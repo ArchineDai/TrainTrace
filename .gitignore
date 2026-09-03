@@ -1,0 +1,29 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+*.iml
+.idea/
+.vscode/
+*.log
+pubspec.lock.bak
+
+# Generated code (drift/riverpod) — keep committed for now; uncomment to ignore
+# *.g.dart
+# *.freezed.dart
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+
+# OS
+.DS_Store
+Thumbs.db
