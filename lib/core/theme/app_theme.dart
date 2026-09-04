@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_text_size.dart';
+
 /// 设计 token 的唯一出处。页面里不写字面量色值（铁律 4）。
 ///
 /// 视觉方向（2026-09-04 定稿）：暗色竞技做底，瑞士排版做骨架。
@@ -252,14 +254,15 @@ abstract final class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),
-        labelStyle: WidgetStateTextStyle.resolveWith(
-          (states) => TextStyle(
-            color: states.contains(WidgetState.selected)
+        // Chip 只把 labelStyle.color 当状态属性解析，整个 WidgetStateTextStyle
+        // 会被拍平成空样式、字色落到引擎默认的白 —— 状态只能挂在 color 上。
+        labelStyle: TextStyle(
+          fontSize: AppTextSize.sm,
+          fontWeight: FontWeight.w500,
+          color: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.selected)
                 ? scheme.onPrimary
                 : scheme.onSurface,
-            fontWeight: states.contains(WidgetState.selected)
-                ? FontWeight.w600
-                : FontWeight.w400,
           ),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
