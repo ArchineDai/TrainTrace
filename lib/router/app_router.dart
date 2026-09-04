@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/dev/presentation/dev_playground_page.dart';
+import '../features/exercises/presentation/exercise_detail_page.dart';
 import '../features/exercises/presentation/exercise_picker_page.dart';
 import '../features/history/presentation/history_list_page.dart';
+import '../features/history/presentation/session_detail_page.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/routines/presentation/routine_edit_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
@@ -106,6 +108,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.exercisePick,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ExercisePickerPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.exerciseDetailPath,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            ExerciseDetailPage(exerciseId: state.pathParameters['id']!),
+      ),
+      // ── 根栈：历史 ────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.sessionDetailPath,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            SessionDetailPage(sessionId: state.pathParameters['id']!),
       ),
       // 训练页（以及现在替它站位的验证页）包 WorkoutDarkScope，
       // 响应设置里的"训练中始终使用深色"。

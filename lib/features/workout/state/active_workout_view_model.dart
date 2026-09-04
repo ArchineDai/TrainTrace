@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants.dart';
 import '../../../core/log.dart';
 import '../../../core/time/clock.dart';
+import '../../exercises/data/exercise_repository.dart';
 import '../../exercises/models/exercise.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/models/history_models.dart';
@@ -71,6 +72,38 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     var session = await _repo.startSession(routine: routine, gymName: gymName);
     final last = await _loadLast(session);
     // 预填：每组继承上次同序号那组；上次组数不够就继承上次最后一组。
+    for (final ex in session.exercises) {
+      await _prefillFromLast(ex, last[ex.id]);
+    }
+    session = (await _repo.getSession(session.id))!;
+    await _timer.skip();
+    state = AsyncData(ActiveWorkoutState(session: session, lastByExercise: last));
+  }
+
+  /// "再练一次"：照一次历史训练的动作、器械标签、目标、休息重新开始。
+  /// 不挂模板 id（那次可能是空白训练或模板已删），只沿用快照名；
+  /// 组数取那次完成的组数（至少 1）；重量次数照常按上次表现预填。
+  Future<void> startFromSession(WorkoutSession source) async {
+    if (hasActive) throw StateError('already has an active workout');
+    var session = await _repo.startSession(
+      gymName: source.gymName,
+      routineName: source.routineName,
+    );
+    for (final ex in source.exercises) {
+      final exercise = await ref.read(exerciseRepositoryProvider).getById(ex.exerciseId);
+      if (exercise == null) continue; // 动作已删
+      await _repo.addExercise(
+        session.id,
+        exercise,
+        setCount: ex.completedSets.isEmpty ? 1 : ex.completedSets.length,
+        equipmentLabel: ex.equipmentLabel,
+        targetRepMin: ex.targetRepMin,
+        targetRepMax: ex.targetRepMax,
+        restSeconds: ex.restSeconds,
+      );
+    }
+    session = (await _repo.getSession(session.id))!;
+    final last = await _loadLast(session);
     for (final ex in session.exercises) {
       await _prefillFromLast(ex, last[ex.id]);
     }

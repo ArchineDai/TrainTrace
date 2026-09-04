@@ -23,14 +23,19 @@ class WorkoutRepository {
   // ── 会话 ─────────────────────────────────────────────────────
 
   /// 从模板开始（`routine` 为 null 即空白训练）。为每个动作预生成 targetSets 个空组。
-  Future<WorkoutSession> startSession({Routine? routine, String? gymName}) async {
+  /// [routineName] 可覆盖快照名（"再练一次"时沿用原训练的名字而不挂模板 id）。
+  Future<WorkoutSession> startSession({
+    Routine? routine,
+    String? gymName,
+    String? routineName,
+  }) async {
     final now = _clock.nowMs();
     final sessionId = newId();
     await _db.transaction(() async {
       await _db.into(_db.workoutSessions).insert(WorkoutSessionsCompanion.insert(
             id: sessionId,
             routineId: Value(routine?.id),
-            routineName: Value(routine?.name),
+            routineName: Value(routineName ?? routine?.name),
             gymName: Value(gymName),
             startedAt: now,
             status: SessionStatus.inProgress.name,

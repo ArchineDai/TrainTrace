@@ -263,8 +263,7 @@ class _RecentTile extends StatelessWidget {
         ' · ${Formatters.kg(summary.totalVolumeKg)} kg',
         style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
       ),
-      // Phase 4：context.push(AppRoutes.sessionDetail(summary.id))
-      onTap: () => AppTheme.showToast(context, '训练详情在 Phase 4 接入'),
+      onTap: () => context.push(AppRoutes.sessionDetail(summary.id)),
     );
   }
 }

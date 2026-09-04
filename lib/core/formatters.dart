@@ -32,6 +32,16 @@ abstract final class Formatters {
     return '${date.year}年${date.month}月${date.day}日';
   }
 
+  /// 月份分组标题：`2026年9月`。
+  static String monthLabel(DateTime d) => '${d.year}年${d.month}月';
+
+  /// `9月1日 18:30`（跨年带年份）。
+  static String dateTime(DateTime d, DateTime now) {
+    final hm = '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    final ymd = d.year == now.year ? '${d.month}月${d.day}日' : '${d.year}年${d.month}月${d.day}日';
+    return '$ymd $hm';
+  }
+
   /// 时长：`55 分钟` / `1 小时 05 分`。
   static String duration(Duration d) {
     final m = d.inMinutes;

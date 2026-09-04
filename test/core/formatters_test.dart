@@ -24,6 +24,12 @@ void main() {
     expect(Formatters.relativeDay(DateTime(2025, 12, 3), now), '2025年12月3日');
   });
 
+  test('monthLabel / dateTime', () {
+    expect(Formatters.monthLabel(DateTime(2026, 9, 4)), '2026年9月');
+    expect(Formatters.dateTime(DateTime(2026, 9, 1, 18, 30), now), '9月1日 18:30');
+    expect(Formatters.dateTime(DateTime(2025, 12, 3, 7, 5), now), '2025年12月3日 07:05');
+  });
+
   test('duration', () {
     expect(Formatters.duration(const Duration(minutes: 55)), '55 分钟');
     expect(Formatters.duration(const Duration(minutes: 65)), '1 小时 05 分');

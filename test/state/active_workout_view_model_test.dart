@@ -221,6 +221,25 @@ void main() {
     expect(after.sets.map((s) => s.reps), [12, 12, 12]);
   });
 
+  test('startFromSession：沿用动作 / 标签 / 目标，组数 = 上次完成组数，不挂模板 id', () async {
+    await container.read(activeWorkoutProvider.future);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final source = (await container
+        .read(workoutRepositoryProvider)
+        .getSession('seed_session_b_20260903'))!;
+
+    await vm.startFromSession(source);
+
+    final st = container.read(activeWorkoutProvider).value!;
+    expect(st.session.routineId, isNull);
+    expect(st.session.routineName, 'B 胸 + 手臂');
+    expect(st.session.exercises.map((e) => e.exerciseName), ['上斜胸推', '哑铃弯举', '二头弯举机']);
+    expect(st.session.exercises[0].sets.length, 2, reason: '上次完成 2 组');
+    expect(st.session.exercises[1].sets.length, 1);
+    expect(st.session.exercises[0].sets[0].weightKg, 2.5, reason: '按上次表现预填');
+    expect(st.session.exercises[2].targetRepMax, 15);
+  });
+
   test('isStale：开始超过 12 小时', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();
