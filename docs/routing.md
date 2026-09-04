@@ -6,9 +6,9 @@
   `StatefulShellRoute.indexedStack`，各分支保活页面栈。
 - 全屏页进根栈：`parentNavigatorKey: _rootNavigatorKey`。
   已注册：`/routines/new`、`/routines/:id/edit`、`/exercises/pick`（模态，
-  `context.push<String>` 拿回 exerciseId）、`/dev`（debug）。
-  待注册：`/workout`、`/workout/summary/:id`（Phase 3）、`/exercises/:id`、
-  `/history/:id`（Phase 4）。
+  `context.push<String>` 拿回 exerciseId）、`/workout`、`/workout/summary/:id`
+  （训练页 finish 后 `pushReplacement` 到它，总结页 `pop` 回 Tab）、`/dev`（debug）。
+  待注册：`/exercises/:id`、`/history/:id`（Phase 4）。
 
 ## 规则
 

@@ -8,8 +8,9 @@
   （2026-09-04，`dumpsys notification` 可见 id=1001）。**vivo 真机未验证**：
   USB 安装需在手机上手动确认，且 OriginOS 可能要求关闭省电 / 允许后台弹出。
   精确闹钟默认未授予，当前退化为 `inexactAllowWhileIdle`；Phase 6 设置页加引导。
-- **V-2 进程被杀恢复**：`adb shell am kill com.archinedai.traintrace` 后重启，
-  inProgress session 能否读回。依赖 Phase 1 的 WorkoutRepository。
+- **V-2 进程被杀恢复**：模拟器上 `am force-stop` 后重启，首页横幅显示已完成组数，
+  进入训练页后用时从原始开始时间累计、计时按 `rest_ends_at` 重算（2026-09-04 通过）。
+  **vivo 真机未验证**，且真机上还要试"训练中接电话 / 切微信被系统回收"这种非主动杀。
 
 ## 推迟项
 
@@ -20,7 +21,10 @@
 - **D-5 通知图标**：目前用 `@mipmap/ic_launcher`，Android 官方建议 drawable 单色图标。
   启动图标已带单色前景 `drawable/ic_launcher_monochrome`（透明底白色图形），可直接改用，
   或从 `assets/icon/adaptive_fg.svg` 另出一份 `drawable/ic_notification`；R8 `keep.xml` 里保留。
-- **D-6 删除验证页**：`features/dev/` 与 `AppRoutes.dev` 在 Phase 3 真实训练页落地后删除。
+- **D-6 删除验证页**：`features/dev/` 与 `AppRoutes.dev`。训练页已落地，但验证页上的
+  "预约 15 秒后通知 / 申请精确闹钟"两个按钮在 vivo 真机验证 V-1 前还有用，之后删。
+- **D-10 训练页体验**：完成一组后不自动滚到下一组、不自动聚焦；默认休息时间用常量 90s
+  而非设置项；键盘弹出时列表底部可能被遮住（Phase 6 打磨）。
 - **D-9 字体许可署名**：两套字体都是 SIL OFL 1.1，许可文本已随 `assets/fonts/*-OFL.txt`
   打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。
 

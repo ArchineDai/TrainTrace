@@ -60,13 +60,16 @@ presentation → state → data → models
 
 落地判据：Drift 只出现在 `data/` 与 `core/db/`。详见 `data-layer.md`。
 
-**现状**（Phase 2 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
-`*Row`（`@DataClassName`）。state 层有 `routinesProvider` / `exercisesProvider` /
-`sessionSummariesProvider`（三个 StreamProvider，Drift watch 驱动）、
-`restTimerProvider`、`themeSettingsProvider`。页面：首页（模板卡片 + 最近训练）、
-模板列表 / 编辑（拖动排序、组数 / 次数区间 / 休息 bottom sheet）、动作选择器
-（搜索 + 肌群 chip + 新建自定义）。`activeWorkoutProvider` 与训练页随 Phase 3 落地，
-首页"开始"按钮暂时只弹 toast。
+**现状**（Phase 3 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
+`*Row`（`@DataClassName`）。state 层：`routinesProvider` / `exercisesProvider` /
+`sessionSummariesProvider`（StreamProvider，Drift watch 驱动）、`restTimerProvider`、
+`themeSettingsProvider`、**`activeWorkoutProvider`**（`AsyncNotifier<ActiveWorkoutState?>`，
+进行中训练的唯一真相源缓存：mutation 先改内存再写库，输入 debounce 300ms，
+`ref.listen(restTimerProvider)` 把计时终点写到 `rest_ends_at`，`build()` 从库恢复）。
+页面：首页（继续横幅 / 模板卡片 / 最近训练）、模板列表 / 编辑、动作选择器、
+**训练页**（卡片 + 自定义键盘 + 计时条 + 器械标签弹层）、**总结页**。
+`main()` 在首帧前预读种子 / 主题 / 进行中训练。
+模拟器上已走通：开始 → 预填 → 完成组自动补组 + 开计时 → 强杀重启恢复 → 结束 → 总结。
 
 ## 依赖用途
 

@@ -10,7 +10,9 @@ import '../features/home/presentation/home_page.dart';
 import '../features/routines/presentation/routine_edit_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
 import '../features/settings/presentation/settings_page.dart';
+import '../features/workout/presentation/active_workout_page.dart';
 import '../features/workout/presentation/widgets/workout_dark_scope.dart';
+import '../features/workout/presentation/workout_summary_page.dart';
 import '../shared/widgets/app_shell.dart';
 import 'app_routes.dart';
 
@@ -84,6 +86,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) =>
             RoutineEditPage(routineId: state.pathParameters['id']!),
+      ),
+      // ── 根栈：训练 ────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.workout,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            const WorkoutDarkScope(child: ActiveWorkoutPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.workoutSummaryPath,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => WorkoutDarkScope(
+          child: WorkoutSummaryPage(sessionId: state.pathParameters['id']!),
+        ),
       ),
       // /exercises/pick 必须在 /exercises/:id 之前注册（docs/routing.md 3）。
       GoRoute(
