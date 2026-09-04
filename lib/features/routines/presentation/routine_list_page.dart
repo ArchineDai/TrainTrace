@@ -12,7 +12,10 @@ import '../data/routine_repository.dart';
 import '../models/routine.dart';
 import '../state/routine_list_view_model.dart';
 
-/// 模板列表。点进编辑，长按删除，右下角新建。
+/// 模板列表。点进编辑，长按删除，右上角新建。
+///
+/// 新建放 AppBar 加号而不是 FAB：Hevy / Strong / 练就 / 训记 四家都把"创建"
+/// 放在所属区块的标题行，右下角不悬浮任何东西（docs/ui-conventions.md 操作语法）。
 class RoutineListPage extends ConsumerWidget {
   const RoutineListPage({super.key});
 
@@ -25,18 +28,22 @@ class RoutineListPage extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('模板')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(AppRoutes.routineNew),
-        icon: const Icon(Icons.add),
-        label: const Text('新建模板'),
+      appBar: AppBar(
+        title: const Text('模板'),
+        actions: [
+          IconButton(
+            onPressed: () => context.push(AppRoutes.routineNew),
+            icon: const Icon(Icons.add),
+            tooltip: '新建模板',
+          ),
+        ],
       ),
       body: routines == null
           ? const SizedBox.shrink()
           : routines.isEmpty
               ? Center(
                   child: Text(
-                    '还没有模板，点右下角新建',
+                    '还没有模板，点右上角 + 新建',
                     style: TextStyle(
                       fontSize: AppTextSize.md,
                       color: scheme.onSurfaceVariant,
@@ -44,7 +51,7 @@ class RoutineListPage extends ConsumerWidget {
                   ),
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   itemCount: routines.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (context, i) => _RoutineTile(

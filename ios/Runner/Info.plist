@@ -14,6 +14,11 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<!-- image_picker：器械备注拍照 / 选图。缺了 iOS 会直接崩。 -->
+	<key>NSCameraUsageDescription</key>
+	<string>拍下这台机器，下次训练时一眼认出它</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>从相册选一张机器的照片作器械备注</string>
 	<key>CFBundleName</key>
 	<string>traintrace</string>
 	<key>CFBundlePackageType</key>

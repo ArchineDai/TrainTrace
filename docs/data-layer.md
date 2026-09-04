@@ -73,6 +73,11 @@ model 用枚举，表用 `text()`。
 - 字段名与列名一一对应（camelCase ↔ snake_case），未来加 `@JsonSerializable()` 即可作 API 契约。
 - 时间字段在 model 里用 `DateTime`，在表里是 epoch ms；转换在 repository。
 - 重量统一 kg 的 `double`，lb 只在 presentation 层换算。
+- 短的只读字符串列表（动作要领 / 常见错误 / 常见机器）存 JSON 文本列，经
+  `core/db/tables/string_list_converter.dart` 映射成 `List<String>`。判据：整体读写、
+  不按元素查询。需要按元素查的建子表。
+- 文件类数据（器械照片）只在库里存**相对 app 文档目录的路径**，绝对路径由
+  `EquipmentPhotoStore`（`features/exercises/data/`）解析；iOS 沙盒绝对路径每次安装会变。
 
 ## State
 

@@ -42,4 +42,32 @@ void main() {
         );
     expect(await repo.readThemeSettings(), const ThemeSettings());
   });
+
+  group('locale', () {
+    test('没选过 → null，不是空串或哨兵值', () async {
+      expect(await repo.readLocale(), isNull);
+    });
+
+    test('写入后能读回，重复写是覆盖', () async {
+      await repo.writeLocale('en');
+      await repo.writeLocale('zh');
+      expect(await repo.readLocale(), 'zh');
+      expect((await db.select(db.appSettings).get()).length, 1);
+    });
+
+    test('writeLocale(null) 删掉这一行，不动其它设置', () async {
+      await repo.writeThemeMode(AppThemeMode.dark);
+      await repo.writeLocale('en');
+      await repo.writeLocale(null);
+
+      expect(await repo.readLocale(), isNull);
+      expect((await db.select(db.appSettings).get()).length, 1);
+      expect((await repo.readThemeSettings()).themeMode, AppThemeMode.dark);
+    });
+
+    test('从没写过时 writeLocale(null) 也不抛错', () async {
+      await repo.writeLocale(null);
+      expect(await repo.readLocale(), isNull);
+    });
+  });
 }

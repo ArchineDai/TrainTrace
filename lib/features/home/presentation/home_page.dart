@@ -38,6 +38,16 @@ class HomePage extends ConsumerWidget {
                   _ResumeBanner(state: active, now: now),
                   const SizedBox(height: 20),
                 ],
+                // 顶部满宽"空白训练"，对齐 Hevy / Strong 的 Quick Start 位置。
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _startWorkout(context, ref, null),
+                    icon: const Icon(Icons.add),
+                    label: const Text('开始空白训练'),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 _sectionTitle(context, '从模板开始'),
                 for (final r in routines) ...[
                   _RoutineCard(
@@ -53,12 +63,6 @@ class HomePage extends ConsumerWidget {
                     '还没有模板，去「模板」页新建一个',
                     style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
                   ),
-                const SizedBox(height: 4),
-                OutlinedButton.icon(
-                  onPressed: () => _startWorkout(context, ref, null),
-                  icon: const Icon(Icons.add),
-                  label: const Text('空白训练'),
-                ),
                 const SizedBox(height: 24),
                 _sectionTitle(context, '最近训练'),
                 if (summaries.isEmpty)

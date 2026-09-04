@@ -7,7 +7,8 @@
 ```
 lib/
 ├─ main.dart                      锁竖屏 + ProviderScope
-├─ app/app.dart                   MaterialApp.router、亮暗主题、zh locale
+├─ app/app.dart                   MaterialApp.router、亮暗主题、locale（跟随系统 / 用户选择）、didChangeLocales
+├─ l10n/                          ARB（app_zh 模板 + app_en）与 gen-l10n 生成码，git 追踪
 ├─ router/
 │   ├─ app_router.dart            StatefulShellRoute(4 Tab)；根栈路由随 Phase 注册
 │   └─ app_routes.dart            地址常量与构造函数
@@ -40,7 +41,7 @@ lib/
 │   ├─ history/
 │   │   ├─ models/history_models.dart     SessionSummary / ExercisePerformance / PersonalRecords
 │   │   └─ data/history_repository.dart   摘要聚合、上次表现（按器械标签分组）、PR / Epley 1RM
-│   ├─ settings/                          ThemeSettings + SettingsRepository + ViewModel + 设置页
+│   ├─ settings/                          ThemeSettings + SettingsRepository + 主题 / 语言两个 ViewModel + 设置页
 │   ├─ dev/presentation/dev_playground_page.dart  Phase 0 验证页，仅 debug 注册（backlog D-6）
 │   └─ home / routines / history           占位页
 ├─ services/
@@ -63,7 +64,7 @@ presentation → state → data → models
 **现状**（Phase 3 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
 `*Row`（`@DataClassName`）。state 层：`routinesProvider` / `exercisesProvider` /
 `sessionSummariesProvider`（StreamProvider，Drift watch 驱动）、`restTimerProvider`、
-`themeSettingsProvider`、**`activeWorkoutProvider`**（`AsyncNotifier<ActiveWorkoutState?>`，
+`themeSettingsProvider`、`localeSettingsProvider`、**`activeWorkoutProvider`**（`AsyncNotifier<ActiveWorkoutState?>`，
 进行中训练的唯一真相源缓存：mutation 先改内存再写库，输入 debounce 300ms，
 `ref.listen(restTimerProvider)` 把计时终点写到 `rest_ends_at`，`build()` 从库恢复）。
 页面：首页（继续横幅 / 模板卡片 / 最近训练）、模板列表 / 编辑、动作选择器、
@@ -83,7 +84,7 @@ presentation → state → data → models
 | `wakelock_plus` | 训练页常亮（Phase 3） |
 | `share_plus` | CSV 导出分享（Phase 6） |
 | `intl` | 日期 / 数字格式化 |
-| `flutter_localizations` | Material 控件中文 |
+| `flutter_localizations` + gen-l10n | 界面文案（`lib/l10n/*.arb`）与 Material 控件本地化，见 `i18n.md` |
 | dev `drift_dev` + `build_runner` | 唯一 codegen |
 
 ## 平台

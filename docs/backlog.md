@@ -14,6 +14,11 @@
 
 ## 推迟项
 
+- **D-12 动作示意换真人素材**：现在是 `exercise_figure_data.dart` 里手写关键帧的火柴人
+  （16 个内置动作，起止两帧插值）。姿态是手调的，不保证解剖学精确；V0.5 若接真人
+  动图 / 视频，这份数据留作离线回退。自定义动作没有示意图。
+- **D-13 器械照片不随导出走**：`exercise_equipment_notes.photo_path` 只是相对路径，
+  CSV 导出（D-2）与未来同步（D-4）都要单独处理文件；相机权限 iOS 字符串已在 Info.plist。
 - **D-1 iOS 构建**：无 Mac，未验证。避免 Android-only 插件。
 - **D-2 CSV 导出**：Phase 6。
 - **D-3 lb 单位**：V0.1 只显示换算，不接受 lb 输入。
@@ -27,6 +32,15 @@
   而非设置项；键盘弹出时列表底部可能被遮住（Phase 6 打磨）。
 - **D-9 字体许可署名**：两套字体都是 SIL OFL 1.1，许可文本已随 `assets/fonts/*-OFL.txt`
   打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。
+- **D-11 文案迁移到 ARB**（2026-09-04 起）：多语言基础设施已落地（`docs/i18n.md`），
+  设置页 / Tab 栏 / 占位页已迁。其余约 170 处硬编码中文逐页迁，每页迁完跑
+  `pwsh scripts/check_l10n.ps1`。按数量：`home_page`（25）、`routine_edit_page`（20）、
+  `active_workout_page`（16）、`exercise_picker_page`（14）、`routine_list_page`（12）、
+  `exercise.dart` 的枚举展示名（12，改成 presentation 层扩展，model 不 import l10n）、
+  `workout_exercise_card` / `equipment_label_sheet`（各 11）、`workout_summary_page` /
+  `rest_timer_bar`（各 7）、`local_notification_rest_notifier`（4，调用方传字符串）、
+  `set_row` / `numeric_keypad` / `workout_session.dart`（8）。`dev_playground_page`（13）
+  随 D-6 删除，不迁。动作名已有 `name` / `nameEn` 双字段，按 `effective` 选字段即可。
 
 ## 已了结
 

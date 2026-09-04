@@ -1,0 +1,22 @@
+{
+  "@@locale": "en",
+
+  "tabWorkout": "Workout",
+  "tabRoutines": "Routines",
+  "tabHistory": "History",
+  "tabSettings": "Settings",
+
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "workoutAlwaysDark": "Always dark during workouts",
+  "workoutAlwaysDarkHint": "Keeps contrast high in dim gyms; other pages follow the choice above",
+  "language": "Language",
+  "followSystemLanguage": "System default",
+  "devPlayground": "Phase 0 tech playground",
+  "devPlaygroundHint": "Keypad / timer / background reminder",
+
+  "placeholderPending": "Coming in {phase}"
+}

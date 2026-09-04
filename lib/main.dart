@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'core/db/seed/seed_loader.dart';
 import 'core/log.dart';
+import 'features/settings/state/locale_settings_view_model.dart';
 import 'features/settings/state/theme_settings_view_model.dart';
 import 'features/workout/state/active_workout_view_model.dart';
 import 'services/local_notification_rest_notifier.dart';
@@ -22,11 +23,12 @@ Future<void> main() async {
     overrides: [restNotifierProvider.overrideWithValue(restNotifier)],
   );
 
-  // 首帧之前导入种子并预读主题设置：都是几十毫秒；换来列表页不闪空态、
-  // 首帧不先按系统亮色渲染再跳深色。
+  // 首帧之前导入种子并预读主题、语言设置：都是几十毫秒；换来列表页不闪空态、
+  // 首帧不先按系统亮色 / 系统语言渲染再跳到用户选的那套。
   try {
     await container.read(seedLoaderProvider).seedIfNeeded();
     await container.read(themeSettingsProvider.future);
+    await container.read(localeSettingsProvider.future);
     // 进行中的训练也提前读：首页横幅首帧就在，而不是过一会儿"弹"出来。
     await container.read(activeWorkoutProvider.future);
   } catch (e, s) {

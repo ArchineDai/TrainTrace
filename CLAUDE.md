@@ -55,6 +55,10 @@ Repository 查询默认过滤 `deleted_at IS NULL`。物理删除只有一处例
 4. **时间经 `clockProvider` 取**，不直接 `DateTime.now()`。测试用 `FixedClock`。
 5. **静默降级用 `swallow(e, label)`**（`core/log.dart`），不写空 `catch`。日志走 `AppLog`。
 6. **有旧数据就不要显示 loading**：判 `asyncValue.value != null`（Riverpod 3 已无 `valueOrNull`）。
+7. **界面文案走 ARB**（`lib/l10n/app_zh.arb` 模板 + `app_en.arb`），页面里
+   `AppLocalizations.of(context).xxx`。**新增 key 必须同步两个 ARB**，走 `/add-text`；
+   `flutter gen-l10n` 对缺 key 只发 warning，靠 `scripts/check_l10n.ps1` 判红绿。
+   语言选择的 `selected` / `effective` 分离与"跟随系统"语义见 `docs/i18n.md`。
 
 ---
 
@@ -93,6 +97,12 @@ dart run build_runner build
 改了 `core/db/` 下任何表必跑。`*.g.dart` 在 git 追踪中，需提交。
 
 ```bash
+pwsh scripts/check_l10n.ps1
+```
+改完 ARB 必跑（内含 `flutter gen-l10n`）。基线为零：**任何 locale 漏一个 key 就 exit 1**。
+生成码 `lib/l10n/app_localizations*.dart` 在 git 追踪中，需提交。
+
+```bash
 flutter run -d 10ACBQ18A8000QD
 ```
 真机（vivo V2241A，Android 16）。休息提醒、进程被杀恢复必须在真机验证，模拟器不算。
@@ -113,4 +123,5 @@ flutter run -d 10ACBQ18A8000QD
 | `docs/data-layer.md` | 写 Repository / model / ViewModel 时的契约细则 |
 | `docs/routing.md` | 加页面、改导航 |
 | `docs/ui-conventions.md` | 写 UI、找 token |
+| `docs/i18n.md` | 加文案、加语言、补翻译缺口 |
 | `docs/backlog.md` | 已知问题与推迟项 |

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_text_size.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Phase 0 占位页。各 Phase 落地时被真实页面替换后删除本文件。
 class PlaceholderPage extends StatelessWidget {
@@ -15,7 +16,7 @@ class PlaceholderPage extends StatelessWidget {
       appBar: AppBar(title: Text(title)),
       body: Center(
         child: Text(
-          '$phase 接入',
+          AppLocalizations.of(context).placeholderPending(phase),
           style: TextStyle(
             fontSize: AppTextSize.md,
             color: Theme.of(context).colorScheme.onSurfaceVariant,

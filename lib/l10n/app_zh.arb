@@ -1,0 +1,28 @@
+{
+  "@@locale": "zh",
+
+  "tabWorkout": "训练",
+  "tabRoutines": "模板",
+  "tabHistory": "历史",
+  "tabSettings": "设置",
+
+  "settings": "设置",
+  "appearance": "外观",
+  "themeSystem": "跟随系统",
+  "themeLight": "浅色",
+  "themeDark": "深色",
+  "workoutAlwaysDark": "训练中始终使用深色",
+  "workoutAlwaysDarkHint": "健身房光线差时保持高对比，其余页面跟随上面的选择",
+  "language": "语言",
+  "followSystemLanguage": "跟随系统",
+  "devPlayground": "Phase 0 技术验证",
+  "devPlaygroundHint": "键盘 / 计时 / 后台提醒",
+
+  "placeholderPending": "{phase} 接入",
+  "@placeholderPending": {
+    "description": "占位页正文，phase 形如 'Phase 4'",
+    "placeholders": {
+      "phase": { "type": "String" }
+    }
+  }
+}

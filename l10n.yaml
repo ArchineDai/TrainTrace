@@ -1,0 +1,12 @@
+arb-dir: lib/l10n
+# 模板是 zh：产品面向国内用户，文案先用中文写，英文是译文。
+template-arb-file: app_zh.arb
+output-localization-file: app_localizations.dart
+output-dir: lib/l10n
+
+# AppLocalizations.of(context) 直接返回非空，页面里不写 `!`。
+nullable-getter: false
+
+# 缺失 key 清单落盘，供 scripts/check_l10n.ps1 判红绿。
+# gen-l10n 对缺 key 只发 warning，不落盘就没有任何机制拦得住漏翻译。
+untranslated-messages-file: l10n_untranslated.json

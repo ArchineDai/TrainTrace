@@ -36,3 +36,6 @@ tool/fonts/node_modules/
 
 # 启动图标生成脚本的 npm 依赖（tool/icon/），lock 文件保留
 tool/icon/node_modules/
+
+# gen-l10n 产出的缺失 key 清单（scripts/check_l10n.ps1 的输入，非源码）
+l10n_untranslated.json

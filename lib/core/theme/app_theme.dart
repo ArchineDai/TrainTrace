@@ -175,6 +175,18 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      // FAB 是页面主操作，和 FilledButton 一样走主色实心 + 墨字。
+      // M3 默认给 FAB 的是 primaryContainer，在这套色板里是暗褐 / 浅桃，比品牌橙浅。
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        elevation: 0,
+        highlightElevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        extendedTextStyle: const TextStyle(fontWeight: FontWeight.w600),
+      ),
       // 文字型按钮是"橙色当文字"的典型场景，亮色下要走加深的 accentText。
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(

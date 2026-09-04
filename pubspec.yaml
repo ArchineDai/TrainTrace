@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^3.4.3
   go_router: ^18.0.1
+  image_picker: ^1.2.3
   intl: ^0.20.3
   path_provider: ^2.1.6
   share_plus: ^13.3.0
@@ -32,6 +33,9 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
 
 flutter:
+  # flutter build / run 自动跑 gen-l10n（配置在 l10n.yaml）；改完 ARB 仍建议手动跑
+  # scripts/check_l10n.ps1 看漏翻报告。
+  generate: true
   uses-material-design: true
 
   # 首启导入的内置动作 / 模板 / 历史记录（core/db/seed/seed_loader.dart）。

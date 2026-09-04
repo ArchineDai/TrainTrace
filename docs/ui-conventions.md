@@ -11,8 +11,10 @@
 | 圆角 | `AppTheme.radius`（6） |
 | 最小触控 | `AppTheme.minTouch`（48dp） |
 | 提示 | `AppTheme.showToast(context, msg)` |
+| 文案 | `AppLocalizations.of(context).xxx`，key 定义在 `lib/l10n/app_zh.arb`，见 `i18n.md` |
 
-`lib/features` 与 `lib/shared` 里不写 `Color(0xFF...)` 和 `fontSize: <数字>`。
+`lib/features` 与 `lib/shared` 里不写 `Color(0xFF...)` 和 `fontSize: <数字>`；
+新写的界面文字不写裸中文字符串（存量迁移见 `backlog.md` D-11）。
 
 ## 训练页专项
 
@@ -65,3 +67,22 @@
   `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS` 改成 `AppIcon`，这是它的已知误写，
   跑完用 `git checkout -- ios/Runner.xcodeproj/project.pbxproj` 还原。
 - `assets/icon/preview.png` 是方图 / 圆形蒙版 / 单色 / 48–144px 小尺寸的对照图，改完看一眼。
+
+## 操作语法
+
+参照 Hevy / Strong / 练就 / 训记 四家的做法定的（2026-09-04），四家都没有右下角圆形 FAB。
+一句话：**创建在标题行，开始在卡片上，训练中的追加在底部胶囊，其余不悬浮。**
+
+| 操作类型 | 放哪 | 控件 | 现有例子 |
+|---|---|---|---|
+| 页面级创建（新建模板 / 新建动作） | AppBar 右侧 | `IconButton(Icons.add)` 带 tooltip | 模板页、动作选择器 |
+| 开始空白训练 | 训练页顶部 | 满宽 `OutlinedButton.icon` | 首页 |
+| 开始某张模板 | 卡片内 | `FilledButton` | 首页模板卡 |
+| 执行类主操作（完成本组 / 结束训练） | 页面底部 | 满宽 `FilledButton`，高 56 | 训练页 |
+| 训练中追加动作 | 底部悬浮 | 带文字的居中胶囊 | 训练页（Phase 3） |
+| 编辑页追加一项（添加动作） | 列表末尾 | 满宽 `OutlinedButton.icon` | 编辑模板页 |
+| 表单提交（保存 / 确定） | AppBar 右侧 | `TextButton` 文字 | 编辑模板页 |
+| 删除 | 长按 或 卡片「…」 | 二次确认，危险按钮红底 | 模板列表 |
+| 次要操作（搜索 / 筛选 / 更多） | AppBar 右侧 | 图标，最多两个 | 动作选择器 |
+
+不用 `FloatingActionButton`。主题里保留了它的样式只是兜底，新页面不要拿它做创建入口。
