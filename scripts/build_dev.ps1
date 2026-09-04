@@ -68,6 +68,7 @@ try {
     $buildArgs = @('build', 'apk', "--$flutterType")
     if (-not $AllAbi) { $buildArgs += @('--target-platform', 'android-arm64') }
 
+    $buildStart = Get-Date
     Write-Host "== flutter $($buildArgs -join ' ') ==" -ForegroundColor Cyan
     & flutter @buildArgs
     if ($LASTEXITCODE -ne 0) {
@@ -75,11 +76,11 @@ try {
         exit $LASTEXITCODE
     }
 
-    $built = Get-BuiltApk $repoRoot $flutterType
-    $archived = Save-ApkArchive $repoRoot $built $flutterType $label $version
+    $apk = Get-BuiltApk $repoRoot $flutterType $buildStart
+    $archived = Save-ApkArchive $repoRoot $apk $label $version
     Write-ApkSummary $archived
 
-    if ($Install) { Install-Apk $adb $deviceId $built }
+    if ($Install) { Install-Apk $adb $deviceId $apk }
 }
 finally {
     Pop-Location

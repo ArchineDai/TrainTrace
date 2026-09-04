@@ -111,8 +111,8 @@ flutter run -d 10ACBQ18A8000QD
 powershell -File scripts/build_dev.ps1 -Install
 ```
 打 dev 包装真机（debug + 只打 arm64，约 170 MB —— 大头是 JIT 的 kernel_blob，debug 去不掉）。
-对外分发用 `scripts/build_release.ps1`（AOT + 按 ABI 拆包，arm64 约 26 MB）：正式签名读
-`android/key.properties`，缺该文件时回退 debug 签名并在构建前警告。
+对外分发用 `scripts/build_release.ps1`（AOT，单个通用包约 66 MB，什么机器都能装）：正式
+签名读 `android/key.properties`，缺该文件时回退 debug 签名并在构建前警告。
 
 ## 提交约定
 

@@ -1,32 +1,30 @@
 ﻿<#
 .SYNOPSIS
-  对外分发用的 release 包（AOT 构建 + 按 ABI 拆包 + 签名检查）。
+  对外分发用的 release 包（AOT 构建 + 签名检查）。
 
 .DESCRIPTION
-  给「发给别人试用」「上国内应用商店」用。相对 dev 包：Dart 代码 AOT 编译、
-  去掉 JIT 用的 kernel_blob 与调试符号、按 ABI 拆包，体积从两百多 MB 降到十几 MB。
+  给「发给别人试用」「上应用商店」用。相对 dev 包：Dart 代码 AOT 编译、去掉 JIT
+  用的 kernel_blob 与调试符号，体积从一百多 MB 降到 60 出头。
+
+  只产一个包，含全部 ABI（arm64-v8a / armeabi-v7a / x86_64），什么机器都能装。
+  按 ABI 拆包能让每个包小一半多，但拆完就要回答「发哪个给谁」，而这个项目的分发
+  就是把一个文件发出去 —— 省下的 40 MB 不值这份麻烦。
 
   签名：读 android/key.properties（该文件含密钥口令，在 .gitignore 里，不入库）。
-  没有这个文件时 Gradle 回退到 debug 签名 —— 装机自测可以，但**不能上架**，
-  也不能覆盖安装到已装正式版的手机上。本脚本会就此警告；-Force 跳过警告。
-  首次生成密钥库见文末「怎么配签名」。
-
-  默认 --split-per-abi：应用商店按机型分发对应包。要发单个「哪台机器都能装」的
-  APK（微信发给朋友、内部群试用）用 -Fat。
+  没有这个文件时 Gradle 回退到 debug 签名 —— 装机自测可以，但**不能上架**，也不能
+  覆盖安装到装了正式版的手机上。本脚本会就此警告；-Force 跳过警告。首次生成密钥库
+  见文末「怎么配签名」。
 
 .PARAMETER Install
-  构建成功后用 adb 装到设备。注意 release 与 dev 签名不同，机上装着 dev 包时
-  会安装失败，需要先卸载（会清掉训练数据）。
+  构建成功后用 adb 装到设备。注意配了正式密钥后 release 与 dev 签名不同，机上装着
+  dev 包时会安装失败，需要先卸载（会清掉训练数据）。
 
 .PARAMETER Device
   adb 设备号。省略时自动选唯一在线设备。
 
-.PARAMETER Fat
-  不拆包，产一个含全部 ABI 的通用 APK（大概是单 ABI 包的三倍）。
-
 .PARAMETER Obfuscate
-  混淆 Dart 符号，调试符号另存到 build/symbols/<版本>/。上架前建议开；
-  开了之后线上崩溃栈是乱码，必须留好这批符号文件才能还原。
+  混淆 Dart 符号，调试符号另存到 build/symbols/<版本>/。上架前建议开；开了之后线上
+  崩溃栈是乱码，必须留好这批符号文件才能还原。
 
 .PARAMETER Force
   没配正式签名时也不警告直接构建。
@@ -36,7 +34,6 @@
 
 .EXAMPLE
   powershell -File scripts/build_release.ps1
-  powershell -File scripts/build_release.ps1 -Fat -Install
   powershell -File scripts/build_release.ps1 -Clean -Obfuscate
 
 .NOTES
@@ -53,7 +50,6 @@
 param(
     [switch]$Install,
     [string]$Device,
-    [switch]$Fat,
     [switch]$Obfuscate,
     [switch]$Force,
     [switch]$Clean
@@ -103,13 +99,13 @@ try {
     }
 
     $buildArgs = @('build', 'apk', '--release')
-    if (-not $Fat) { $buildArgs += '--split-per-abi' }
     if ($Obfuscate) {
         $symbols = Join-Path $repoRoot "build\symbols\$version"
         if (-not (Test-Path $symbols)) { New-Item -ItemType Directory -Path $symbols -Force | Out-Null }
         $buildArgs += @('--obfuscate', '--split-debug-info', $symbols)
     }
 
+    $buildStart = Get-Date
     Write-Host "== flutter $($buildArgs -join ' ') （$version） ==" -ForegroundColor Cyan
     & flutter @buildArgs
     if ($LASTEXITCODE -ne 0) {
@@ -117,8 +113,8 @@ try {
         exit $LASTEXITCODE
     }
 
-    $built = Get-BuiltApk $repoRoot 'release'
-    $archived = Save-ApkArchive $repoRoot $built 'release' 'release' $version
+    $apk = Get-BuiltApk $repoRoot 'release' $buildStart
+    $archived = Save-ApkArchive $repoRoot $apk 'release' $version
     Write-ApkSummary $archived
 
     Write-Host ''
@@ -132,7 +128,7 @@ try {
         Write-Host "符号：build\symbols\$version（还原崩溃栈要用，别删）" -ForegroundColor Green
     }
 
-    if ($Install) { Install-Apk $adb $deviceId $built }
+    if ($Install) { Install-Apk $adb $deviceId $apk }
 }
 finally {
     Pop-Location
