@@ -50,40 +50,64 @@ class SuggestionCard extends ConsumerWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppTheme.radius),
-        border: Border(
-          left: BorderSide(color: accent, width: 4),
-          top: BorderSide(color: scheme.outlineVariant),
-          right: BorderSide(color: scheme.outlineVariant),
-          bottom: BorderSide(color: scheme.outlineVariant),
+    // 左侧色条单独画：BoxDecoration 不允许"非均匀边框 + 圆角"同时出现。
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppTheme.radius),
+      child: Container(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppTheme.radius),
+          border: Border.all(color: scheme.outlineVariant),
         ),
-      ),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        // ListView 里子项高度无界，stretch 需要 IntrinsicHeight 给 Row 一个有限高度，
+        // 否则左侧色条会被要求撑到无限高而整块画不出来。
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(icon, size: 18, color: accent),
-              const SizedBox(width: 6),
-              Text(
-                s.title,
-                style: TextStyle(
-                  fontSize: AppTextSize.md,
-                  fontWeight: FontWeight.w600,
-                  color: accent,
+              Container(width: 4, color: accent),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(icon, size: 18, color: accent),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              s.title,
+                              style: TextStyle(
+                                fontSize: AppTextSize.md,
+                                fontWeight: FontWeight.w600,
+                                color: accent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        s.reason,
+                        style: TextStyle(
+                          fontSize: AppTextSize.sm,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '下次：${s.nextTarget}',
+                        style: TextStyle(fontSize: AppTextSize.sm),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(s.reason, style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant)),
-          const SizedBox(height: 4),
-          Text('下次：${s.nextTarget}', style: TextStyle(fontSize: AppTextSize.sm)),
-        ],
+        ),
       ),
     );
   }

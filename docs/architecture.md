@@ -61,7 +61,12 @@ presentation → state → data → models
 
 落地判据：Drift 只出现在 `data/` 与 `core/db/`。详见 `data-layer.md`。
 
-**现状**（Phase 3 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
+**现状**（Phase 5 完成，Phase 6 未开始）：历史列表（按月分组）、训练详情（删除 / 再练一次）、
+动作详情（个人记录 / 最近记录 / 备注 / 要领动图）、`features/suggestion/`（纯函数
+`SuggestionEngine` + `suggestionProvider` + `SuggestionCard`，接在总结页、动作详情页、
+训练卡片）均已落地。以下是 Phase 3 时的分层描述，仍然准确：
+
+四个 feature 的 models + data 层齐备，Drift 行类统一命名
 `*Row`（`@DataClassName`）。state 层：`routinesProvider` / `exercisesProvider` /
 `sessionSummariesProvider`（StreamProvider，Drift watch 驱动）、`restTimerProvider`、
 `themeSettingsProvider`、`localeSettingsProvider`、**`activeWorkoutProvider`**（`AsyncNotifier<ActiveWorkoutState?>`，
