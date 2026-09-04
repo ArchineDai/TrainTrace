@@ -27,3 +27,6 @@ ios/Flutter/ephemeral/
 # OS
 .DS_Store
 Thumbs.db
+
+# Flutter tooling
+.flutter-plugins-dependencies

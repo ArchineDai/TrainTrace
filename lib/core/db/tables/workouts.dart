@@ -1,0 +1,59 @@
+import 'package:drift/drift.dart';
+
+import 'exercises.dart';
+import 'routines.dart';
+import 'sync_columns.dart';
+
+/// 一次训练。开始即落库（status = inProgress），是意外退出恢复的依据。
+@TableIndex(name: 'idx_sessions_status', columns: {#status})
+@TableIndex(name: 'idx_sessions_started', columns: {#startedAt})
+class WorkoutSessions extends Table with UuidPrimaryKey, SyncColumns {
+  TextColumn get routineId =>
+      text().nullable().references(Routines, #id, onDelete: KeyAction.setNull)();
+
+  /// 模板名快照：模板改名 / 删除后历史仍可读。
+  TextColumn get routineName => text().nullable()();
+  TextColumn get gymName => text().nullable()();
+  IntColumn get startedAt => integer()();
+  IntColumn get endedAt => integer().nullable()();
+
+  /// inProgress / completed / discarded
+  TextColumn get status => text()();
+
+  /// 休息倒计时结束的时间戳（epoch ms）。只存终点不存剩余秒数，恢复时重算。
+  IntColumn get restEndsAt => integer().nullable()();
+  TextColumn get note => text().nullable()();
+}
+
+/// 训练中的一个动作。目标区间 / 休息是从模板复制的快照，训练中可改。
+@TableIndex(name: 'idx_wex_session', columns: {#sessionId, #sortOrder})
+@TableIndex(name: 'idx_wex_exercise', columns: {#exerciseId})
+class WorkoutExercises extends Table with UuidPrimaryKey, SyncColumns {
+  TextColumn get sessionId =>
+      text().references(WorkoutSessions, #id, onDelete: KeyAction.cascade)();
+  TextColumn get exerciseId => text().references(Exercises, #id)();
+  IntColumn get sortOrder => integer()();
+
+  /// "黑熊猫 机器A"。为空视为默认器械。上次表现与建议都按它分组。
+  TextColumn get equipmentLabel => text().nullable()();
+  IntColumn get targetRepMin => integer().nullable()();
+  IntColumn get targetRepMax => integer().nullable()();
+  IntColumn get restSeconds => integer().nullable()();
+  TextColumn get note => text().nullable()();
+}
+
+/// 一组。不带同步三列，随父动作整体同步。
+@TableIndex(name: 'idx_sets_wex', columns: {#workoutExerciseId, #setIndex})
+class WorkoutSets extends Table with UuidPrimaryKey {
+  TextColumn get workoutExerciseId =>
+      text().references(WorkoutExercises, #id, onDelete: KeyAction.cascade)();
+  IntColumn get setIndex => integer()();
+
+  /// warmup / working / drop
+  TextColumn get setType => text().withDefault(const Constant('working'))();
+  RealColumn get weightKg => real().nullable()();
+  IntColumn get reps => integer().nullable()();
+  IntColumn get rir => integer().nullable()();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  IntColumn get completedAt => integer().nullable()();
+}
