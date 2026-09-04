@@ -125,6 +125,15 @@ void main() {
     expect((await history.personalRecords('ex_plank')).isEmpty, isTrue);
   });
 
+  test('personalRecords：无配重动作练过也算没记录', () async {
+    // 蝴蝶机夹胸种子里只记了次数（weightKg 全空）：练过 1 次，但三个记录都算不出来。
+    // 早先 isEmpty 判的是 sessionCount，这里会返 false，动作详情页取 maxWeightKg! 当场就炸。
+    final pr = await history.personalRecords('ex_pec_deck');
+    expect(pr.sessionCount, 1);
+    expect(pr.maxWeightKg, isNull);
+    expect(pr.isEmpty, isTrue);
+  });
+
   test('删除训练后摘要与上次表现都不再包含它', () async {
     await workouts.deleteSession('seed_session_3_20260903');
     expect((await history.getSummaries()).length, 2);

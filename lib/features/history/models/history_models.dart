@@ -98,5 +98,8 @@ class PersonalRecords {
   /// 做过这个动作的训练次数。
   final int sessionCount;
 
-  bool get isEmpty => sessionCount == 0;
+  /// 三个记录都由"重量 × 次数"一起算出，要么全有要么全无。判 [sessionCount]
+  /// 不够：无配重动作（如蝴蝶机夹胸只记次数）练过 N 次但一条重量记录都没有，
+  /// 这时 `isEmpty` 为 false，展示侧取 `maxWeightKg!` 就炸。
+  bool get isEmpty => maxWeightKg == null;
 }
