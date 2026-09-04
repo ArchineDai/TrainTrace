@@ -26,7 +26,8 @@ class SeedLoader {
   final Clock _clock;
   final AssetReader _read;
 
-  static const seedVersion = 1;
+  /// v1 首版；v2 给 16 个内置动作补要领 / 常见错误 / 常见机器。
+  static const seedVersion = 2;
   static const _kSeededVersion = 'seededVersion';
 
   static const exercisesAsset = 'assets/seed/exercises.json';
@@ -78,6 +79,9 @@ class SeedLoader {
                 defaultRepMax: Value(_int(e['defaultRepMax']) ?? 15),
                 defaultRestSeconds: Value(_int(e['defaultRestSeconds']) ?? 90),
                 minIncrementKg: Value(_double(e['minIncrementKg']) ?? 2.5),
+                cues: Value(_strings(e['cues'])),
+                commonMistakes: Value(_strings(e['commonMistakes'])),
+                equipmentVariants: Value(_strings(e['equipmentVariants'])),
                 createdAt: now,
                 updatedAt: now,
               ),
@@ -185,8 +189,29 @@ class SeedLoader {
     }
   }
 
-  /// 种子版本升级时只补差量。V1 之后再填。
-  Future<void> _migrateSeed(int from) async {}
+  /// 种子版本升级时只补差量，不覆盖用户改过的目标 / 增量。
+  Future<void> _migrateSeed(int from) async {
+    if (from < 2) await _fillExerciseGuides();
+  }
+
+  /// v1 → v2：给已存在的内置动作写入要领 / 常见错误 / 常见机器。
+  /// 只按 id 更新已有行，用户删掉的动作不复活，自定义动作不动。
+  Future<void> _fillExerciseGuides() async {
+    final exercises = _list(await _read(exercisesAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      for (final e in exercises) {
+        await (_db.update(_db.exercises)
+              ..where((t) => t.id.equals(e['id'] as String)))
+            .write(ExercisesCompanion(
+          cues: Value(_strings(e['cues'])),
+          commonMistakes: Value(_strings(e['commonMistakes'])),
+          equipmentVariants: Value(_strings(e['equipmentVariants'])),
+          updatedAt: Value(now),
+        ));
+      }
+    });
+  }
 
   static List<Map<String, dynamic>> _list(Object? json) {
     final decoded = json is String ? jsonDecode(json) : json;
@@ -196,6 +221,9 @@ class SeedLoader {
   static int? _int(Object? v) => v == null ? null : (v as num).toInt();
 
   static double? _double(Object? v) => v == null ? null : (v as num).toDouble();
+
+  static List<String> _strings(Object? v) =>
+      v == null ? const [] : (v as List).cast<String>();
 }
 
 final seedLoaderProvider = Provider<SeedLoader>(

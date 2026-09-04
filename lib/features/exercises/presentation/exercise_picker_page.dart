@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../router/app_routes.dart';
 import '../data/exercise_repository.dart';
 import '../models/exercise.dart';
 import '../state/exercise_list_view_model.dart';
@@ -44,10 +45,11 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
       appBar: AppBar(
         title: const Text('选择动作'),
         actions: [
-          TextButton.icon(
+          // 创建一律是标题行右侧的加号图标，和模板页一致（ui-conventions 操作语法）。
+          IconButton(
             onPressed: () => _createCustom(context),
             icon: const Icon(Icons.add),
-            label: const Text('新建'),
+            tooltip: '新建动作',
           ),
         ],
       ),
@@ -114,14 +116,15 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
                         title: Text(e.nameZh),
                         subtitle: Text(
                           '${e.muscleGroup.label} · ${e.equipmentType.label}'
-                          '${e.isCustom ? ' · 自定义' : ''}',
+                          '${e.isCustom ? ' · 自定义' : ''}'
+                          ' · ${e.defaultRepMin}–${e.defaultRepMax} 次',
                         ),
-                        trailing: Text(
-                          '${e.defaultRepMin}–${e.defaultRepMax} 次',
-                          style: TextStyle(
-                            fontSize: AppTextSize.sm,
-                            color: scheme.onSurfaceVariant,
-                          ),
+                        // 新手先看要领再选；点行本身仍是选中。
+                        trailing: IconButton(
+                          tooltip: '动作要领',
+                          icon: const Icon(Icons.info_outline),
+                          onPressed: () =>
+                              context.push(AppRoutes.exerciseDetail(e.id)),
                         ),
                         onTap: () => context.pop(e.id),
                       );

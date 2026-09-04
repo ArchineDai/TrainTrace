@@ -181,6 +181,26 @@ class ExerciseRepository {
     ));
   }
 
+  /// 设置或清除（传 null）备注的照片路径。文件本身由 EquipmentPhotoStore 管。
+  Future<void> setNotePhoto(String id, String? photoPath) {
+    final now = _clock.nowMs();
+    return (_db.update(_db.exerciseEquipmentNotes)..where((t) => t.id.equals(id)))
+        .write(ExerciseEquipmentNotesCompanion(
+      photoPath: Value(photoPath),
+      updatedAt: Value(now),
+    ));
+  }
+
+  /// 按训练里选中的显示标签（"黑熊猫 机器A"）找回备注，用来在训练页显示照片。
+  Future<EquipmentNote?> findNoteByDisplayLabel(
+      String exerciseId, String displayLabel) async {
+    final notes = await getNotes(exerciseId);
+    for (final n in notes) {
+      if (n.displayLabel == displayLabel) return n;
+    }
+    return null;
+  }
+
   Future<void> deleteNote(String id) {
     final now = _clock.nowMs();
     return (_db.update(_db.exerciseEquipmentNotes)..where((t) => t.id.equals(id)))
@@ -204,6 +224,9 @@ class ExerciseRepository {
         minIncrementKg: r.minIncrementKg,
         isCustom: r.isCustom,
         createdAt: DateTime.fromMillisecondsSinceEpoch(r.createdAt),
+        cues: r.cues,
+        commonMistakes: r.commonMistakes,
+        equipmentVariants: r.equipmentVariants,
       );
 
   static EquipmentNote _toNote(EquipmentNoteRow r) => EquipmentNote(
@@ -215,6 +238,7 @@ class ExerciseRepository {
         lastUsedAt: r.lastUsedAt == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(r.lastUsedAt!),
+        photoPath: r.photoPath,
       );
 }
 

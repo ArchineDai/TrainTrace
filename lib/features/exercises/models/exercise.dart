@@ -50,6 +50,9 @@ class Exercise {
     this.minIncrementKg = 2.5,
     this.isCustom = false,
     required this.createdAt,
+    this.cues = const [],
+    this.commonMistakes = const [],
+    this.equipmentVariants = const [],
   });
 
   final String id;
@@ -65,6 +68,15 @@ class Exercise {
   final double minIncrementKg;
   final bool isCustom;
   final DateTime createdAt;
+
+  /// 动作要领，3–5 条短句。内置动作由种子提供，自定义动作为空。
+  final List<String> cues;
+
+  /// 常见错误。
+  final List<String> commonMistakes;
+
+  /// 健身房里做这个动作通常用的机器 / 器械形态，帮新手认机器。
+  final List<String> equipmentVariants;
 
   Exercise copyWith({
     String? nameZh,
@@ -88,6 +100,9 @@ class Exercise {
       minIncrementKg: minIncrementKg ?? this.minIncrementKg,
       isCustom: isCustom,
       createdAt: createdAt,
+      cues: cues,
+      commonMistakes: commonMistakes,
+      equipmentVariants: equipmentVariants,
     );
   }
 
@@ -110,6 +125,7 @@ class EquipmentNote {
     required this.equipmentLabel,
     this.note,
     this.lastUsedAt,
+    this.photoPath,
   });
 
   final String id;
@@ -120,6 +136,12 @@ class EquipmentNote {
   final String equipmentLabel;
   final String? note;
   final DateTime? lastUsedAt;
+
+  /// 这台机器的照片，相对 app 文档目录的路径；null 表示没拍。
+  /// 解析成文件经 EquipmentPhotoStore。
+  final String? photoPath;
+
+  bool get hasPhoto => photoPath != null && photoPath!.isNotEmpty;
 
   /// "黑熊猫 机器A"；没有场馆时就是 "机器A"。
   String get displayLabel =>

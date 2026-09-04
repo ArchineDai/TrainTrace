@@ -4,6 +4,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'tables/app_settings.dart';
 import 'tables/exercises.dart';
 import 'tables/routines.dart';
+import 'tables/string_list_converter.dart';
 import 'tables/workouts.dart';
 
 part 'app_database.g.dart';
@@ -34,12 +35,23 @@ class AppDatabase extends _$AppDatabase {
 
   static QueryExecutor _openOnDevice() => driftDatabase(name: 'traintrace');
 
+  /// v1 首版；v2 动作加 cues / common_mistakes / equipment_variants，
+  /// 器械备注加 photo_path。
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(exercises, exercises.cues);
+            await m.addColumn(exercises, exercises.commonMistakes);
+            await m.addColumn(exercises, exercises.equipmentVariants);
+            await m.addColumn(
+                exerciseEquipmentNotes, exerciseEquipmentNotes.photoPath);
+          }
+        },
         beforeOpen: (details) async {
           // SQLite 默认不检查外键；ON DELETE CASCADE / SET NULL 全靠这一行生效。
           await customStatement('PRAGMA foreign_keys = ON');

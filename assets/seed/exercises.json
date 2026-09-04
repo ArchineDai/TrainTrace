@@ -1,18 +1,305 @@
 [
-  {"id": "ex_lat_pulldown", "nameZh": "高位下拉", "nameEn": "Lat Pulldown", "muscleGroup": "back", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_seated_row", "nameZh": "坐姿划船", "nameEn": "Seated Row", "muscleGroup": "back", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_shoulder_press", "nameZh": "器械肩推", "nameEn": "Machine Shoulder Press", "muscleGroup": "shoulder", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_lateral_raise", "nameZh": "哑铃侧平举", "nameEn": "Dumbbell Lateral Raise", "muscleGroup": "shoulder", "equipmentType": "dumbbell", "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 1.0},
-  {"id": "ex_reverse_pec_deck", "nameZh": "反向蝴蝶机", "nameEn": "Reverse Pec Deck", "muscleGroup": "shoulder", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5},
-  {"id": "ex_pec_deck", "nameZh": "蝴蝶机夹胸", "nameEn": "Pec Deck Fly", "muscleGroup": "chest", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_chest_press", "nameZh": "水平胸推", "nameEn": "Chest Press", "muscleGroup": "chest", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_incline_chest_press", "nameZh": "上斜胸推", "nameEn": "Incline Chest Press", "muscleGroup": "chest", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_dumbbell_curl", "nameZh": "哑铃弯举", "nameEn": "Dumbbell Curl", "muscleGroup": "arm", "equipmentType": "dumbbell", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0},
-  {"id": "ex_machine_curl", "nameZh": "二头弯举机", "nameEn": "Machine Bicep Curl", "muscleGroup": "arm", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.0},
-  {"id": "ex_leg_press", "nameZh": "腿举", "nameEn": "Leg Press", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 120, "minIncrementKg": 5.0},
-  {"id": "ex_leg_extension", "nameZh": "腿屈伸", "nameEn": "Leg Extension", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_leg_curl", "nameZh": "腿弯举", "nameEn": "Leg Curl", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
-  {"id": "ex_calf_raise", "nameZh": "提踵", "nameEn": "Calf Raise", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 5.0},
-  {"id": "ex_crunch", "nameZh": "卷腹", "nameEn": "Crunch", "muscleGroup": "core", "equipmentType": "bodyweight", "defaultRepMin": 15, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5},
-  {"id": "ex_plank", "nameZh": "平板支撑", "nameEn": "Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight", "defaultRepMin": 30, "defaultRepMax": 60, "defaultRestSeconds": 60, "minIncrementKg": 2.5}
+  {
+    "id": "ex_lat_pulldown", "nameZh": "高位下拉", "nameEn": "Lat Pulldown", "muscleGroup": "back", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "坐稳，大腿卡进挡板，双手比肩略宽握住横杆",
+      "挺胸、肩胛下沉，肘部向下向后拉，把杆拉到锁骨上方",
+      "拉到底时感受背阔肌收缩，停 1 秒",
+      "缓慢放回，手臂伸直但肩膀不要被拉起来"
+    ],
+    "commonMistakes": [
+      "身体大幅后仰，用惯性把杆拽下来",
+      "只用手臂发力，肩膀耸起"
+    ],
+    "equipmentVariants": [
+      "高位下拉机：头顶横杆连着配重片，前方有大腿挡板",
+      "龙门架高位滑轮 + 宽握直杆（需自己搬凳子或跪姿）",
+      "辅助引体向上机也能替代，配重越大越轻松"
+    ]
+  },
+  {
+    "id": "ex_seated_row", "nameZh": "坐姿划船", "nameEn": "Seated Row", "muscleGroup": "back", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "双脚踩稳踏板，膝盖微屈，腰背坐直",
+      "先把肩胛骨向后收，再用肘部带着把手拉到腹部",
+      "拉到底时挺胸、肩胛夹紧，停 1 秒",
+      "放回时手臂伸直，肩胛跟着前伸，腰背保持直立"
+    ],
+    "commonMistakes": [
+      "身体大幅前后晃动借力",
+      "拉到底时肩膀耸起、手腕上翘"
+    ],
+    "equipmentVariants": [
+      "坐姿划船机：胸前有挡胸垫，两侧独立把手",
+      "龙门架低位滑轮 + V 形把手（坐地上或专用划船座）",
+      "T 杠划船架"
+    ]
+  },
+  {
+    "id": "ex_shoulder_press", "nameZh": "器械肩推", "nameEn": "Machine Shoulder Press", "muscleGroup": "shoulder", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "调整座椅，让把手起始位置大约在耳朵高度",
+      "背贴靠背，核心收紧，双脚踩稳地面",
+      "向上推到手臂接近伸直，肘部不锁死",
+      "缓慢下放回起始位置，肘部朝身体前方约 45°"
+    ],
+    "commonMistakes": [
+      "下背拱起、屁股离开座椅",
+      "推到顶时肩膀跟着耸起"
+    ],
+    "equipmentVariants": [
+      "坐姿肩推机：把手在头两侧，轨迹固定",
+      "史密斯机 + 靠背可调的凳子",
+      "哑铃坐姿推举"
+    ]
+  },
+  {
+    "id": "ex_lateral_raise", "nameZh": "哑铃侧平举", "nameEn": "Dumbbell Lateral Raise", "muscleGroup": "shoulder", "equipmentType": "dumbbell",
+    "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 1.0,
+    "cues": [
+      "站立，双手持哑铃自然垂在身侧，掌心相对",
+      "肘部微屈，像倒水一样把手臂向两侧抬到与肩同高",
+      "顶点小拇指略高于大拇指，停 1 秒",
+      "控制着放下，全程不借力"
+    ],
+    "commonMistakes": [
+      "抬过肩膀高度，或者晃身借力",
+      "耸肩，用斜方肌代偿"
+    ],
+    "equipmentVariants": [
+      "哑铃（最常见，新手从 2–4kg 起步）",
+      "坐姿侧平举机：肘部顶在外侧垫上抬",
+      "龙门架低位滑轮单臂侧平举"
+    ]
+  },
+  {
+    "id": "ex_reverse_pec_deck", "nameZh": "反向蝴蝶机", "nameEn": "Reverse Pec Deck", "muscleGroup": "shoulder", "equipmentType": "machine",
+    "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "面向机器坐好，胸口贴在胸垫上",
+      "双手握把，手臂微屈，向身体两侧后方打开",
+      "顶点时肩胛后收夹紧，停 1 秒",
+      "缓慢回到起始位置，两手不要相撞"
+    ],
+    "commonMistakes": [
+      "手臂完全伸直硬拉，变成手臂发力",
+      "耸肩，用斜方肌代偿"
+    ],
+    "equipmentVariants": [
+      "蝴蝶机（Pec Deck）反向坐，把手调到后侧位置",
+      "专用后束飞鸟机（Rear Delt Fly）",
+      "哑铃俯身飞鸟、绳索面拉"
+    ]
+  },
+  {
+    "id": "ex_pec_deck", "nameZh": "蝴蝶机夹胸", "nameEn": "Pec Deck Fly", "muscleGroup": "chest", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "调整座椅高度，把手与胸口同高",
+      "背贴靠背，肘部微屈，用胸把两侧把手向中间夹",
+      "两手快碰到时停 1 秒，感受胸肌收缩",
+      "缓慢打开，手臂不要超过肩膀平面"
+    ],
+    "commonMistakes": [
+      "打开过大，拉伤肩膀",
+      "靠惯性夹，两手在中间撞在一起"
+    ],
+    "equipmentVariants": [
+      "蝴蝶机（Pec Deck）：有前臂垫版和把手版",
+      "龙门架双侧绳索夹胸",
+      "哑铃平板飞鸟"
+    ]
+  },
+  {
+    "id": "ex_chest_press", "nameZh": "水平胸推", "nameEn": "Chest Press", "muscleGroup": "chest", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "调整座椅，把手与胸口中部同高",
+      "背贴靠背，肩胛下沉夹紧",
+      "向前推到手臂接近伸直，不锁肘",
+      "缓慢收回到把手离胸口约一拳"
+    ],
+    "commonMistakes": [
+      "肩膀往前送、含胸推",
+      "手腕过度上翘"
+    ],
+    "equipmentVariants": [
+      "坐姿胸推机：把手轨迹固定",
+      "史密斯机或杠铃平板卧推",
+      "哑铃平板卧推"
+    ]
+  },
+  {
+    "id": "ex_incline_chest_press", "nameZh": "上斜胸推", "nameEn": "Incline Chest Press", "muscleGroup": "chest", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "座椅调低一点，把手起始位置在上胸",
+      "背贴靠背，肩胛下沉",
+      "向上前方推到手臂接近伸直",
+      "缓慢收回，感受上胸被拉开"
+    ],
+    "commonMistakes": [
+      "座椅太高，变成了肩推",
+      "推到顶时耸肩"
+    ],
+    "equipmentVariants": [
+      "上斜胸推机：靠背带角度",
+      "史密斯机 + 上斜凳（约 30°）",
+      "哑铃上斜卧推"
+    ]
+  },
+  {
+    "id": "ex_dumbbell_curl", "nameZh": "哑铃弯举", "nameEn": "Dumbbell Curl", "muscleGroup": "arm", "equipmentType": "dumbbell",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0,
+    "cues": [
+      "站立或坐姿，双手持哑铃垂在身侧",
+      "肘部固定在身体两侧，向上弯举到肩前",
+      "顶点转腕让小拇指向上，挤压二头",
+      "慢慢放下，手臂放到接近伸直"
+    ],
+    "commonMistakes": [
+      "肘部前移、耸肩借力",
+      "用腰晃动甩哑铃"
+    ],
+    "equipmentVariants": [
+      "哑铃（可交替或同时弯举）",
+      "杠铃或曲杆弯举",
+      "龙门架低位滑轮 + 直杆"
+    ]
+  },
+  {
+    "id": "ex_machine_curl", "nameZh": "二头弯举机", "nameEn": "Machine Bicep Curl", "muscleGroup": "arm", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.0,
+    "cues": [
+      "调整座椅，腋下卡在斜垫顶部，上臂整个贴在垫上",
+      "手心向上握把，向上弯举到接近肩膀",
+      "顶点停 1 秒挤压二头",
+      "缓慢放下到手臂接近伸直，不要完全甩开"
+    ],
+    "commonMistakes": [
+      "肘部离开垫子，用肩膀抬",
+      "放下时完全锁肘、借反弹"
+    ],
+    "equipmentVariants": [
+      "牧师凳弯举机（Preacher Curl Machine）",
+      "牧师凳 + 曲杆或哑铃",
+      "龙门架低位滑轮弯举"
+    ]
+  },
+  {
+    "id": "ex_leg_press", "nameZh": "腿举", "nameEn": "Leg Press", "muscleGroup": "leg", "equipmentType": "machine",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 120, "minIncrementKg": 5.0,
+    "cues": [
+      "背和屁股贴紧靠背，双脚与肩同宽踩在踏板中部",
+      "解锁后缓慢下放，屈膝到约 90°",
+      "用脚跟发力推回去，膝盖不锁死",
+      "全程膝盖对准脚尖方向"
+    ],
+    "commonMistakes": [
+      "下放太深，屁股离开座椅、腰弯起来",
+      "推到顶时膝盖锁死"
+    ],
+    "equipmentVariants": [
+      "45° 斜板腿举机：自己挂配重片",
+      "坐姿水平腿举机：插销选配重",
+      "哈克深蹲机、史密斯机深蹲"
+    ]
+  },
+  {
+    "id": "ex_leg_extension", "nameZh": "腿屈伸", "nameEn": "Leg Extension", "muscleGroup": "leg", "equipmentType": "machine",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "调整靠背和滚轴：膝盖对准机器转轴，滚轴压在脚踝上方",
+      "握住两侧把手，用大腿前侧把小腿抬到伸直",
+      "顶点停 1 秒，挤压股四头",
+      "缓慢放下，不要让配重砸回去"
+    ],
+    "commonMistakes": [
+      "靠惯性甩上去，屁股离开座椅",
+      "转轴没对齐膝盖，膝盖不舒服"
+    ],
+    "equipmentVariants": [
+      "坐姿腿屈伸机（Leg Extension）",
+      "腿屈伸 / 腿弯举二合一组合机"
+    ]
+  },
+  {
+    "id": "ex_leg_curl", "nameZh": "腿弯举", "nameEn": "Leg Curl", "muscleGroup": "leg", "equipmentType": "machine",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "俯卧在垫上，膝盖略超出垫子边缘，滚轴压在脚踝上方",
+      "握住把手，用大腿后侧把小腿向屁股方向弯",
+      "顶点停 1 秒",
+      "缓慢放回，腿接近伸直但不完全锁死"
+    ],
+    "commonMistakes": [
+      "屁股抬起，用腰借力",
+      "放下太快，配重砸底"
+    ],
+    "equipmentVariants": [
+      "俯卧腿弯举机（Lying Leg Curl）",
+      "坐姿腿弯举机（Seated Leg Curl）",
+      "站姿单腿弯举机"
+    ]
+  },
+  {
+    "id": "ex_calf_raise", "nameZh": "提踵", "nameEn": "Calf Raise", "muscleGroup": "leg", "equipmentType": "machine",
+    "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 5.0,
+    "cues": [
+      "前脚掌踩在踏板边缘，脚跟悬空",
+      "脚跟尽量下沉，拉伸小腿",
+      "用前脚掌发力把脚跟抬到最高，停 1 秒",
+      "缓慢下放，站姿时全程膝盖伸直"
+    ],
+    "commonMistakes": [
+      "幅度小，只在中段快速抖动",
+      "膝盖弯曲借力"
+    ],
+    "equipmentVariants": [
+      "站姿提踵机：肩膀顶在肩垫下",
+      "腿举机上做：脚放踏板下缘只动脚踝",
+      "坐姿提踵机，或台阶 + 手持哑铃"
+    ]
+  },
+  {
+    "id": "ex_crunch", "nameZh": "卷腹", "nameEn": "Crunch", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "defaultRepMin": 15, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "仰卧屈膝，脚踩地，双手交叉胸前或轻扶耳侧",
+      "呼气，用腹部把肩胛卷离地面",
+      "下巴与胸口保持一拳距离，不要用手拉头",
+      "吸气缓慢放回，肩胛轻触地面就再起"
+    ],
+    "commonMistakes": [
+      "用手把头往前拉，颈部酸",
+      "整个腰离地，变成仰卧起坐"
+    ],
+    "equipmentVariants": [
+      "垫子（自重）",
+      "卷腹机（Ab Crunch Machine，有配重）",
+      "罗马椅或下斜板"
+    ]
+  },
+  {
+    "id": "ex_plank", "nameZh": "平板支撑", "nameEn": "Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "defaultRepMin": 30, "defaultRepMax": 60, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "肘撑在肩膀正下方，前臂平放地面",
+      "脚尖踩地，身体从头到脚跟一条直线",
+      "收紧腹部和臀部，不塌腰、不翘屁股",
+      "正常呼吸，姿势开始变形就停"
+    ],
+    "commonMistakes": [
+      "腰塌下去或屁股抬太高",
+      "憋气、低头看地"
+    ],
+    "equipmentVariants": [
+      "垫子（自重）",
+      "膝盖着地版更简单",
+      "脚放凳子上或背上加片更难"
+    ]
+  }
 ]

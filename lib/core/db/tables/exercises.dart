@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import 'string_list_converter.dart';
 import 'sync_columns.dart';
 
 /// 动作库。内置 16 个 + 用户自定义。
@@ -27,6 +28,23 @@ class Exercises extends Table with UuidPrimaryKey, SyncColumns {
 
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
   IntColumn get createdAt => integer()();
+
+  // ── 新手向内容（schema v2）。JSON 数组文本，内置动作由种子填，自定义动作为空。──
+
+  /// 动作要领，3–5 条。
+  TextColumn get cues => text()
+      .map(const StringListConverter())
+      .withDefault(const Constant('[]'))();
+
+  /// 常见错误，1–3 条。
+  TextColumn get commonMistakes => text()
+      .map(const StringListConverter())
+      .withDefault(const Constant('[]'))();
+
+  /// 这个动作在健身房里通常用哪几种机器 / 器械做，帮新手认机器。
+  TextColumn get equipmentVariants => text()
+      .map(const StringListConverter())
+      .withDefault(const Constant('[]'))();
 }
 
 /// 场馆 / 器械备注：同一动作在不同健身房、不同机器上的合适重量不可比。
@@ -42,6 +60,10 @@ class ExerciseEquipmentNotes extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get equipmentLabel => text()();
   TextColumn get note => text().nullable()();
   IntColumn get lastUsedAt => integer().nullable()();
+
+  /// 用户拍的这台机器的照片，相对 app 文档目录的路径（schema v2）。
+  /// 只存相对路径：iOS 的沙盒绝对路径每次安装会变。
+  TextColumn get photoPath => text().nullable()();
 
   @override
   List<Set<Column>> get uniqueKeys => [

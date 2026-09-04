@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_text_size.dart';
 import '../../../exercises/data/exercise_repository.dart';
+import '../../../exercises/models/exercise.dart';
+import '../../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../../history/data/history_repository.dart';
 
 /// 选择结果。`label` 为 null 表示"不区分器械"。
@@ -43,7 +45,8 @@ class EquipmentLabelSheet extends ConsumerStatefulWidget {
 }
 
 class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
-  List<String>? _labels;
+  /// 显示标签 + 对应备注（历史里用过但没建备注的为 null）。
+  List<(String, EquipmentNote?)>? _labels;
 
   @override
   void initState() {
@@ -55,11 +58,11 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
     final notes = await ref.read(exerciseRepositoryProvider).getNotes(widget.exerciseId);
     final used = await ref.read(historyRepositoryProvider).equipmentLabelsUsed(widget.exerciseId);
     final seen = <String>{};
-    final labels = <String>[
+    final labels = <(String, EquipmentNote?)>[
       for (final n in notes)
-        if (seen.add(n.displayLabel)) n.displayLabel,
+        if (seen.add(n.displayLabel)) (n.displayLabel, n),
       for (final u in used)
-        if (seen.add(u)) u,
+        if (seen.add(u)) (u, null),
     ];
     if (mounted) setState(() => _labels = labels);
   }
@@ -100,10 +103,14 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
                       title: Text('不区分器械'),
                       contentPadding: EdgeInsets.zero,
                     ),
-                    for (final l in labels)
+                    for (final (l, n) in labels)
                       RadioListTile<String?>(
                         value: l,
                         title: Text(l),
+                        // 有照片就露个缩略图，认机器靠这个。
+                        secondary: n != null && n.hasPhoto
+                            ? EquipmentNotePhoto(note: n, size: 40, allowPick: false)
+                            : null,
                         contentPadding: EdgeInsets.zero,
                       ),
                   ],

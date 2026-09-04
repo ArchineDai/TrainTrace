@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 
@@ -23,7 +24,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '1');
+    expect(version.value, '2');
   });
 
   test('历史记录的组全部标记完成，且完成时间落在训练时长内', () async {
@@ -43,5 +44,34 @@ void main() {
     final exIds = (await db.select(db.exercises).get()).map((e) => e.id).toSet();
     final refs = await db.select(db.routineExercises).get();
     expect(refs.every((r) => exIds.contains(r.exerciseId)), isTrue);
+  });
+  test('种子 v1 → v2：补写要领，不动用户改过的目标，不复活已删动作', () async {
+    final loader = seedLoader(db, fixedClock());
+    await loader.seedIfNeeded();
+    // 模拟一台 v1 用户机：要领为空、seededVersion=1、改过目标、删过一个动作。
+    await (db.update(db.exercises)).write(const ExercisesCompanion(
+      cues: Value([]),
+      commonMistakes: Value([]),
+      equipmentVariants: Value([]),
+    ));
+    await (db.update(db.exercises)..where((t) => t.id.equals('ex_leg_press')))
+        .write(const ExercisesCompanion(defaultRepMin: Value(6)));
+    await (db.update(db.exercises)..where((t) => t.id.equals('ex_plank')))
+        .write(const ExercisesCompanion(deletedAt: Value(1)));
+    await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
+        .write(const AppSettingsCompanion(value: Value('1')));
+
+    expect(await loader.seedIfNeeded(), isTrue);
+
+    final rows = await db.select(db.exercises).get();
+    expect(rows.length, 16, reason: '只更新，不新增');
+    final legPress = rows.singleWhere((r) => r.id == 'ex_leg_press');
+    expect(legPress.cues.length, 4);
+    expect(legPress.defaultRepMin, 6, reason: '用户改过的目标保留');
+    expect(rows.singleWhere((r) => r.id == 'ex_plank').deletedAt, 1, reason: '已删的不复活');
+    final version = await (db.select(db.appSettings)
+          ..where((t) => t.key.equals('seededVersion')))
+        .getSingle();
+    expect(version.value, '2');
   });
 }

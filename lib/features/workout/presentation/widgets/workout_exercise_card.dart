@@ -9,7 +9,7 @@ import '../../models/workout_session.dart';
 import 'set_row.dart';
 
 /// 卡片菜单动作。
-enum ExerciseCardAction { toggleRir, applyLast, changeLabel, remove }
+enum ExerciseCardAction { toggleRir, applyLast, changeLabel, viewExercise, remove }
 
 /// 训练页里一个动作的卡片：头部（名称 / 器械标签 / 目标）、上次表现、各组、添加一组。
 ///
@@ -29,6 +29,7 @@ class WorkoutExerciseCard extends StatelessWidget {
     required this.onDeleteSet,
     required this.onSetRir,
     required this.onTapLabel,
+    this.onLongPressLabel,
     required this.onAction,
   });
 
@@ -46,6 +47,9 @@ class WorkoutExerciseCard extends StatelessWidget {
   final ValueChanged<String> onDeleteSet;
   final void Function(String setId, int? rir) onSetRir;
   final VoidCallback onTapLabel;
+
+  /// 长按器械标签：看这台机器的照片。
+  final VoidCallback? onLongPressLabel;
   final ValueChanged<ExerciseCardAction> onAction;
 
   @override
@@ -93,7 +97,11 @@ class WorkoutExerciseCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                _LabelChip(label: exercise.equipmentLabel, onTap: onTapLabel),
+                _LabelChip(
+                  label: exercise.equipmentLabel,
+                  onTap: onTapLabel,
+                  onLongPress: onLongPressLabel,
+                ),
                 PopupMenuButton<ExerciseCardAction>(
                   tooltip: '更多',
                   onSelected: onAction,
@@ -110,6 +118,10 @@ class WorkoutExerciseCard extends StatelessWidget {
                     const PopupMenuItem(
                       value: ExerciseCardAction.changeLabel,
                       child: Text('器械 / 场馆标签'),
+                    ),
+                    const PopupMenuItem(
+                      value: ExerciseCardAction.viewExercise,
+                      child: Text('查看动作要领'),
                     ),
                     PopupMenuItem(
                       value: ExerciseCardAction.remove,
@@ -204,31 +216,35 @@ class WorkoutExerciseCard extends StatelessWidget {
 }
 
 class _LabelChip extends StatelessWidget {
-  const _LabelChip({required this.label, required this.onTap});
+  const _LabelChip({required this.label, required this.onTap, this.onLongPress});
 
   final String? label;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: ActionChip(
-        avatar: Icon(
-          Icons.fitness_center,
-          size: 16,
-          color: label == null ? scheme.onSurfaceVariant : scheme.onSurface,
-        ),
-        label: Text(
-          label ?? '器械',
-          style: TextStyle(
-            fontSize: AppTextSize.xs,
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: ActionChip(
+          avatar: Icon(
+            Icons.fitness_center,
+            size: 16,
             color: label == null ? scheme.onSurfaceVariant : scheme.onSurface,
           ),
+          label: Text(
+            label ?? '器械',
+            style: TextStyle(
+              fontSize: AppTextSize.xs,
+              color: label == null ? scheme.onSurfaceVariant : scheme.onSurface,
+            ),
+          ),
+          onPressed: onTap,
+          visualDensity: VisualDensity.compact,
         ),
-        onPressed: onTap,
-        visualDensity: VisualDensity.compact,
       ),
     );
   }

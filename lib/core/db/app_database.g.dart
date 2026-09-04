@@ -166,6 +166,36 @@ class $ExercisesTable extends Exercises
     requiredDuringInsert: true,
   );
   @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> cues =
+      GeneratedColumn<String>(
+        'cues',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      ).withConverter<List<String>>($ExercisesTable.$convertercues);
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String>
+  commonMistakes = GeneratedColumn<String>(
+    'common_mistakes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  ).withConverter<List<String>>($ExercisesTable.$convertercommonMistakes);
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String>
+  equipmentVariants = GeneratedColumn<String>(
+    'equipment_variants',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  ).withConverter<List<String>>($ExercisesTable.$converterequipmentVariants);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     updatedAt,
@@ -181,6 +211,9 @@ class $ExercisesTable extends Exercises
     minIncrementKg,
     isCustom,
     createdAt,
+    cues,
+    commonMistakes,
+    equipmentVariants,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -370,6 +403,24 @@ class $ExercisesTable extends Exercises
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
       )!,
+      cues: $ExercisesTable.$convertercues.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}cues'],
+        )!,
+      ),
+      commonMistakes: $ExercisesTable.$convertercommonMistakes.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}common_mistakes'],
+        )!,
+      ),
+      equipmentVariants: $ExercisesTable.$converterequipmentVariants.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}equipment_variants'],
+        )!,
+      ),
     );
   }
 
@@ -377,6 +428,13 @@ class $ExercisesTable extends Exercises
   $ExercisesTable createAlias(String alias) {
     return $ExercisesTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<List<String>, String> $convertercues =
+      const StringListConverter();
+  static TypeConverter<List<String>, String> $convertercommonMistakes =
+      const StringListConverter();
+  static TypeConverter<List<String>, String> $converterequipmentVariants =
+      const StringListConverter();
 }
 
 class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
@@ -400,6 +458,15 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
   final double minIncrementKg;
   final bool isCustom;
   final int createdAt;
+
+  /// 动作要领，3–5 条。
+  final List<String> cues;
+
+  /// 常见错误，1–3 条。
+  final List<String> commonMistakes;
+
+  /// 这个动作在健身房里通常用哪几种机器 / 器械做，帮新手认机器。
+  final List<String> equipmentVariants;
   const ExerciseRow({
     required this.id,
     required this.updatedAt,
@@ -415,6 +482,9 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
     required this.minIncrementKg,
     required this.isCustom,
     required this.createdAt,
+    required this.cues,
+    required this.commonMistakes,
+    required this.equipmentVariants,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -437,6 +507,21 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
     map['min_increment_kg'] = Variable<double>(minIncrementKg);
     map['is_custom'] = Variable<bool>(isCustom);
     map['created_at'] = Variable<int>(createdAt);
+    {
+      map['cues'] = Variable<String>(
+        $ExercisesTable.$convertercues.toSql(cues),
+      );
+    }
+    {
+      map['common_mistakes'] = Variable<String>(
+        $ExercisesTable.$convertercommonMistakes.toSql(commonMistakes),
+      );
+    }
+    {
+      map['equipment_variants'] = Variable<String>(
+        $ExercisesTable.$converterequipmentVariants.toSql(equipmentVariants),
+      );
+    }
     return map;
   }
 
@@ -460,6 +545,9 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
       minIncrementKg: Value(minIncrementKg),
       isCustom: Value(isCustom),
       createdAt: Value(createdAt),
+      cues: Value(cues),
+      commonMistakes: Value(commonMistakes),
+      equipmentVariants: Value(equipmentVariants),
     );
   }
 
@@ -483,6 +571,11 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
       minIncrementKg: serializer.fromJson<double>(json['minIncrementKg']),
       isCustom: serializer.fromJson<bool>(json['isCustom']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
+      cues: serializer.fromJson<List<String>>(json['cues']),
+      commonMistakes: serializer.fromJson<List<String>>(json['commonMistakes']),
+      equipmentVariants: serializer.fromJson<List<String>>(
+        json['equipmentVariants'],
+      ),
     );
   }
   @override
@@ -503,6 +596,9 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
       'minIncrementKg': serializer.toJson<double>(minIncrementKg),
       'isCustom': serializer.toJson<bool>(isCustom),
       'createdAt': serializer.toJson<int>(createdAt),
+      'cues': serializer.toJson<List<String>>(cues),
+      'commonMistakes': serializer.toJson<List<String>>(commonMistakes),
+      'equipmentVariants': serializer.toJson<List<String>>(equipmentVariants),
     };
   }
 
@@ -521,6 +617,9 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
     double? minIncrementKg,
     bool? isCustom,
     int? createdAt,
+    List<String>? cues,
+    List<String>? commonMistakes,
+    List<String>? equipmentVariants,
   }) => ExerciseRow(
     id: id ?? this.id,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -536,6 +635,9 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
     minIncrementKg: minIncrementKg ?? this.minIncrementKg,
     isCustom: isCustom ?? this.isCustom,
     createdAt: createdAt ?? this.createdAt,
+    cues: cues ?? this.cues,
+    commonMistakes: commonMistakes ?? this.commonMistakes,
+    equipmentVariants: equipmentVariants ?? this.equipmentVariants,
   );
   ExerciseRow copyWithCompanion(ExercisesCompanion data) {
     return ExerciseRow(
@@ -567,6 +669,13 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
           : this.minIncrementKg,
       isCustom: data.isCustom.present ? data.isCustom.value : this.isCustom,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      cues: data.cues.present ? data.cues.value : this.cues,
+      commonMistakes: data.commonMistakes.present
+          ? data.commonMistakes.value
+          : this.commonMistakes,
+      equipmentVariants: data.equipmentVariants.present
+          ? data.equipmentVariants.value
+          : this.equipmentVariants,
     );
   }
 
@@ -586,7 +695,10 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
           ..write('defaultRestSeconds: $defaultRestSeconds, ')
           ..write('minIncrementKg: $minIncrementKg, ')
           ..write('isCustom: $isCustom, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('cues: $cues, ')
+          ..write('commonMistakes: $commonMistakes, ')
+          ..write('equipmentVariants: $equipmentVariants')
           ..write(')'))
         .toString();
   }
@@ -607,6 +719,9 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
     minIncrementKg,
     isCustom,
     createdAt,
+    cues,
+    commonMistakes,
+    equipmentVariants,
   );
   @override
   bool operator ==(Object other) =>
@@ -625,7 +740,10 @@ class ExerciseRow extends DataClass implements Insertable<ExerciseRow> {
           other.defaultRestSeconds == this.defaultRestSeconds &&
           other.minIncrementKg == this.minIncrementKg &&
           other.isCustom == this.isCustom &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.cues == this.cues &&
+          other.commonMistakes == this.commonMistakes &&
+          other.equipmentVariants == this.equipmentVariants);
 }
 
 class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
@@ -643,6 +761,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
   final Value<double> minIncrementKg;
   final Value<bool> isCustom;
   final Value<int> createdAt;
+  final Value<List<String>> cues;
+  final Value<List<String>> commonMistakes;
+  final Value<List<String>> equipmentVariants;
   final Value<int> rowid;
   const ExercisesCompanion({
     this.id = const Value.absent(),
@@ -659,6 +780,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
     this.minIncrementKg = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.cues = const Value.absent(),
+    this.commonMistakes = const Value.absent(),
+    this.equipmentVariants = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ExercisesCompanion.insert({
@@ -676,6 +800,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
     this.minIncrementKg = const Value.absent(),
     this.isCustom = const Value.absent(),
     required int createdAt,
+    this.cues = const Value.absent(),
+    this.commonMistakes = const Value.absent(),
+    this.equipmentVariants = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        updatedAt = Value(updatedAt),
@@ -698,6 +825,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
     Expression<double>? minIncrementKg,
     Expression<bool>? isCustom,
     Expression<int>? createdAt,
+    Expression<String>? cues,
+    Expression<String>? commonMistakes,
+    Expression<String>? equipmentVariants,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -716,6 +846,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
       if (minIncrementKg != null) 'min_increment_kg': minIncrementKg,
       if (isCustom != null) 'is_custom': isCustom,
       if (createdAt != null) 'created_at': createdAt,
+      if (cues != null) 'cues': cues,
+      if (commonMistakes != null) 'common_mistakes': commonMistakes,
+      if (equipmentVariants != null) 'equipment_variants': equipmentVariants,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -735,6 +868,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
     Value<double>? minIncrementKg,
     Value<bool>? isCustom,
     Value<int>? createdAt,
+    Value<List<String>>? cues,
+    Value<List<String>>? commonMistakes,
+    Value<List<String>>? equipmentVariants,
     Value<int>? rowid,
   }) {
     return ExercisesCompanion(
@@ -752,6 +888,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
       minIncrementKg: minIncrementKg ?? this.minIncrementKg,
       isCustom: isCustom ?? this.isCustom,
       createdAt: createdAt ?? this.createdAt,
+      cues: cues ?? this.cues,
+      commonMistakes: commonMistakes ?? this.commonMistakes,
+      equipmentVariants: equipmentVariants ?? this.equipmentVariants,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -801,6 +940,23 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
+    if (cues.present) {
+      map['cues'] = Variable<String>(
+        $ExercisesTable.$convertercues.toSql(cues.value),
+      );
+    }
+    if (commonMistakes.present) {
+      map['common_mistakes'] = Variable<String>(
+        $ExercisesTable.$convertercommonMistakes.toSql(commonMistakes.value),
+      );
+    }
+    if (equipmentVariants.present) {
+      map['equipment_variants'] = Variable<String>(
+        $ExercisesTable.$converterequipmentVariants.toSql(
+          equipmentVariants.value,
+        ),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -824,6 +980,9 @@ class ExercisesCompanion extends UpdateCompanion<ExerciseRow> {
           ..write('minIncrementKg: $minIncrementKg, ')
           ..write('isCustom: $isCustom, ')
           ..write('createdAt: $createdAt, ')
+          ..write('cues: $cues, ')
+          ..write('commonMistakes: $commonMistakes, ')
+          ..write('equipmentVariants: $equipmentVariants, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -935,6 +1094,17 @@ class $ExerciseEquipmentNotesTable extends ExerciseEquipmentNotes
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _photoPathMeta = const VerificationMeta(
+    'photoPath',
+  );
+  @override
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+    'photo_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -946,6 +1116,7 @@ class $ExerciseEquipmentNotesTable extends ExerciseEquipmentNotes
     equipmentLabel,
     note,
     lastUsedAt,
+    photoPath,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1024,6 +1195,12 @@ class $ExerciseEquipmentNotesTable extends ExerciseEquipmentNotes
         ),
       );
     }
+    if (data.containsKey('photo_path')) {
+      context.handle(
+        _photoPathMeta,
+        photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta),
+      );
+    }
     return context;
   }
 
@@ -1073,6 +1250,10 @@ class $ExerciseEquipmentNotesTable extends ExerciseEquipmentNotes
         DriftSqlType.int,
         data['${effectivePrefix}last_used_at'],
       ),
+      photoPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_path'],
+      ),
     );
   }
 
@@ -1093,6 +1274,10 @@ class EquipmentNoteRow extends DataClass
   final String equipmentLabel;
   final String? note;
   final int? lastUsedAt;
+
+  /// 用户拍的这台机器的照片，相对 app 文档目录的路径（schema v2）。
+  /// 只存相对路径：iOS 的沙盒绝对路径每次安装会变。
+  final String? photoPath;
   const EquipmentNoteRow({
     required this.id,
     required this.updatedAt,
@@ -1103,6 +1288,7 @@ class EquipmentNoteRow extends DataClass
     required this.equipmentLabel,
     this.note,
     this.lastUsedAt,
+    this.photoPath,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1124,6 +1310,9 @@ class EquipmentNoteRow extends DataClass
     if (!nullToAbsent || lastUsedAt != null) {
       map['last_used_at'] = Variable<int>(lastUsedAt);
     }
+    if (!nullToAbsent || photoPath != null) {
+      map['photo_path'] = Variable<String>(photoPath);
+    }
     return map;
   }
 
@@ -1144,6 +1333,9 @@ class EquipmentNoteRow extends DataClass
       lastUsedAt: lastUsedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastUsedAt),
+      photoPath: photoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoPath),
     );
   }
 
@@ -1162,6 +1354,7 @@ class EquipmentNoteRow extends DataClass
       equipmentLabel: serializer.fromJson<String>(json['equipmentLabel']),
       note: serializer.fromJson<String?>(json['note']),
       lastUsedAt: serializer.fromJson<int?>(json['lastUsedAt']),
+      photoPath: serializer.fromJson<String?>(json['photoPath']),
     );
   }
   @override
@@ -1177,6 +1370,7 @@ class EquipmentNoteRow extends DataClass
       'equipmentLabel': serializer.toJson<String>(equipmentLabel),
       'note': serializer.toJson<String?>(note),
       'lastUsedAt': serializer.toJson<int?>(lastUsedAt),
+      'photoPath': serializer.toJson<String?>(photoPath),
     };
   }
 
@@ -1190,6 +1384,7 @@ class EquipmentNoteRow extends DataClass
     String? equipmentLabel,
     Value<String?> note = const Value.absent(),
     Value<int?> lastUsedAt = const Value.absent(),
+    Value<String?> photoPath = const Value.absent(),
   }) => EquipmentNoteRow(
     id: id ?? this.id,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1200,6 +1395,7 @@ class EquipmentNoteRow extends DataClass
     equipmentLabel: equipmentLabel ?? this.equipmentLabel,
     note: note.present ? note.value : this.note,
     lastUsedAt: lastUsedAt.present ? lastUsedAt.value : this.lastUsedAt,
+    photoPath: photoPath.present ? photoPath.value : this.photoPath,
   );
   EquipmentNoteRow copyWithCompanion(ExerciseEquipmentNotesCompanion data) {
     return EquipmentNoteRow(
@@ -1220,6 +1416,7 @@ class EquipmentNoteRow extends DataClass
       lastUsedAt: data.lastUsedAt.present
           ? data.lastUsedAt.value
           : this.lastUsedAt,
+      photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
     );
   }
 
@@ -1234,7 +1431,8 @@ class EquipmentNoteRow extends DataClass
           ..write('gymName: $gymName, ')
           ..write('equipmentLabel: $equipmentLabel, ')
           ..write('note: $note, ')
-          ..write('lastUsedAt: $lastUsedAt')
+          ..write('lastUsedAt: $lastUsedAt, ')
+          ..write('photoPath: $photoPath')
           ..write(')'))
         .toString();
   }
@@ -1250,6 +1448,7 @@ class EquipmentNoteRow extends DataClass
     equipmentLabel,
     note,
     lastUsedAt,
+    photoPath,
   );
   @override
   bool operator ==(Object other) =>
@@ -1263,7 +1462,8 @@ class EquipmentNoteRow extends DataClass
           other.gymName == this.gymName &&
           other.equipmentLabel == this.equipmentLabel &&
           other.note == this.note &&
-          other.lastUsedAt == this.lastUsedAt);
+          other.lastUsedAt == this.lastUsedAt &&
+          other.photoPath == this.photoPath);
 }
 
 class ExerciseEquipmentNotesCompanion
@@ -1277,6 +1477,7 @@ class ExerciseEquipmentNotesCompanion
   final Value<String> equipmentLabel;
   final Value<String?> note;
   final Value<int?> lastUsedAt;
+  final Value<String?> photoPath;
   final Value<int> rowid;
   const ExerciseEquipmentNotesCompanion({
     this.id = const Value.absent(),
@@ -1288,6 +1489,7 @@ class ExerciseEquipmentNotesCompanion
     this.equipmentLabel = const Value.absent(),
     this.note = const Value.absent(),
     this.lastUsedAt = const Value.absent(),
+    this.photoPath = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ExerciseEquipmentNotesCompanion.insert({
@@ -1300,6 +1502,7 @@ class ExerciseEquipmentNotesCompanion
     required String equipmentLabel,
     this.note = const Value.absent(),
     this.lastUsedAt = const Value.absent(),
+    this.photoPath = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        updatedAt = Value(updatedAt),
@@ -1315,6 +1518,7 @@ class ExerciseEquipmentNotesCompanion
     Expression<String>? equipmentLabel,
     Expression<String>? note,
     Expression<int>? lastUsedAt,
+    Expression<String>? photoPath,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1327,6 +1531,7 @@ class ExerciseEquipmentNotesCompanion
       if (equipmentLabel != null) 'equipment_label': equipmentLabel,
       if (note != null) 'note': note,
       if (lastUsedAt != null) 'last_used_at': lastUsedAt,
+      if (photoPath != null) 'photo_path': photoPath,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1341,6 +1546,7 @@ class ExerciseEquipmentNotesCompanion
     Value<String>? equipmentLabel,
     Value<String?>? note,
     Value<int?>? lastUsedAt,
+    Value<String?>? photoPath,
     Value<int>? rowid,
   }) {
     return ExerciseEquipmentNotesCompanion(
@@ -1353,6 +1559,7 @@ class ExerciseEquipmentNotesCompanion
       equipmentLabel: equipmentLabel ?? this.equipmentLabel,
       note: note ?? this.note,
       lastUsedAt: lastUsedAt ?? this.lastUsedAt,
+      photoPath: photoPath ?? this.photoPath,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1387,6 +1594,9 @@ class ExerciseEquipmentNotesCompanion
     if (lastUsedAt.present) {
       map['last_used_at'] = Variable<int>(lastUsedAt.value);
     }
+    if (photoPath.present) {
+      map['photo_path'] = Variable<String>(photoPath.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1405,6 +1615,7 @@ class ExerciseEquipmentNotesCompanion
           ..write('equipmentLabel: $equipmentLabel, ')
           ..write('note: $note, ')
           ..write('lastUsedAt: $lastUsedAt, ')
+          ..write('photoPath: $photoPath, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5017,6 +5228,9 @@ typedef $$ExercisesTableCreateCompanionBuilder = ExercisesCompanion Function({
   Value<double> minIncrementKg,
   Value<bool> isCustom,
   required int createdAt,
+  Value<List<String>> cues,
+  Value<List<String>> commonMistakes,
+  Value<List<String>> equipmentVariants,
   Value<int> rowid,
 });
 typedef $$ExercisesTableUpdateCompanionBuilder = ExercisesCompanion Function({
@@ -5034,6 +5248,9 @@ typedef $$ExercisesTableUpdateCompanionBuilder = ExercisesCompanion Function({
   Value<double> minIncrementKg,
   Value<bool> isCustom,
   Value<int> createdAt,
+  Value<List<String>> cues,
+  Value<List<String>> commonMistakes,
+  Value<List<String>> equipmentVariants,
   Value<int> rowid,
 });
 
@@ -5184,6 +5401,24 @@ class $$ExercisesTableFilterComposer
   ColumnFilters<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String> get cues =>
+      $composableBuilder(
+        column: $table.cues,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get commonMistakes => $composableBuilder(
+    column: $table.commonMistakes,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get equipmentVariants => $composableBuilder(
+    column: $table.equipmentVariants,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   Expression<bool> exerciseEquipmentNotesRefs(
@@ -5341,6 +5576,21 @@ class $$ExercisesTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get cues => $composableBuilder(
+    column: $table.cues,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get commonMistakes => $composableBuilder(
+    column: $table.commonMistakes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipmentVariants => $composableBuilder(
+    column: $table.equipmentVariants,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ExercisesTableAnnotationComposer
@@ -5407,6 +5657,21 @@ class $$ExercisesTableAnnotationComposer
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get cues =>
+      $composableBuilder(column: $table.cues, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get commonMistakes =>
+      $composableBuilder(
+        column: $table.commonMistakes,
+        builder: (column) => column,
+      );
+
+  GeneratedColumnWithTypeConverter<List<String>, String>
+  get equipmentVariants => $composableBuilder(
+    column: $table.equipmentVariants,
+    builder: (column) => column,
+  );
 
   Expression<T> exerciseEquipmentNotesRefs<T extends Object>(
     Expression<T> Function($$ExerciseEquipmentNotesTableAnnotationComposer a) f,
@@ -5531,6 +5796,9 @@ class $$ExercisesTableTableManager
                 Value<double> minIncrementKg = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
+                Value<List<String>> cues = const Value.absent(),
+                Value<List<String>> commonMistakes = const Value.absent(),
+                Value<List<String>> equipmentVariants = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ExercisesCompanion(
                 id: id,
@@ -5547,6 +5815,9 @@ class $$ExercisesTableTableManager
                 minIncrementKg: minIncrementKg,
                 isCustom: isCustom,
                 createdAt: createdAt,
+                cues: cues,
+                commonMistakes: commonMistakes,
+                equipmentVariants: equipmentVariants,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5565,6 +5836,9 @@ class $$ExercisesTableTableManager
                 Value<double> minIncrementKg = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 required int createdAt,
+                Value<List<String>> cues = const Value.absent(),
+                Value<List<String>> commonMistakes = const Value.absent(),
+                Value<List<String>> equipmentVariants = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ExercisesCompanion.insert(
                 id: id,
@@ -5581,6 +5855,9 @@ class $$ExercisesTableTableManager
                 minIncrementKg: minIncrementKg,
                 isCustom: isCustom,
                 createdAt: createdAt,
+                cues: cues,
+                commonMistakes: commonMistakes,
+                equipmentVariants: equipmentVariants,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -5707,6 +5984,7 @@ typedef $$ExerciseEquipmentNotesTableCreateCompanionBuilder =
       required String equipmentLabel,
       Value<String?> note,
       Value<int?> lastUsedAt,
+      Value<String?> photoPath,
       Value<int> rowid,
     });
 typedef $$ExerciseEquipmentNotesTableUpdateCompanionBuilder =
@@ -5720,6 +5998,7 @@ typedef $$ExerciseEquipmentNotesTableUpdateCompanionBuilder =
       Value<String> equipmentLabel,
       Value<String?> note,
       Value<int?> lastUsedAt,
+      Value<String?> photoPath,
       Value<int> rowid,
     });
 
@@ -5803,6 +6082,11 @@ class $$ExerciseEquipmentNotesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get photoPath => $composableBuilder(
+    column: $table.photoPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ExercisesTableFilterComposer get exerciseId {
     final $$ExercisesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -5876,6 +6160,11 @@ class $$ExerciseEquipmentNotesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get photoPath => $composableBuilder(
+    column: $table.photoPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ExercisesTableOrderingComposer get exerciseId {
     final $$ExercisesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5938,6 +6227,9 @@ class $$ExerciseEquipmentNotesTableAnnotationComposer
     column: $table.lastUsedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get photoPath =>
+      $composableBuilder(column: $table.photoPath, builder: (column) => column);
 
   $$ExercisesTableAnnotationComposer get exerciseId {
     final $$ExercisesTableAnnotationComposer composer = $composerBuilder(
@@ -6011,6 +6303,7 @@ class $$ExerciseEquipmentNotesTableTableManager
                 Value<String> equipmentLabel = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int?> lastUsedAt = const Value.absent(),
+                Value<String?> photoPath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ExerciseEquipmentNotesCompanion(
                 id: id,
@@ -6022,6 +6315,7 @@ class $$ExerciseEquipmentNotesTableTableManager
                 equipmentLabel: equipmentLabel,
                 note: note,
                 lastUsedAt: lastUsedAt,
+                photoPath: photoPath,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -6035,6 +6329,7 @@ class $$ExerciseEquipmentNotesTableTableManager
                 required String equipmentLabel,
                 Value<String?> note = const Value.absent(),
                 Value<int?> lastUsedAt = const Value.absent(),
+                Value<String?> photoPath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ExerciseEquipmentNotesCompanion.insert(
                 id: id,
@@ -6046,6 +6341,7 @@ class $$ExerciseEquipmentNotesTableTableManager
                 equipmentLabel: equipmentLabel,
                 note: note,
                 lastUsedAt: lastUsedAt,
+                photoPath: photoPath,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -10,6 +10,8 @@ import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
 import '../../../router/app_routes.dart';
+import '../../exercises/data/exercise_repository.dart';
+import '../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
 import '../models/numeric_input.dart';
 import '../state/active_workout_view_model.dart';
@@ -137,6 +139,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                           },
                           onSetRir: (id, v) => _vm.editSet(id, rir: v, clearRir: v == null),
                           onTapLabel: () => _changeLabel(ex.id, ex.exerciseId, ex.equipmentLabel),
+                          onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
                           onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
                         ),
                       );
@@ -270,6 +273,23 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     );
   }
 
+  /// 长按器械标签：看这台机器的照片；没拍过就提示去详情页拍。
+  Future<void> _showLabelPhoto(String exerciseId, String? label) async {
+    if (label == null) {
+      AppTheme.showToast(context, '先选一个器械标签');
+      return;
+    }
+    final note = await ref
+        .read(exerciseRepositoryProvider)
+        .findNoteByDisplayLabel(exerciseId, label);
+    if (!mounted) return;
+    if (note == null || !note.hasPhoto) {
+      AppTheme.showToast(context, '「」还没有照片，在动作详情页可以拍一张');
+      return;
+    }
+    await EquipmentPhotoViewer.show(context, note);
+  }
+
   Future<void> _onCardAction(
     String weId,
     String exerciseId,
@@ -285,6 +305,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         await _vm.applyLastPerformance(weId);
       case ExerciseCardAction.changeLabel:
         await _changeLabel(weId, exerciseId, label);
+      case ExerciseCardAction.viewExercise:
+        await context.push(AppRoutes.exerciseDetail(exerciseId));
       case ExerciseCardAction.remove:
         final st = ref.read(activeWorkoutProvider).value;
         final ex = st?.exerciseById(weId);

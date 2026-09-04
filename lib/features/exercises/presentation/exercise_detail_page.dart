@@ -10,6 +10,8 @@ import '../data/exercise_repository.dart';
 import '../models/exercise.dart';
 import '../state/exercise_detail_view_model.dart';
 import '../state/exercise_list_view_model.dart';
+import 'widgets/equipment_note_photo.dart';
+import 'widgets/exercise_guide_section.dart';
 
 /// 动作详情：目标与增量、个人记录、最近记录、场馆 / 器械备注。
 /// 工作重量建议卡片随 Phase 5 加在头部下方。
@@ -57,6 +59,9 @@ class ExerciseDetailPage extends ConsumerWidget {
             style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
+
+          // ── 怎么做：示意动画、要领、常见错误、找哪台机器 ─────────
+          ExerciseGuideSection(exercise: exercise),
 
           // ── 个人记录 ────────────────────────────────────────
           _section(context, '个人记录'),
@@ -125,6 +130,7 @@ class ExerciseDetailPage extends ConsumerWidget {
               Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
+                  leading: EquipmentNotePhoto(note: n),
                   title: Text(n.displayLabel),
                   subtitle: n.note == null || n.note!.isEmpty ? null : Text(n.note!),
                   trailing: IconButton(
