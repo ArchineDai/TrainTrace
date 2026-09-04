@@ -90,16 +90,21 @@ void main() {
     expect(version.value, '3');
   });
 
-  test('种子 v2 → v3：老历史软删除，更正后的三次插入，用户自己的记录不动', () async {
+  test('种子 v2 → v3：v2 之前的记录整表作废，只剩种子的三次和进行中的那次', () async {
     final loader = seedLoader(db, fixedClock());
     await loader.seedIfNeeded();
-    // 模拟一台 v2 用户机：库里是老的两条示例历史 + 用户自己练的一次。
+    // 模拟一台 v2 用户机：老的两条示例历史 + 开发期试出来的一次 + 手上正在练的一次。
     await db.delete(db.workoutSessions).go();
-    for (final id in ['seed_session_a_20260901', 'seed_session_b_20260903', 'mine']) {
+    for (final e in {
+      'seed_session_a_20260901': 'completed',
+      'seed_session_b_20260903': 'completed',
+      'junk': 'completed',
+      'live': 'inProgress',
+    }.entries) {
       await db.into(db.workoutSessions).insert(WorkoutSessionsCompanion.insert(
-            id: id,
+            id: e.key,
             startedAt: 1,
-            status: 'completed',
+            status: e.value,
             updatedAt: 1,
           ));
     }
@@ -109,14 +114,13 @@ void main() {
     expect(await loader.seedIfNeeded(), isTrue);
 
     final rows = await db.select(db.workoutSessions).get();
-    final byId = {for (final r in rows) r.id: r};
-    expect(byId['seed_session_a_20260901']!.deletedAt, isNotNull);
-    expect(byId['seed_session_b_20260903']!.deletedAt, isNotNull);
-    expect(byId['mine']!.deletedAt, isNull, reason: '用户自己的记录不动');
-    expect(
-      byId.keys.where((id) => id.startsWith('seed_session_') && byId[id]!.deletedAt == null),
-      hasLength(3),
-    );
+    final alive = rows.where((r) => r.deletedAt == null).map((r) => r.id).toList();
+    expect(alive..sort(), [
+      'live',
+      'seed_session_1_20260830',
+      'seed_session_2_20260901',
+      'seed_session_3_20260903',
+    ], reason: '老示例和开发期数据全作废，进行中的那次留着');
   });
 
   test('v3 的迁移重跑不会把历史插两遍', () async {

@@ -31,6 +31,9 @@ class SeedLoader {
   static const seedVersion = 3;
   static const _kSeededVersion = 'seededVersion';
 
+  /// `SessionStatus.inProgress.name`。core 不 import features，所以写字面量。
+  static const _inProgress = 'inProgress';
+
   static const exercisesAsset = 'assets/seed/exercises.json';
   static const routinesAsset = 'assets/seed/routines.json';
   static const historyAsset = 'assets/seed/history_demo.json';
@@ -203,18 +206,20 @@ class SeedLoader {
     if (from < 3) await _reseedHistory();
   }
 
-  /// v2 → v3：内置示例历史与用户的真实记录不符（日期错位、缺 9/3 那次、
-  /// 少了蝴蝶机夹胸与水平胸推），整体换成更正后的三次。
+  /// v2 → v3：`history_demo.json` 是训练记录的唯一准确来源，v2 之前库里的
+  /// 记录（日期错位的示例 + 开发期试出来的训练）一律作废，**整表替换**。
   ///
-  /// 老的两条按 id 软删除（历史查询都过滤 `deletedAt IS NULL`），更正后的三条
-  /// 用新 id 插入。用户自己练出来的 session 不在这两个 id 里，不受影响。
+  /// 所以这里不按 id 挑，而是把**所有**已有 session 软删除，再插种子里的三次。
+  /// 软删除即从 UI 消失：历史 / 上次表现 / PR 的查询都过滤 `deletedAt IS NULL`。
+  /// 只有正在进行的训练留着 —— 更新完打开 App 时手上那次不该被抹掉。
   Future<void> _reseedHistory() async {
-    const legacyIds = ['seed_session_a_20260901', 'seed_session_b_20260903'];
     final history = _list(await _read(historyAsset));
     final now = _clock.nowMs();
     await _db.transaction(() async {
       await (_db.update(_db.workoutSessions)
-            ..where((t) => t.id.isIn(legacyIds) & t.deletedAt.isNull()))
+            ..where((t) =>
+                t.deletedAt.isNull() &
+                t.status.equals(_inProgress).not()))
           .write(WorkoutSessionsCompanion(
         deletedAt: Value(now),
         updatedAt: Value(now),

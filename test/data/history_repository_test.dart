@@ -35,7 +35,7 @@ void main() {
     expect(first.setCount, 15, reason: '含肩推的一组热身');
     // 20×12×3 + 19×12×3 + (5×15 + 10×12×2) + 5×8×3 + 12×(12+6+6)
     expect(first.totalVolumeKg, 720 + 684 + 75 + 240 + 120 + 288);
-    expect(first.duration, const Duration(minutes: 55));
+    expect(first.duration, const Duration(minutes: 45), reason: '表里没记时长，走默认');
 
     final second = list[1]; // 9/1
     expect(second.exerciseCount, 5);
