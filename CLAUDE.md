@@ -101,6 +101,9 @@ flutter run -d 10ACBQ18A8000QD
 
 `type(scope): 中文描述`，正文中文。`feat` / `fix` / `docs` / `build` / `chore` / `test` / `refactor`。
 
+收尾提交走用户级 `/commit` skill（`~/.claude/skills/commit`）：盘点、跑上面的门禁、按动机归组、
+不 push。本仓库门禁与提交格式它都从这份文件读。
+
 ## docs 索引
 
 | 文件 | 什么时候读 |
