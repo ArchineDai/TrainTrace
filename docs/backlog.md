@@ -2,13 +2,14 @@
 
 > 决定要不要动手修某个已知问题时读这份。已了结的移到底部索引。
 
-## 待验证（Phase 0 技术验证，需真机）
+## 待验证（Phase 0 技术验证）
 
-- **V-1 后台休息提醒**：`flutter_local_notifications` 22 + `timezone` 预约通知，
-  锁屏 2 分钟看是否准时。vivo OriginOS 对后台限制严格，可能需要引导用户关闭省电。
+- **V-1 后台提醒**：模拟器（Android 17）上 `zonedSchedule` 15 秒预约按时送达
+  （2026-09-04，`dumpsys notification` 可见 id=1001）。**vivo 真机未验证**：
+  USB 安装需在手机上手动确认，且 OriginOS 可能要求关闭省电 / 允许后台弹出。
+  精确闹钟默认未授予，当前退化为 `inexactAllowWhileIdle`；Phase 6 设置页加引导。
 - **V-2 进程被杀恢复**：`adb shell am kill com.archinedai.traintrace` 后重启，
   inProgress session 能否读回。依赖 Phase 1 的 WorkoutRepository。
-- **V-3 记录速度**：自定义键盘原型，实测完成 3 组 ≤ 6 次点击。
 
 ## 推迟项
 
@@ -16,7 +17,13 @@
 - **D-2 CSV 导出**：Phase 6。
 - **D-3 lb 单位**：V0.1 只显示换算，不接受 lb 输入。
 - **D-4 同步**：outbox 表、SyncService、登录。列已预留（`sync_columns.dart`）。
+- **D-5 通知图标**：目前用 `@mipmap/ic_launcher`，Android 官方建议 drawable 单色图标；
+  发布前补 `drawable/ic_notification` 并在 R8 `keep.xml` 里保留。
+- **D-6 删除验证页**：`features/dev/` 与 `AppRoutes.dev` 在 Phase 3 真实训练页落地后删除。
 
 ## 已了结
 
-（空）
+- **V-3 记录速度**（2026-09-04）：验证页实测。三组中改一组次数（12→10）并全部完成
+  = 6 次点击（2 次 ✓ + 1 次聚焦 + 2 位数字 + 1 次完成），不改数字则 3 次。达标。
+- **Gradle 国内下载**（2026-09-04）：发行包走 `mirrors.cloud.tencent.com`，
+  依赖走阿里云镜像（同 weluck）。首次 assembleDebug 7 分钟，之后增量约 1 分钟。

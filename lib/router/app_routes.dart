@@ -33,4 +33,8 @@ abstract final class AppRoutes {
   // ── 历史 ─────────────────────────────────────────────────────
   static const sessionDetailPath = '/history/:id';
   static String sessionDetail(String sessionId) => '/history/$sessionId';
+
+  // ── 开发 ─────────────────────────────────────────────────────
+  /// Phase 0 技术验证页，只在 debug 构建注册。
+  static const dev = '/dev';
 }

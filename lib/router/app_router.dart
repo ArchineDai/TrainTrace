@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/dev/presentation/dev_playground_page.dart';
 import '../features/history/presentation/history_list_page.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
@@ -68,6 +70,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 根栈（覆盖 Tab 栏的全屏页）：/workout、/routines/:id/edit、
       // /exercises/:id、/history/:id 等随各 Phase 落地时在此注册，
       // 都带 parentNavigatorKey: _rootNavigatorKey。
+      if (kDebugMode)
+        GoRoute(
+          path: AppRoutes.dev,
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => const DevPlaygroundPage(),
+        ),
     ],
   );
 });
