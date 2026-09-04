@@ -4,6 +4,7 @@ import 'exercises.dart';
 import 'sync_columns.dart';
 
 /// 训练模板（A 背+肩 / B 胸+手臂 / C 腿+核心）。
+@DataClassName('RoutineRow')
 class Routines extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get name => text()();
   TextColumn get color => text().nullable()();
@@ -16,6 +17,7 @@ class Routines extends Table with UuidPrimaryKey, SyncColumns {
   name: 'idx_routine_exercises_routine',
   columns: {#routineId, #sortOrder},
 )
+@DataClassName('RoutineExerciseRow')
 class RoutineExercises extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get routineId =>
       text().references(Routines, #id, onDelete: KeyAction.cascade)();

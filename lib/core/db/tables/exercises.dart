@@ -6,6 +6,7 @@ import 'sync_columns.dart';
 ///
 /// `muscleGroup` / `equipmentType` 存枚举名字符串，不用 `textEnum`：
 /// 枚举定义在 feature 的 models 层，core/db 不反向依赖 features。
+@DataClassName('ExerciseRow')
 class Exercises extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get nameZh => text()();
   TextColumn get nameEn => text().nullable()();
@@ -33,6 +34,7 @@ class Exercises extends Table with UuidPrimaryKey, SyncColumns {
   name: 'idx_equipment_notes_exercise',
   columns: {#exerciseId},
 )
+@DataClassName('EquipmentNoteRow')
 class ExerciseEquipmentNotes extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get exerciseId =>
       text().references(Exercises, #id, onDelete: KeyAction.cascade)();

@@ -1,0 +1,18 @@
+[
+  {"id": "ex_lat_pulldown", "nameZh": "高位下拉", "nameEn": "Lat Pulldown", "muscleGroup": "back", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_seated_row", "nameZh": "坐姿划船", "nameEn": "Seated Row", "muscleGroup": "back", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_shoulder_press", "nameZh": "器械肩推", "nameEn": "Machine Shoulder Press", "muscleGroup": "shoulder", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_lateral_raise", "nameZh": "哑铃侧平举", "nameEn": "Dumbbell Lateral Raise", "muscleGroup": "shoulder", "equipmentType": "dumbbell", "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 1.0},
+  {"id": "ex_reverse_pec_deck", "nameZh": "反向蝴蝶机", "nameEn": "Reverse Pec Deck", "muscleGroup": "shoulder", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5},
+  {"id": "ex_pec_deck", "nameZh": "蝴蝶机夹胸", "nameEn": "Pec Deck Fly", "muscleGroup": "chest", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_chest_press", "nameZh": "水平胸推", "nameEn": "Chest Press", "muscleGroup": "chest", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_incline_chest_press", "nameZh": "上斜胸推", "nameEn": "Incline Chest Press", "muscleGroup": "chest", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_dumbbell_curl", "nameZh": "哑铃弯举", "nameEn": "Dumbbell Curl", "muscleGroup": "arm", "equipmentType": "dumbbell", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0},
+  {"id": "ex_machine_curl", "nameZh": "二头弯举机", "nameEn": "Machine Bicep Curl", "muscleGroup": "arm", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.0},
+  {"id": "ex_leg_press", "nameZh": "腿举", "nameEn": "Leg Press", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 120, "minIncrementKg": 5.0},
+  {"id": "ex_leg_extension", "nameZh": "腿屈伸", "nameEn": "Leg Extension", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_leg_curl", "nameZh": "腿弯举", "nameEn": "Leg Curl", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 2.5},
+  {"id": "ex_calf_raise", "nameZh": "提踵", "nameEn": "Calf Raise", "muscleGroup": "leg", "equipmentType": "machine", "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 5.0},
+  {"id": "ex_crunch", "nameZh": "卷腹", "nameEn": "Crunch", "muscleGroup": "core", "equipmentType": "bodyweight", "defaultRepMin": 15, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5},
+  {"id": "ex_plank", "nameZh": "平板支撑", "nameEn": "Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight", "defaultRepMin": 30, "defaultRepMax": 60, "defaultRestSeconds": 60, "minIncrementKg": 2.5}
+]

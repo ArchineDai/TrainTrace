@@ -17,8 +17,9 @@
 - **D-2 CSV 导出**：Phase 6。
 - **D-3 lb 单位**：V0.1 只显示换算，不接受 lb 输入。
 - **D-4 同步**：outbox 表、SyncService、登录。列已预留（`sync_columns.dart`）。
-- **D-5 通知图标**：目前用 `@mipmap/ic_launcher`，Android 官方建议 drawable 单色图标；
-  发布前补 `drawable/ic_notification` 并在 R8 `keep.xml` 里保留。
+- **D-5 通知图标**：目前用 `@mipmap/ic_launcher`，Android 官方建议 drawable 单色图标。
+  启动图标已带单色前景 `drawable/ic_launcher_monochrome`（透明底白色图形），可直接改用，
+  或从 `assets/icon/adaptive_fg.svg` 另出一份 `drawable/ic_notification`；R8 `keep.xml` 里保留。
 - **D-6 删除验证页**：`features/dev/` 与 `AppRoutes.dev` 在 Phase 3 真实训练页落地后删除。
 - **D-9 字体许可署名**：两套字体都是 SIL OFL 1.1，许可文本已随 `assets/fonts/*-OFL.txt`
   打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。

@@ -50,3 +50,18 @@
   源文件来自 github.com/notofonts/noto-cjk 的 `Sans/SubsetOTF/SC/`。
 - 两份 OFL 许可文本随资源打包（`*-OFL.txt`）。OFL 要求分发时附带许可，
   关于页加"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"一行即可。
+
+## 启动图标
+
+概念：**杠铃片即柱状图**。两侧各三片配重向中间递增，既是杠铃（Train），也是一张上升的
+记录图（Trace）。近黑底 `#0C0D10`、片用品牌橙 `#FF7A1A`、杠用 `#ECEDEF`，圆角与 UI 同一套方正感。
+
+- 矢量源与 1024 PNG 在 `assets/icon/`，由 `tool/icon/gen_icon.mjs` 生成（sharp 渲染 SVG）。
+  所有矩形的角都落在半径 380/1000 的圆内，满足 Android 自适应图标 66/108 安全区。
+- 改设计只改 `gen_icon.mjs` 里的 `shapes()`，然后
+  `cd tool/icon && npm install && node gen_icon.mjs`，再回根目录 `dart run flutter_launcher_icons`。
+  产物（Android mipmap / drawable、iOS AppIcon.appiconset）随 git 追踪。
+- `flutter_launcher_icons` 会顺手把 iOS pbxproj 的
+  `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS` 改成 `AppIcon`，这是它的已知误写，
+  跑完用 `git checkout -- ios/Runner.xcodeproj/project.pbxproj` 还原。
+- `assets/icon/preview.png` 是方图 / 圆形蒙版 / 单色 / 48–144px 小尺寸的对照图，改完看一眼。

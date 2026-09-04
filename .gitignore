@@ -33,3 +33,6 @@ Thumbs.db
 
 # 字体子集化脚本的 npm 依赖（tool/fonts/），lock 文件保留
 tool/fonts/node_modules/
+
+# 启动图标生成脚本的 npm 依赖（tool/icon/），lock 文件保留
+tool/icon/node_modules/

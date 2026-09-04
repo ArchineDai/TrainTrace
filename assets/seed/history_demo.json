@@ -1,0 +1,36 @@
+[
+  {
+    "id": "seed_session_a_20260901",
+    "routineId": "rt_a_back_shoulder",
+    "routineName": "A 背 + 肩",
+    "startedAt": "2026-09-01T18:30:00+08:00",
+    "durationMinutes": 55,
+    "exercises": [
+      {"exerciseId": "ex_lat_pulldown", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90,
+       "sets": [{"weightKg": 20, "reps": 12}, {"weightKg": 20, "reps": 12}, {"weightKg": 20, "reps": 12}]},
+      {"exerciseId": "ex_seated_row", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90,
+       "sets": [{"weightKg": 19, "reps": 12}, {"weightKg": 19, "reps": 12}, {"weightKg": 19, "reps": 12}]},
+      {"exerciseId": "ex_shoulder_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90,
+       "sets": [{"weightKg": 10, "reps": 12}, {"weightKg": 10, "reps": 12}]},
+      {"exerciseId": "ex_lateral_raise", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "偏重",
+       "sets": [{"weightKg": 5, "reps": 8, "rir": 1}, {"weightKg": 5, "reps": 8, "rir": 0}, {"weightKg": 5, "reps": 8, "rir": 0}]},
+      {"exerciseId": "ex_reverse_pec_deck", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "后两组力竭",
+       "sets": [{"weightKg": 12, "reps": 12, "rir": 1}, {"weightKg": 12, "reps": 6, "rir": 0}, {"weightKg": 12, "reps": 6, "rir": 0}]}
+    ]
+  },
+  {
+    "id": "seed_session_b_20260903",
+    "routineId": "rt_b_chest_arm",
+    "routineName": "B 胸 + 手臂",
+    "startedAt": "2026-09-03T18:30:00+08:00",
+    "durationMinutes": 40,
+    "exercises": [
+      {"exerciseId": "ex_incline_chest_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "单边 2.5kg",
+       "sets": [{"weightKg": 2.5, "reps": 12}, {"weightKg": 2.5, "reps": 12}]},
+      {"exerciseId": "ex_dumbbell_curl", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60, "note": "较合适",
+       "sets": [{"weightKg": 5, "reps": 10, "rir": 2}]},
+      {"exerciseId": "ex_machine_curl", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60, "note": "明显偏重",
+       "sets": [{"weightKg": 12, "reps": 5, "rir": 0}]}
+    ]
+  }
+]

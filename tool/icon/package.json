@@ -1,0 +1,12 @@
+{
+  "name": "traintrace-icon-tools",
+  "private": true,
+  "type": "module",
+  "description": "用 SVG 生成启动图标源图（assets/icon/），再由 flutter_launcher_icons 产出各平台尺寸。用法见 gen_icon.mjs 头部注释。",
+  "scripts": {
+    "gen": "node gen_icon.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.34.3"
+  }
+}

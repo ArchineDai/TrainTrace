@@ -21,14 +21,28 @@ lib/
 │   ├─ log.dart                   AppLog + swallow()
 │   ├─ ids.dart                   newId() → UUID v4
 │   └─ constants.dart             休息预设、次数区间预设、12h 陈旧阈值等
+├─ core/db/seed/seed_loader.dart  首启导入 assets/seed/*.json（16 动作、3 模板、2 次历史），
+│                                  靠 app_settings.seededVersion 判重；main() 在首帧前调用
 ├─ features/
+│   ├─ exercises/
+│   │   ├─ models/exercise.dart           Exercise / EquipmentNote / MuscleGroup / EquipmentType
+│   │   └─ data/exercise_repository.dart  动作 CRUD（软删）、搜索、器械备注 upsert
+│   ├─ routines/
+│   │   ├─ models/routine.dart            Routine / RoutineExercise / RoutineExerciseDraft
+│   │   └─ data/routine_repository.dart   三表 join 的 watchAll、整体替换式 update、reorder
 │   ├─ workout/
+│   │   ├─ models/workout_session.dart    WorkoutSession / WorkoutExercise / WorkoutSet + 枚举
 │   │   ├─ models/rest_timer_state.dart   休息计时纯状态机（只存 endsAt / pausedAt）
 │   │   ├─ models/numeric_input.dart      自定义键盘的编辑规则（fresh 替换、±步长）
+│   │   ├─ data/workout_repository.dart   开始 / 改组 / 完成 / 结束（清空组）/ 放弃，写穿入口
 │   │   ├─ state/rest_timer_view_model.dart  restTimerProvider + restTimerRemainingProvider
 │   │   └─ presentation/widgets/         numeric_keypad / set_row / rest_timer_bar
+│   ├─ history/
+│   │   ├─ models/history_models.dart     SessionSummary / ExercisePerformance / PersonalRecords
+│   │   └─ data/history_repository.dart   摘要聚合、上次表现（按器械标签分组）、PR / Epley 1RM
+│   ├─ settings/                          ThemeSettings + SettingsRepository + ViewModel + 设置页
 │   ├─ dev/presentation/dev_playground_page.dart  Phase 0 验证页，仅 debug 注册（backlog D-6）
-│   └─ home / routines / history / settings   占位页
+│   └─ home / routines / history           占位页
 ├─ services/
 │   ├─ rest_notifier.dart             RestNotifier 接口 + Noop + provider
 │   └─ local_notification_rest_notifier.dart  flutter_local_notifications 实现，UTC 绝对时刻预约
@@ -46,8 +60,10 @@ presentation → state → data → models
 
 落地判据：Drift 只出现在 `data/` 与 `core/db/`。详见 `data-layer.md`。
 
-**现状**：Phase 0 只有 `core/db` 与占位页，尚无 Repository / ViewModel / model。
-Phase 1 起按 `data-layer.md` 落地。
+**现状**（Phase 1 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
+`*Row`（`@DataClassName`），与纯 Dart model 同名冲突不存在。state 层只有
+`restTimerProvider` 与 `themeSettingsProvider`；`activeWorkoutProvider`、列表 provider
+随 Phase 2 / 3 落地。`test/data/` 81 条覆盖数据库契约、五个 repository 与种子导入。
 
 ## 依赖用途
 

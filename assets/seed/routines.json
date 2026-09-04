@@ -1,0 +1,39 @@
+[
+  {
+    "id": "rt_a_back_shoulder",
+    "name": "A 背 + 肩",
+    "sortOrder": 0,
+    "exercises": [
+      {"exerciseId": "ex_lat_pulldown", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_seated_row", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_shoulder_press", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_lateral_raise", "targetSets": 3, "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60},
+      {"exerciseId": "ex_reverse_pec_deck", "targetSets": 3, "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60}
+    ]
+  },
+  {
+    "id": "rt_b_chest_arm",
+    "name": "B 胸 + 手臂",
+    "sortOrder": 1,
+    "exercises": [
+      {"exerciseId": "ex_chest_press", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_incline_chest_press", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_pec_deck", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_dumbbell_curl", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60},
+      {"exerciseId": "ex_machine_curl", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60}
+    ]
+  },
+  {
+    "id": "rt_c_leg_core",
+    "name": "C 腿 + 核心",
+    "sortOrder": 2,
+    "exercises": [
+      {"exerciseId": "ex_leg_press", "targetSets": 3, "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 120},
+      {"exerciseId": "ex_leg_extension", "targetSets": 3, "targetRepMin": 12, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_leg_curl", "targetSets": 3, "targetRepMin": 12, "targetRepMax": 15, "restSeconds": 90},
+      {"exerciseId": "ex_calf_raise", "targetSets": 3, "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60},
+      {"exerciseId": "ex_crunch", "targetSets": 3, "targetRepMin": 15, "targetRepMax": 20, "restSeconds": 60},
+      {"exerciseId": "ex_plank", "targetSets": 3, "targetRepMin": 30, "targetRepMax": 60, "restSeconds": 60}
+    ]
+  }
+]

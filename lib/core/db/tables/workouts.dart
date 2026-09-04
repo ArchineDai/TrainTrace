@@ -7,6 +7,7 @@ import 'sync_columns.dart';
 /// 一次训练。开始即落库（status = inProgress），是意外退出恢复的依据。
 @TableIndex(name: 'idx_sessions_status', columns: {#status})
 @TableIndex(name: 'idx_sessions_started', columns: {#startedAt})
+@DataClassName('WorkoutSessionRow')
 class WorkoutSessions extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get routineId =>
       text().nullable().references(Routines, #id, onDelete: KeyAction.setNull)();
@@ -28,6 +29,7 @@ class WorkoutSessions extends Table with UuidPrimaryKey, SyncColumns {
 /// 训练中的一个动作。目标区间 / 休息是从模板复制的快照，训练中可改。
 @TableIndex(name: 'idx_wex_session', columns: {#sessionId, #sortOrder})
 @TableIndex(name: 'idx_wex_exercise', columns: {#exerciseId})
+@DataClassName('WorkoutExerciseRow')
 class WorkoutExercises extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get sessionId =>
       text().references(WorkoutSessions, #id, onDelete: KeyAction.cascade)();
@@ -44,6 +46,7 @@ class WorkoutExercises extends Table with UuidPrimaryKey, SyncColumns {
 
 /// 一组。不带同步三列，随父动作整体同步。
 @TableIndex(name: 'idx_sets_wex', columns: {#workoutExerciseId, #setIndex})
+@DataClassName('WorkoutSetRow')
 class WorkoutSets extends Table with UuidPrimaryKey {
   TextColumn get workoutExerciseId =>
       text().references(WorkoutExercises, #id, onDelete: KeyAction.cascade)();

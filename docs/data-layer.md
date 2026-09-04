@@ -18,6 +18,10 @@ models/         纯 Dart 实体与枚举。不 import drift
 
 ## Repository
 
+现有五个：`ExerciseRepository` / `RoutineRepository` / `WorkoutRepository` /
+`HistoryRepository`（只读）/ `SettingsRepository`。Drift 行类统一叫 `XxxRow`
+（表上 `@DataClassName`），纯 Dart model 叫 `Xxx`，两者不会同名。
+
 ### 构造注入 AppDatabase 与 Clock
 
 ```dart

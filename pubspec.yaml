@@ -29,9 +29,14 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   drift_dev: ^2.34.6
   build_runner: ^2.16.1
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
+
+  # 首启导入的内置动作 / 模板 / 历史记录（core/db/seed/seed_loader.dart）。
+  assets:
+    - assets/seed/
 
   # 西文 / 数字走 IBM Plex Sans（OFL），汉字回落到 Noto Sans SC（OFL）。
   # Noto 已子集化到 GB2312 + UI 符号（tool/fonts/subset_fonts.mjs），
@@ -53,3 +58,14 @@ flutter:
           weight: 500
         - asset: assets/fonts/NotoSansSC-Bold.otf
           weight: 700
+
+# 启动图标。源图由 tool/icon/gen_icon.mjs 生成到 assets/icon/，
+# 改完源图后运行 `dart run flutter_launcher_icons` 重新产出各平台尺寸。
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  adaptive_icon_background: "#0C0D10"
+  adaptive_icon_foreground: "assets/icon/adaptive_fg.png"
+  adaptive_icon_monochrome: "assets/icon/adaptive_mono.png"
+  ios: true
+  remove_alpha_ios: true
