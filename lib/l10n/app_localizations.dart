@@ -98,6 +98,12 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @appTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'训迹'**
+  String get appTitle;
+
   /// No description provided for @tabWorkout.
   ///
   /// In zh, this message translates to:

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 桌面图标与系统设置里的应用名。中文见 values-zh/strings.xml。
+         跟系统语言，不跟应用内的语言选择（那份走 MaterialApp.onGenerateTitle）。 -->
+    <string name="app_name">TrainTrace</string>
+</resources>

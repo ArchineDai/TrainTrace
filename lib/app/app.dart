@@ -54,7 +54,10 @@ class _TrainTraceAppState extends ConsumerState<TrainTraceApp>
       ),
     );
     return MaterialApp.router(
-      title: 'TrainTrace',
+      // 中文叫「训迹」，所以走 onGenerateTitle 而不是写死的 title：它在 localizationsDelegates
+      // 装好之后才调，拿得到 l10n。安卓最近任务卡片用的是这个名字；桌面图标
+      // 的名字在 AndroidManifest 的 @string/app_name，跟系统语言，不跟应用内的选择。
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: switch (themeMode) {

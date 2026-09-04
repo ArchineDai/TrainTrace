@@ -10,6 +10,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get appTitle => 'TrainTrace';
+
+  @override
   String get tabWorkout => 'Workout';
 
   @override

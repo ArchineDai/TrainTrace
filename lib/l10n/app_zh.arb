@@ -1,6 +1,8 @@
 {
   "@@locale": "zh",
 
+  "appTitle": "训迹",
+
   "tabWorkout": "训练",
   "tabRoutines": "模板",
   "tabHistory": "历史",

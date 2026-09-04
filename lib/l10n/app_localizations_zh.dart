@@ -10,6 +10,9 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get appTitle => '训迹';
+
+  @override
   String get tabWorkout => '训练';
 
   @override
