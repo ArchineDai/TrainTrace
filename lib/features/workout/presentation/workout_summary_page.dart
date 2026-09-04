@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/formatters.dart';
 import '../../../core/theme/app_text_size.dart';
+import '../../suggestion/presentation/suggestion_card.dart';
+import '../../suggestion/state/suggestion_provider.dart';
 import '../state/active_workout_view_model.dart';
 
 /// 训练结束后的总结。V0.1 展示时长 / 组数 / 容量与每个动作的各组；
@@ -58,6 +60,17 @@ class WorkoutSummaryPage extends ConsumerWidget {
                           ]),
                     style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
                   ),
+                  if (ex.completedSets.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    SuggestionCard(
+                      query: SuggestionQuery(
+                        exerciseId: ex.exerciseId,
+                        equipmentLabel: ex.equipmentLabel,
+                        targetRepMin: ex.targetRepMin,
+                        targetRepMax: ex.targetRepMax,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
                 ],
               ],
