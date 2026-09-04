@@ -43,6 +43,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workoutAlwaysDarkHint => '健身房光线差时保持高对比，其余页面跟随上面的选择';
 
   @override
+  String get settingsGeneral => '通用';
+
+  @override
   String get language => '语言';
 
   @override

@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'健身房光线差时保持高对比，其余页面跟随上面的选择'**
   String get workoutAlwaysDarkHint;
 
+  /// No description provided for @settingsGeneral.
+  ///
+  /// In zh, this message translates to:
+  /// **'通用'**
+  String get settingsGeneral;
+
   /// No description provided for @language.
   ///
   /// In zh, this message translates to:

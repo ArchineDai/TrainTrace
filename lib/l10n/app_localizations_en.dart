@@ -44,6 +44,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keeps contrast high in dim gyms; other pages follow the choice above';
 
   @override
+  String get settingsGeneral => 'General';
+
+  @override
   String get language => 'Language';
 
   @override

@@ -13,6 +13,7 @@
   "themeDark": "Dark",
   "workoutAlwaysDark": "Always dark during workouts",
   "workoutAlwaysDarkHint": "Keeps contrast high in dim gyms; other pages follow the choice above",
+  "settingsGeneral": "General",
   "language": "Language",
   "followSystemLanguage": "System default",
   "devPlayground": "Phase 0 tech playground",

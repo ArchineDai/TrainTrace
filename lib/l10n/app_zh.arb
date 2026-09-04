@@ -13,6 +13,7 @@
   "themeDark": "深色",
   "workoutAlwaysDark": "训练中始终使用深色",
   "workoutAlwaysDarkHint": "健身房光线差时保持高对比，其余页面跟随上面的选择",
+  "settingsGeneral": "通用",
   "language": "语言",
   "followSystemLanguage": "跟随系统",
   "devPlayground": "Phase 0 技术验证",

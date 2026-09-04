@@ -1,16 +1,16 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../router/app_routes.dart';
 import '../models/theme_settings.dart';
 import '../state/locale_settings_view_model.dart';
 import '../state/theme_settings_view_model.dart';
 
 /// 设置页。V0.1 先落外观与语言；单位 / 默认休息 / 场馆 / 数据在 Phase 6 补齐。
+///
+/// 分组靠 [_SectionHeader] 而不是 `Divider` —— 组数还会长，标题比线更耐加。
+/// Phase 0 技术验证页不在这里挂入口（debug 下仍可直接走 `/dev`）。
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
@@ -26,22 +26,11 @@ class SettingsPage extends ConsumerWidget {
     final selectedLocale = ref.watch(
       localeSettingsProvider.select((s) => s.value?.selected),
     );
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.appearance,
-              style: textTheme.labelLarge?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
+          _SectionHeader(l10n.appearance),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SegmentedButton<AppThemeMode>(
@@ -78,23 +67,16 @@ class SettingsPage extends ConsumerWidget {
                 ? null
                 : vm.setWorkoutAlwaysDark,
           ),
-          const Divider(),
+          _SectionHeader(l10n.settingsGeneral),
           ListTile(
+            minTileHeight: AppTheme.minTouch,
             leading: const Icon(Icons.language),
             title: Text(l10n.language),
             subtitle: Text(_localeLabel(l10n, selectedLocale)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _pickLocale(context, ref),
           ),
-          if (kDebugMode) ...[
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.science_outlined),
-              title: Text(l10n.devPlayground),
-              subtitle: Text(l10n.devPlaygroundHint),
-              onTap: () => context.push(AppRoutes.dev),
-            ),
-          ],
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -146,6 +128,28 @@ class SettingsPage extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// 设置页分组标题。用 accentText 而不是 onSurfaceVariant —— 后者和下面
+/// ListTile 的 subtitle 同色，扫一眼分不出哪行是标题。
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: AppTheme.of(context).accentText,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
