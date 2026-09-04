@@ -208,10 +208,13 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
   }
 
   /// 追加一组，继承本动作最后一组的重量与次数；没有则继承上次表现的最后一组。
-  Future<void> addSet(String workoutExerciseId) async {
+  ///
+  /// 返回新建的那组，写库失败时为 null —— 调用方要往里写别的值时需要它的 id
+  /// （见 [applyLastPerformance]）。
+  Future<WorkoutSet?> addSet(String workoutExerciseId) async {
     final s = state.value;
     final ex = s?.exerciseById(workoutExerciseId);
-    if (s == null || ex == null) return;
+    if (s == null || ex == null) return null;
     double? w;
     int? r;
     if (ex.sets.isNotEmpty) {
@@ -227,8 +230,10 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       _mutate((st) => st.replaceExercise(
             (st.exerciseById(ex.id) ?? ex).let((e) => e.copyWith(sets: [...e.sets, added])),
           ));
+      return added;
     } catch (e, st) {
       swallow(e, 'add set', st);
+      return null;
     }
   }
 
@@ -339,19 +344,40 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     final last = s?.lastByExercise[workoutExerciseId];
     if (s == null || ex == null || last == null || last.sets.isEmpty) return;
     await flushPending();
-    var i = 0;
-    for (final set in ex.sets) {
+    // 按位置对齐：第 k 组对上次第 k 组，和 [_prefillFromLast] 同一套语义。
+    // 已完成的组不改（练过的数字不能被冲掉），但它**仍然占一个位置** —— 早先
+    // 这里数的是"未完成组的序号"，完成 k 组后剩下的组会整体错位 k 位，收尾还会
+    // 多补 k 组出来。上次各组等重时看不出来。
+    for (var k = 0; k < ex.sets.length; k++) {
+      final set = ex.sets[k];
       if (set.isCompleted) continue;
-      final src = i < last.sets.length ? last.sets[i] : last.sets.last;
-      editSet(set.id, weightKg: src.weightKg, reps: src.reps);
-      i++;
+      _copyLastSetInto(set.id, last.sets[k < last.sets.length ? k : last.sets.length - 1]);
     }
-    while (i < last.sets.length) {
-      await addSet(workoutExerciseId);
-      i++;
+    // 组数不够就补到和上次一样多；多出来的组不删（用户可能自己加的）。
+    for (var k = ex.sets.length; k < last.sets.length; k++) {
+      // addSet 继承的是本动作前一组的数值，不是上次第 k 组 —— 补完必须再显式
+      // 写一遍。上次各组重量不同时（如 18.16 / 22.7 / 18.16）差别是看得见的。
+      final added = await addSet(workoutExerciseId);
+      if (added != null) _copyLastSetInto(added.id, last.sets[k]);
     }
     await flushPending();
   }
+
+  /// 把上次某一组的重量 / 次数原样写进 [setId]。
+  ///
+  /// 上次那组"无配重"（`weightKg == null`，如蝴蝶机夹胸）或没记次数时必须走
+  /// `clearWeight` / `clearReps`：`editSet(weightKg: null)` 的语义是"这个字段
+  /// 不改"，会把预填值留在那儿，看上去就是沿用上次没生效。
+  ///
+  /// **不带 RIR**：RIR 是当次的体感，不是计划的一部分，沿用上次的 RIR 等于替
+  /// 用户填了他还没练的感受。这是有意的，不是漏了。
+  void _copyLastSetInto(String setId, WorkoutSet src) => editSet(
+        setId,
+        weightKg: src.weightKg,
+        reps: src.reps,
+        clearWeight: src.weightKg == null,
+        clearReps: src.reps == null,
+      );
 
   // ── 内部 ─────────────────────────────────────────────────────
 

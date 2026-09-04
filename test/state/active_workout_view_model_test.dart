@@ -232,9 +232,49 @@ void main() {
     st = container.read(activeWorkoutProvider).value!;
     final after = st.session.exercises[0];
     expect(after.sets.length, 3, reason: '上次 3 组，删掉一组后补回');
-    expect(after.sets.map((s) => s.weightKg), [18.16, 22.7, 22.7],
-        reason: '前两组照抄上次，补回的那组继承前一组');
+    expect(after.sets.map((s) => s.weightKg), [18.16, 22.7, 18.16],
+        reason: '补回的那组也要照抄上次第 3 组，而不是继承前一组');
     expect(after.sets.map((s) => s.reps), [12, 12, 12]);
+  });
+
+  test('applyLastPerformance：已完成的组占位，剩下的组不错位、不多补', () async {
+    await container.read(activeWorkoutProvider.future);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final routine = await container.read(routineRepositoryProvider).getById('rt_a_back_shoulder');
+    await vm.start(routine: routine);
+    var st = container.read(activeWorkoutProvider).value!;
+    final lat = st.session.exercises[0];
+    // 上次高位下拉是 18.16 / 22.7 / 18.16。第 1 组按别的重量练完，再点沿用上次。
+    vm.editSet(lat.sets[0].id, weightKg: 30, reps: 5);
+    await vm.toggleComplete(lat.sets[0].id);
+    await vm.applyLastPerformance(lat.id);
+
+    st = container.read(activeWorkoutProvider).value!;
+    final after = st.session.exercises.firstWhere((e) => e.id == lat.id);
+    expect(after.sets.length, 3, reason: '上次 3 组，不该因为完成了 1 组就补成 4 组');
+    expect(after.sets[0].weightKg, 30, reason: '已完成的组不被冲掉');
+    expect(after.sets[0].reps, 5);
+    expect(after.sets.map((s) => s.weightKg), [30, 22.7, 18.16],
+        reason: '第 2 / 3 组对上次第 2 / 3 组，不是第 1 / 2 组');
+  });
+
+  test('applyLastPerformance：上次无配重时清掉预填的重量', () async {
+    await container.read(activeWorkoutProvider.future);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final routine = await container.read(routineRepositoryProvider).getById('rt_b_chest_arm');
+    await vm.start(routine: routine);
+    var st = container.read(activeWorkoutProvider).value!;
+    // 蝴蝶机夹胸上次是无配重 × 8（history_demo 里 weightKg 缺省）。
+    final pecDeck =
+        st.session.exercises.firstWhere((e) => e.exerciseId == 'ex_pec_deck');
+    vm.editSet(pecDeck.sets[0].id, weightKg: 30, reps: 5);
+    await vm.applyLastPerformance(pecDeck.id);
+
+    st = container.read(activeWorkoutProvider).value!;
+    final after = st.session.exercises.firstWhere((e) => e.id == pecDeck.id);
+    expect(after.sets.map((s) => s.weightKg), everyElement(isNull),
+        reason: 'editSet(weightKg: null) 是"不改"，要走 clearWeight 才真的清掉');
+    expect(after.sets.map((s) => s.reps), [8, 8, 8]);
   });
 
   test('startFromSession：沿用动作 / 标签 / 目标，组数 = 上次完成组数，不挂模板 id', () async {
