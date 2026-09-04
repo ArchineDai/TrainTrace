@@ -25,15 +25,19 @@ function Resolve-Adb([string]$repoRoot) {
     if (Test-Path $lp) {
         foreach ($line in Get-Content $lp) {
             if ($line -match '^\s*sdk\.dir\s*=\s*(.+)$') {
-                # local.properties 里的路径是转义过的（C:\Users\...）
-                $roots += $Matches[1].Trim().Replace('\', '\')
+                # local.properties 是 Java properties 格式，路径里的反斜杠是转义过的
+                # （sdk.dir=C:\\Users\\...），要还原成单个才是真路径。
+                $roots += $Matches[1].Trim().Replace('\\', '\')
             }
         }
     }
-    $roots += (Join-Path $env:LOCALAPPDATA 'Android\Sdk')
+    if ($env:LOCALAPPDATA) { $roots += "$env:LOCALAPPDATA\Android\Sdk" }
 
+    # 这里用字符串拼接而不是 Join-Path：候选路径来自环境变量和 local.properties，
+    # 可能指向不存在的盘符，Join-Path 遇到就抛异常 —— 脚本开了 ErrorActionPreference
+    # = Stop，那样会让「某个候选路径不对」升级成整个构建中止。Test-Path 则只返回 false。
     foreach ($r in $roots) {
-        $p = Join-Path $r 'platform-tools\adb.exe'
+        $p = "$r\platform-tools\adb.exe"
         if (Test-Path $p) { return $p }
     }
     throw '找不到 adb.exe。设置 ANDROID_HOME，或确认 Android SDK 里装了 platform-tools。'
