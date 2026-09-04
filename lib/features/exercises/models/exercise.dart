@@ -1,16 +1,15 @@
 /// 肌群。存库时用 [name]，读回时不认识的值回落到 [other]。
+///
+/// 展示名在 presentation 层（`presentation/exercise_labels.dart` 的
+/// `MuscleGroupL10n.label`）—— model 不 import l10n。
 enum MuscleGroup {
-  back('背'),
-  shoulder('肩'),
-  chest('胸'),
-  arm('手臂'),
-  leg('腿'),
-  core('核心'),
-  other('其他');
-
-  const MuscleGroup(this.label);
-
-  final String label;
+  back,
+  shoulder,
+  chest,
+  arm,
+  leg,
+  core,
+  other;
 
   static MuscleGroup parse(String? raw) => values.firstWhere(
         (v) => v.name == raw,
@@ -19,16 +18,14 @@ enum MuscleGroup {
 }
 
 /// 器械类型。决定默认的最小增量与建议文案。
+///
+/// 展示名见 `presentation/exercise_labels.dart` 的 `EquipmentTypeL10n.label`。
 enum EquipmentType {
-  machine('固定器械'),
-  dumbbell('哑铃'),
-  barbell('杠铃'),
-  cable('绳索'),
-  bodyweight('自重');
-
-  const EquipmentType(this.label);
-
-  final String label;
+  machine,
+  dumbbell,
+  barbell,
+  cable,
+  bodyweight;
 
   static EquipmentType parse(String? raw) => values.firstWhere(
         (v) => v.name == raw,

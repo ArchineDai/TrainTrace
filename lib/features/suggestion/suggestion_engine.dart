@@ -1,4 +1,5 @@
 import '../../core/formatters.dart';
+import '../../l10n/app_localizations.dart';
 import '../history/models/history_models.dart';
 import '../workout/models/workout_session.dart';
 import 'models/suggestion.dart';
@@ -23,6 +24,10 @@ class SuggestionInput {
 
 /// 透明、可解释的规则引擎（PLAN.md 1.4）。纯函数，无 IO。
 ///
+/// 结论文案随界面语言变，所以 [evaluate] 收一份 [AppLocalizations]：调用方
+/// （`suggestionProvider`）从 `appLocalizationsProvider` 取，测试用
+/// `lookupAppLocalizations(const Locale('zh'))`。
+///
 /// 只看最近一次训练的正式组；规则按优先级命中第一条：
 ///
 /// | # | 条件 | 结果 |
@@ -39,11 +44,11 @@ class SuggestionInput {
 abstract final class SuggestionEngine {
   SuggestionEngine._();
 
-  static Suggestion evaluate(SuggestionInput input) {
-    if (input.recent.isEmpty) return Suggestion.insufficient;
+  static Suggestion evaluate(SuggestionInput input, AppLocalizations l10n) {
+    if (input.recent.isEmpty) return _insufficient(l10n);
     final latest = input.recent.first;
     final sets = latest.workingSets.where((s) => s.reps != null).toList();
-    if (sets.isEmpty) return Suggestion.insufficient;
+    if (sets.isEmpty) return _insufficient(l10n);
 
     final lo = input.targetRepMin;
     final hi = input.targetRepMax;
@@ -63,15 +68,15 @@ abstract final class SuggestionEngine {
       final steps = first.reps! < lo - 3 ? 2 : 1;
       final suggested = weight == null ? null : _round(weight - inc * steps, inc);
       final reason = firstBelow
-          ? '第 1 组只做了 ${first.reps} 次，低于目标下限 $lo 次'
-          : '第 1 组 RIR 为 0（没有余力）';
+          ? l10n.suggestReasonFirstSetBelow(first.reps!, lo)
+          : l10n.suggestReasonFirstSetRirZero;
       return Suggestion(
         kind: SuggestionKind.decrease,
-        title: '重量偏高，下次降重',
+        title: l10n.suggestDecreaseTitle,
         reason: reason,
         nextTarget: suggested == null
-            ? '降到能做 $lo 次以上的重量'
-            : '${Formatters.kg(suggested)}kg × $range 次',
+            ? l10n.suggestNextDecreaseUnknown(lo)
+            : l10n.suggestNextWeightReps(Formatters.kg(suggested), range),
         currentWeightKg: weight,
         suggestedWeightKg: suggested,
       );
@@ -83,16 +88,16 @@ abstract final class SuggestionEngine {
     if (allAtTop && (minRir == null || minRir >= 1)) {
       final suggested = weight == null ? null : _round(weight + inc, inc);
       final streak = _topStreak(input.recent, hi);
-      final reason = '${sets.length} 组均达到 $hi 次'
-          '${minRir == null ? '' : '，RIR ≥ $minRir'}'
-          '${streak >= 2 ? '，已连续 $streak 次' : ''}';
+      final reason = l10n.suggestReasonAllAtTop(sets.length, hi) +
+          (minRir == null ? '' : l10n.suggestReasonRirAtLeast(minRir)) +
+          (streak >= 2 ? l10n.suggestReasonStreak(streak) : '');
       return Suggestion(
         kind: SuggestionKind.increase,
-        title: '下次可小幅加重',
+        title: l10n.suggestIncreaseTitle,
         reason: reason,
         nextTarget: suggested == null
-            ? '加最小一档重量，次数回到 $lo 附近是正常的'
-            : '${Formatters.kg(suggested)}kg × $range 次（次数回落到 $lo 附近是正常的）',
+            ? l10n.suggestNextIncreaseUnknown(lo)
+            : l10n.suggestNextIncrease(Formatters.kg(suggested), range, lo),
         currentWeightKg: weight,
         suggestedWeightKg: suggested,
       );
@@ -107,25 +112,36 @@ abstract final class SuggestionEngine {
     final String reason;
     final String next;
     if (majorityInRange) {
-      reason = '$inRange/${reps.length} 组在 $range 次内'
-          '${allAtTop ? '，但有一组 RIR 为 0' : ''}';
-      next = w == null ? '维持当前重量' : '维持 ${w}kg；${sets.length} 组都做到 $hi 次后加重';
+      reason = l10n.suggestReasonInRange(inRange, reps.length, range) +
+          (allAtTop ? l10n.suggestReasonOneRirZero : '');
+      next = w == null
+          ? l10n.suggestNextHoldUnknown
+          : l10n.suggestNextHold(w, sets.length, hi);
     } else if (fadeOut) {
-      reason = '第 1 组 ${first.reps} 次达标，之后掉到 ${reps.skip(1).join(' / ')} 次';
-      next = w == null ? '保持重量，先把后几组补齐' : '维持 ${w}kg，休息足一点，先把后几组补到 $lo 次';
+      reason = l10n.suggestReasonFadeOut(first.reps!, reps.skip(1).join(' / '));
+      next = w == null
+          ? l10n.suggestNextFadeOutUnknown
+          : l10n.suggestNextFadeOut(w, lo);
     } else {
-      reason = '本次 ${reps.join(' / ')} 次，目标 $range';
-      next = w == null ? '维持当前重量' : '维持 ${w}kg，稳定在区间内再加';
+      reason = l10n.suggestReasonGeneric(reps.join(' / '), range);
+      next = w == null ? l10n.suggestNextHoldUnknown : l10n.suggestNextGeneric(w);
     }
     return Suggestion(
       kind: SuggestionKind.hold,
-      title: fadeOut ? '重量合适，后段掉次数明显' : '当前重量合适，保持',
+      title: fadeOut ? l10n.suggestHoldFadeOutTitle : l10n.suggestHoldTitle,
       reason: reason,
       nextTarget: next,
       currentWeightKg: weight,
       suggestedWeightKg: weight,
     );
   }
+
+  static Suggestion _insufficient(AppLocalizations l10n) => Suggestion(
+        kind: SuggestionKind.insufficientData,
+        title: l10n.suggestInsufficientTitle,
+        reason: l10n.suggestInsufficientReason,
+        nextTarget: l10n.suggestInsufficientNext,
+      );
 
   /// 工作重量 = 正式组里的最大重量（热身组已被 workingSets 过滤）。
   static double? _workingWeight(List<WorkoutSet> sets) {

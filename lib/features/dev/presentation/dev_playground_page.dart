@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
 import '../../../services/local_notification_rest_notifier.dart';
 import '../../../services/rest_notifier.dart';
+import '../../settings/state/app_localizations_provider.dart';
 import '../../workout/models/numeric_input.dart';
 import '../../workout/presentation/widgets/numeric_keypad.dart';
 import '../../workout/presentation/widgets/rest_timer_bar.dart';
@@ -143,7 +144,16 @@ class _DevPlaygroundPageState extends ConsumerState<DevPlaygroundPage> {
 
   Future<void> _scheduleOnly() async {
     final at = ref.read(clockProvider).now().add(const Duration(seconds: 15));
-    await ref.read(restNotifierProvider).scheduleRestEnd(at);
+    final l10n = ref.read(appLocalizationsProvider);
+    await ref.read(restNotifierProvider).scheduleRestEnd(
+          at,
+          text: RestNotificationText(
+            channelName: l10n.restNotificationChannelName,
+            channelDescription: l10n.restNotificationChannelDescription,
+            title: l10n.restFinished,
+            body: l10n.restNotificationBody,
+          ),
+        );
     setState(() => _status = '已预约 15 秒后通知，请立刻锁屏');
   }
 

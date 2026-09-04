@@ -9,8 +9,10 @@ import '../../../core/log.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../exercises/data/exercise_repository.dart';
+import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
 import '../models/numeric_input.dart';
@@ -57,6 +59,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   @override
   Widget build(BuildContext context) {
     final st = ref.watch(activeWorkoutProvider).value;
+    final l10n = AppLocalizations.of(context);
     if (st == null) {
       // 结束 / 放弃后 provider 变 null；页面若还在栈上就退出。
       return Scaffold(
@@ -64,7 +67,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         body: Center(
           child: TextButton(
             onPressed: () => context.pop(),
-            child: const Text('没有进行中的训练，返回'),
+            child: Text(l10n.noActiveWorkoutBack),
           ),
         ),
       );
@@ -82,13 +85,16 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(session.routineName ?? '空白训练', style: TextStyle(fontSize: AppTextSize.lg)),
+            Text(
+              session.routineName ?? l10n.emptyWorkoutName,
+              style: TextStyle(fontSize: AppTextSize.lg),
+            ),
             _Elapsed(startedAt: session.startedAt),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: '添加动作',
+            tooltip: l10n.addExercise,
             icon: const Icon(Icons.add),
             onPressed: _addExercise,
           ),
@@ -99,7 +105,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'discard',
-                child: Text('放弃训练', style: TextStyle(color: AppTheme.of(context).danger)),
+                child: Text(
+                  l10n.discardWorkout,
+                  style: TextStyle(color: AppTheme.of(context).danger),
+                ),
               ),
             ],
           ),
@@ -111,7 +120,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             child: session.exercises.isEmpty
                 ? Center(
                     child: Text(
-                      '点右上角 + 添加动作',
+                      l10n.workoutEmptyHint,
                       style: TextStyle(fontSize: AppTextSize.md, color: scheme.onSurfaceVariant),
                     ),
                   )
@@ -163,7 +172,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: _finishing ? null : _finish,
-                    child: const Text('结束训练'),
+                    child: Text(l10n.finishWorkout),
                   ),
                 ),
               ),
@@ -275,8 +284,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
 
   /// 长按器械标签：看这台机器的照片；没拍过就提示去详情页拍。
   Future<void> _showLabelPhoto(String exerciseId, String? label) async {
+    final l10n = AppLocalizations.of(context);
     if (label == null) {
-      AppTheme.showToast(context, '先选一个器械标签');
+      AppTheme.showToast(context, l10n.pickEquipmentLabelFirst);
       return;
     }
     final note = await ref
@@ -284,7 +294,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         .findNoteByDisplayLabel(exerciseId, label);
     if (!mounted) return;
     if (note == null || !note.hasPhoto) {
-      AppTheme.showToast(context, '「」还没有照片，在动作详情页可以拍一张');
+      AppTheme.showToast(context, l10n.labelHasNoPhoto(label));
       return;
     }
     await EquipmentPhotoViewer.show(context, note);
@@ -312,7 +322,13 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         final ex = st?.exerciseById(weId);
         final hasDone = ex?.completedSets.isNotEmpty ?? false;
         if (hasDone) {
-          final ok = await _confirm('删除「${ex!.exerciseName}」？', '已完成的 ${ex.completedSets.length} 组会一起删除。');
+          final l10n = AppLocalizations.of(context);
+          final ok = await _confirm(
+            l10n.removeExerciseTitle(
+              exerciseDisplayName(context, ex!.exerciseName, ex.exerciseNameEn),
+            ),
+            l10n.removeExerciseBody(ex.completedSets.length),
+          );
           if (ok != true) return;
         }
         if (_focusSetId != null && st?.exerciseOfSet(_focusSetId!)?.id == weId) _unfocus();
@@ -325,10 +341,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   Future<void> _finish() async {
     final st = ref.read(activeWorkoutProvider).value;
     if (st == null) return;
+    final l10n = AppLocalizations.of(context);
     final done = st.session.completedSetCount;
     final ok = await _confirm(
-      '结束训练？',
-      done == 0 ? '还没有完成任何一组。结束后会保存为一次空训练。' : '已完成 $done 组，未填写的空组会被清理。',
+      l10n.finishWorkoutTitle,
+      done == 0 ? l10n.finishWorkoutBodyEmpty : l10n.finishWorkoutBody(done),
     );
     if (ok != true || !mounted) return;
     setState(() => _finishing = true);
@@ -336,14 +353,19 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     if (!mounted) return;
     if (finished == null) {
       setState(() => _finishing = false);
-      AppTheme.showToast(context, '保存失败，请重试');
+      AppTheme.showToast(context, l10n.saveFailedRetry);
       return;
     }
     context.pushReplacement(AppRoutes.workoutSummary(finished.id));
   }
 
   Future<void> _confirmDiscard() async {
-    final ok = await _confirm('放弃这次训练？', '本次记录会被丢弃，无法恢复。', danger: true);
+    final l10n = AppLocalizations.of(context);
+    final ok = await _confirm(
+      l10n.discardWorkoutTitle,
+      l10n.discardWorkoutBody,
+      danger: true,
+    );
     if (ok != true || !mounted) return;
     await _vm.discard();
     if (mounted) context.pop();
@@ -355,7 +377,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           title: Text(title),
           content: Text(body),
           actions: [
-            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(AppLocalizations.of(ctx).actionCancel),
+            ),
             FilledButton(
               style: danger
                   ? FilledButton.styleFrom(
@@ -364,7 +389,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                     )
                   : null,
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(ctx).actionConfirm),
             ),
           ],
         ),

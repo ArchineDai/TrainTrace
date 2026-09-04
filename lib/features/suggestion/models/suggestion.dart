@@ -2,6 +2,10 @@
 enum SuggestionKind { increase, hold, decrease, insufficientData }
 
 /// 工作重量建议：类型 + 可解释的理由 + 下次目标。全部纯数据，UI 只负责排版。
+///
+/// 三个文本字段是 [SuggestionEngine] 用当次的 [AppLocalizations] 拼好的成品串
+/// —— model 不 import l10n，也不存 key + 参数：句式随语言变（中文"第 1 组只做了
+/// N 次"和英文的语序不同），拆成 key + 参数会把拼装逻辑推给每个调用方。
 class Suggestion {
   const Suggestion({
     required this.kind,
@@ -28,13 +32,6 @@ class Suggestion {
 
   /// 加重 / 降重时给出，保持时等于 [currentWeightKg]。
   final double? suggestedWeightKg;
-
-  static const insufficient = Suggestion(
-    kind: SuggestionKind.insufficientData,
-    title: '还没有足够记录',
-    reason: '完成一次训练后就会给出建议',
-    nextTarget: '按目标次数区间选一个能做到下限的重量',
-  );
 
   @override
   String toString() => 'Suggestion($kind, $title, $suggestedWeightKg)';

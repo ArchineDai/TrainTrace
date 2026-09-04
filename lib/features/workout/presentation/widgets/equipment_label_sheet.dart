@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_text_size.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../exercises/data/exercise_repository.dart';
 import '../../../exercises/models/exercise.dart';
 import '../../../exercises/presentation/widgets/equipment_note_photo.dart';
@@ -70,6 +71,7 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final labels = _labels;
     return SafeArea(
       child: Padding(
@@ -79,12 +81,12 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '器械 / 场馆标签',
+              l10n.equipmentLabelMenu,
               style: TextStyle(fontSize: AppTextSize.lg, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
-              '不同健身房、不同机器的重量不可比。上次表现与建议按标签分开算。',
+              l10n.equipmentLabelHint,
               style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 12),
@@ -98,9 +100,9 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const RadioListTile<String?>(
+                    RadioListTile<String?>(
                       value: null,
-                      title: Text('不区分器械'),
+                      title: Text(l10n.noEquipmentDistinction),
                       contentPadding: EdgeInsets.zero,
                     ),
                     for (final (l, n) in labels)
@@ -121,7 +123,7 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
             OutlinedButton.icon(
               onPressed: _create,
               icon: const Icon(Icons.add),
-              label: const Text('新建标签'),
+              label: Text(l10n.newLabel),
             ),
           ],
         ),
@@ -130,30 +132,43 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
   }
 
   Future<void> _create() async {
+    final l10n = AppLocalizations.of(context);
     final gym = TextEditingController();
     final label = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('新建标签'),
+        title: Text(l10n.newLabel),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: gym,
-              decoration: const InputDecoration(labelText: '场馆（可选）', hintText: '如：黑熊猫'),
+              decoration: InputDecoration(
+                labelText: l10n.fieldGymOptional,
+                hintText: l10n.hintGym,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: label,
               autofocus: true,
-              decoration: const InputDecoration(labelText: '器械', hintText: '如：机器A'),
+              decoration: InputDecoration(
+                labelText: l10n.fieldEquipment,
+                hintText: l10n.hintEquipment,
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('确定')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.actionConfirm),
+          ),
         ],
       ),
     );

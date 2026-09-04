@@ -27,27 +27,33 @@ void main() {
   test('摘要：按时间倒序、动作数 / 组数 / 容量聚合正确、进行中的不算', () async {
     await workouts.startSession(); // inProgress，不应出现
     final list = await history.getSummaries();
-    expect(list.length, 2);
-    expect(list[0].routineName, 'B 胸 + 手臂');
-    expect(list[1].routineName, 'A 背 + 肩');
+    expect(list.length, 3);
+    expect(list.map((s) => s.routineName), ['A 背 + 肩', 'B 胸 + 手臂', 'A 背 + 肩']);
 
-    final a = list[1];
-    expect(a.exerciseCount, 5);
-    expect(a.setCount, 14);
-    // 20×12×3 + 19×12×3 + 10×12×2 + 5×8×3 + 12×(12+6+6)
-    expect(a.totalVolumeKg, 720 + 684 + 240 + 120 + 288);
-    expect(a.duration, const Duration(minutes: 55));
+    final first = list[2]; // 8/30
+    expect(first.exerciseCount, 5);
+    expect(first.setCount, 15, reason: '含肩推的一组热身');
+    // 20×12×3 + 19×12×3 + (5×15 + 10×12×2) + 5×8×3 + 12×(12+6+6)
+    expect(first.totalVolumeKg, 720 + 684 + 75 + 240 + 120 + 288);
+    expect(first.duration, const Duration(minutes: 55));
 
-    final b = list[0];
-    expect(b.exerciseCount, 3);
-    expect(b.setCount, 4);
-    expect(b.totalVolumeKg, 60 + 50 + 60);
+    final second = list[1]; // 9/1
+    expect(second.exerciseCount, 5);
+    expect(second.setCount, 9);
+    // 蝴蝶机没记配重、水平胸推空载，两个都不进容量
+    expect(second.totalVolumeKg, 60 + 60 + 50);
+
+    final third = list[0]; // 9/3
+    expect(third.exerciseCount, 6);
+    expect(third.setCount, 17);
+    expect(third.totalVolumeKg, closeTo(90 + 396 + 708.24 + 648 + 90 + 288, 1e-6));
   });
 
   test('lastPerformance：默认按器械标签分组，null 标签只匹配未标注的记录', () async {
     final seedLast = await history.lastPerformance('ex_lat_pulldown');
     expect(seedLast, isNotNull);
-    expect(seedLast!.sets.length, 3);
+    expect(seedLast!.sessionId, 'seed_session_3_20260903', reason: '两次都没标签，取最近的');
+    expect(seedLast.sets.map((s) => s.weightKg), [18.16, 22.7, 18.16]);
     expect(seedLast.sets.map((s) => s.reps), [12, 12, 12]);
     expect(seedLast.targetRepMax, 15);
 
@@ -64,7 +70,7 @@ void main() {
     expect(byLabel!.sets.single.weightKg, 27.5);
 
     final unlabeled = await history.lastPerformance('ex_lat_pulldown');
-    expect(unlabeled!.sessionId, 'seed_session_a_20260901', reason: 'null 标签不混入机器B');
+    expect(unlabeled!.sessionId, 'seed_session_3_20260903', reason: 'null 标签不混入机器B');
 
     final any = await history.lastPerformance('ex_lat_pulldown', anyEquipment: true);
     expect(any!.sessionId, s.id, reason: '忽略标签时取最新');
@@ -85,30 +91,31 @@ void main() {
     await workouts.finishSession(current.id);
 
     final all = await history.recentPerformances('ex_lat_pulldown');
-    expect(all.length, 2);
+    expect(all.length, 3);
     expect(all.first.sessionId, current.id);
 
     final excluded = await history.recentPerformances(
       'ex_lat_pulldown',
       excludeSessionId: current.id,
     );
-    expect(excluded.single.sessionId, 'seed_session_a_20260901');
+    expect(excluded.map((p) => p.sessionId),
+        ['seed_session_3_20260903', 'seed_session_1_20260830']);
 
     // 完成过训练但这个动作一组都没完成 → 不算一次表现
     clock.advance(const Duration(days: 1));
     final empty = await workouts.startSession();
     await workouts.addExercise(empty.id, lat);
     await workouts.finishSession(empty.id);
-    expect((await history.recentPerformances('ex_lat_pulldown')).length, 2);
+    expect((await history.recentPerformances('ex_lat_pulldown')).length, 3);
   });
 
   test('personalRecords：最大重量、单组容量、Epley 1RM、次数', () async {
     final pr = await history.personalRecords('ex_lat_pulldown');
-    expect(pr.sessionCount, 1);
-    expect(pr.maxWeightKg, 20);
+    expect(pr.sessionCount, 2);
+    expect(pr.maxWeightKg, 22.7);
     expect(pr.maxWeightReps, 12);
-    expect(pr.maxSetVolumeKg, 240);
-    expect(pr.estimatedOneRmKg, closeTo(20 * (1 + 12 / 30), 1e-9));
+    expect(pr.maxSetVolumeKg, closeTo(22.7 * 12, 1e-9));
+    expect(pr.estimatedOneRmKg, closeTo(22.7 * (1 + 12 / 30), 1e-9));
 
     final rev = await history.personalRecords('ex_reverse_pec_deck');
     expect(rev.maxWeightKg, 12);
@@ -119,7 +126,12 @@ void main() {
   });
 
   test('删除训练后摘要与上次表现都不再包含它', () async {
-    await workouts.deleteSession('seed_session_a_20260901');
+    await workouts.deleteSession('seed_session_3_20260903');
+    expect((await history.getSummaries()).length, 2);
+    expect((await history.lastPerformance('ex_lat_pulldown'))!.sessionId,
+        'seed_session_1_20260830', reason: '退回到上一次');
+
+    await workouts.deleteSession('seed_session_1_20260830');
     expect((await history.getSummaries()).length, 1);
     expect(await history.lastPerformance('ex_lat_pulldown'), isNull);
   });

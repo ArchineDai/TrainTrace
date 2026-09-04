@@ -6,6 +6,7 @@ import '../../../../core/formatters.dart';
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/time/clock.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../state/rest_timer_view_model.dart';
 
 /// 休息倒计时条。空闲时不占位；进行中橙色；到点红色并保留直到下一组完成。
@@ -36,6 +37,7 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
     final paused = timer.isPaused;
     final vm = ref.read(restTimerProvider.notifier);
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     final Color accent = finished
         ? AppTheme.of(context).timerFinished
@@ -64,7 +66,7 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          finished ? '休息结束' : Formatters.clock(remaining),
+                          finished ? l10n.restFinished : Formatters.clock(remaining),
                           style: TextStyle(
                             fontSize: finished ? AppTextSize.lg : AppTextSize.number,
                             fontWeight: FontWeight.w600,
@@ -75,7 +77,7 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
                         if (paused) ...[
                           const SizedBox(width: 8),
                           Text(
-                            '已暂停',
+                            l10n.restPaused,
                             style: TextStyle(
                               fontSize: AppTextSize.sm,
                               color: scheme.onSurfaceVariant,
@@ -97,7 +99,7 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
                   ),
                 ],
                 _Chip(
-                  label: finished ? '知道了' : '跳过',
+                  label: finished ? l10n.restGotIt : l10n.restSkip,
                   onTap: vm.skip,
                   emphasized: finished,
                 ),
@@ -111,10 +113,10 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
               child: Row(
                 children: [
                   _Chip(
-                    label: paused ? '继续' : '暂停',
+                    label: paused ? l10n.restResume : l10n.restPause,
                     onTap: paused ? vm.resume : vm.pause,
                   ),
-                  _Chip(label: '重置', onTap: vm.reset),
+                  _Chip(label: l10n.restReset, onTap: vm.reset),
                   const Spacer(),
                   for (final preset in AppConstants.restPresets)
                     _Chip(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 键盘的语义键。数字与小数点直接给字符。
 enum KeypadAction { backspace, stepDown, stepUp, next, done }
@@ -23,7 +24,7 @@ class NumericKeypad extends StatelessWidget {
     required this.allowDecimal,
     required this.onDigit,
     required this.onAction,
-    this.doneLabel = '完成',
+    this.doneLabel,
   });
 
   /// ±键的步长（重量：动作的最小增量；次数：1）。
@@ -31,7 +32,9 @@ class NumericKeypad extends StatelessWidget {
   final bool allowDecimal;
   final ValueChanged<String> onDigit;
   final ValueChanged<KeypadAction> onAction;
-  final String doneLabel;
+
+  /// null 用默认的"完成"。const 默认值取不到 l10n，所以在 build 里回落。
+  final String? doneLabel;
 
   String get _stepLabel =>
       step == step.roundToDouble() ? step.round().toString() : step.toString();
@@ -39,6 +42,7 @@ class NumericKeypad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Material(
       color: scheme.surfaceContainerHigh,
       child: SafeArea(
@@ -81,12 +85,12 @@ class NumericKeypad extends StatelessWidget {
                     : _key(label: '', onTap: null),
                 _digit('0'),
                 _key(
-                  label: '下一项',
+                  label: l10n.keypadNext,
                   onTap: () => onAction(KeypadAction.next),
                   tonal: true,
                 ),
                 _key(
-                  label: doneLabel,
+                  label: doneLabel ?? l10n.actionDone,
                   onTap: () => onAction(KeypadAction.done),
                   primary: true,
                 ),

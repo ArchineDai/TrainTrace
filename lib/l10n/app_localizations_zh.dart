@@ -58,4 +58,716 @@ class AppLocalizationsZh extends AppLocalizations {
   String placeholderPending(String phase) {
     return '$phase 接入';
   }
+
+  @override
+  String get actionCancel => '取消';
+
+  @override
+  String get actionSave => '保存';
+
+  @override
+  String get actionDelete => '删除';
+
+  @override
+  String get actionConfirm => '确定';
+
+  @override
+  String get actionDone => '完成';
+
+  @override
+  String get actionAdd => '添加';
+
+  @override
+  String get actionRemove => '移除';
+
+  @override
+  String get actionCreate => '创建';
+
+  @override
+  String get actionDiscard => '放弃';
+
+  @override
+  String get actionView => '查看';
+
+  @override
+  String get actionResume => '继续';
+
+  @override
+  String get actionStart => '开始';
+
+  @override
+  String get actionMore => '更多';
+
+  @override
+  String get actionCustom => '自定义';
+
+  @override
+  String get toastSaved => '已保存';
+
+  @override
+  String get toastDeleted => '已删除';
+
+  @override
+  String get emptyNoRecords => '还没有记录';
+
+  @override
+  String get dateToday => '今天';
+
+  @override
+  String get dateYesterday => '昨天';
+
+  @override
+  String dateDaysAgo(int days) {
+    return '$days 天前';
+  }
+
+  @override
+  String dateMonthDay(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.MMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String dateYearMonthDay(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String dateYearMonth(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMM(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    return '$minutes 分钟';
+  }
+
+  @override
+  String durationHoursMinutes(int hours, String minutes) {
+    return '$hours 小时 $minutes 分';
+  }
+
+  @override
+  String get deletedExercise => '（已删除的动作）';
+
+  @override
+  String nameWithLabel(String name, String label) {
+    return '$name（$label）';
+  }
+
+  @override
+  String get emptyWorkoutName => '空白训练';
+
+  @override
+  String get unitReps => '次';
+
+  @override
+  String repsValue(String reps) {
+    return '$reps 次';
+  }
+
+  @override
+  String get muscleBack => '背';
+
+  @override
+  String get muscleShoulder => '肩';
+
+  @override
+  String get muscleChest => '胸';
+
+  @override
+  String get muscleArm => '手臂';
+
+  @override
+  String get muscleLeg => '腿';
+
+  @override
+  String get muscleCore => '核心';
+
+  @override
+  String get muscleOther => '其他';
+
+  @override
+  String get equipmentMachine => '固定器械';
+
+  @override
+  String get equipmentDumbbell => '哑铃';
+
+  @override
+  String get equipmentBarbell => '杠铃';
+
+  @override
+  String get equipmentCable => '绳索';
+
+  @override
+  String get equipmentBodyweight => '自重';
+
+  @override
+  String get setTypeWarmup => '热身';
+
+  @override
+  String get setTypeWorking => '正式';
+
+  @override
+  String get setTypeDrop => '递减';
+
+  @override
+  String get homeStartEmptyWorkout => '开始空白训练';
+
+  @override
+  String get homeFromRoutine => '从模板开始';
+
+  @override
+  String get homeNoRoutines => '还没有模板，去「模板」页新建一个';
+
+  @override
+  String get homeRecentWorkouts => '最近训练';
+
+  @override
+  String get workoutInProgressToast => '有一次训练还在进行中，先继续或放弃它';
+
+  @override
+  String get resumeBannerStaleTitle => '有一次训练超过 12 小时未结束';
+
+  @override
+  String get resumeBannerTitle => '有一次未完成的训练';
+
+  @override
+  String resumeBannerMeta(String name, String startedAt, int sets) {
+    return '$name · 开始于 $startedAt · 已完成 $sets 组';
+  }
+
+  @override
+  String get finishAndSave => '结束并保存';
+
+  @override
+  String get discardWorkoutTitle => '放弃这次训练？';
+
+  @override
+  String get discardWorkoutBody => '本次记录会被丢弃，无法恢复。';
+
+  @override
+  String get routineNoExercises => '没有动作';
+
+  @override
+  String get routineNeverPerformed => '未练过';
+
+  @override
+  String routineLastPerformed(String date) {
+    return '上次 $date';
+  }
+
+  @override
+  String exerciseCount(int count) {
+    return '$count 个动作';
+  }
+
+  @override
+  String sessionMetaExercisesSets(int exercises, int sets) {
+    return '$exercises 个动作 · $sets 组';
+  }
+
+  @override
+  String get routinesNewRoutine => '新建模板';
+
+  @override
+  String get routinesEditRoutine => '编辑模板';
+
+  @override
+  String get routinesEmpty => '还没有模板，点右上角 + 新建';
+
+  @override
+  String get routineNameLabel => '模板名称';
+
+  @override
+  String get routineNameHint => '如：A 背 + 肩';
+
+  @override
+  String get routineEmptyItems => '还没有动作，点下方添加';
+
+  @override
+  String routineDeleteTitle(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String get routineDeleteBody => '历史训练记录不受影响。';
+
+  @override
+  String routineItemMeta(int sets, int min, int max, int rest) {
+    return '$sets 组 · $min–$max 次 · 休息 ${rest}s';
+  }
+
+  @override
+  String get fieldSets => '组数';
+
+  @override
+  String get fieldTargetReps => '目标次数';
+
+  @override
+  String get fieldRestTime => '休息时间';
+
+  @override
+  String get customRepRangeTitle => '自定义次数区间';
+
+  @override
+  String get fieldRepRangeMin => '下限';
+
+  @override
+  String get fieldRepRangeMax => '上限';
+
+  @override
+  String get pickExerciseTitle => '选择动作';
+
+  @override
+  String get newExercise => '新建动作';
+
+  @override
+  String get searchExercise => '搜索动作';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get exerciseLibraryEmpty => '动作库为空';
+
+  @override
+  String get noMatchingExercise => '没有匹配的动作';
+
+  @override
+  String get exerciseGuide => '动作要领';
+
+  @override
+  String get fieldName => '名称';
+
+  @override
+  String get fieldMuscleGroup => '肌群';
+
+  @override
+  String get fieldEquipment => '器械';
+
+  @override
+  String exerciseRepRange(int min, int max) {
+    return '$min–$max 次';
+  }
+
+  @override
+  String get exerciseNotFound => '动作不存在或已删除';
+
+  @override
+  String get editTargets => '编辑目标';
+
+  @override
+  String exerciseDefaultsMeta(int min, int max, int rest, String increment) {
+    return '目标 $min–$max 次 · 休息 ${rest}s · 最小增量 $increment kg';
+  }
+
+  @override
+  String get nextSuggestion => '下次建议';
+
+  @override
+  String get personalRecords => '个人记录';
+
+  @override
+  String get prMaxWeight => '最大重量';
+
+  @override
+  String get prMaxSetVolume => '单组容量';
+
+  @override
+  String get prEstimatedOneRm => '估算 1RM';
+
+  @override
+  String get recentRecords => '最近记录';
+
+  @override
+  String get equipmentNotesSection => '场馆 / 器械备注';
+
+  @override
+  String get equipmentNotesEmpty => '同一动作在不同健身房、不同机器上的合适重量不可比，记在这里。';
+
+  @override
+  String get fieldRepMin => '次数下限';
+
+  @override
+  String get fieldRepMax => '次数上限';
+
+  @override
+  String get fieldRestSeconds => '休息（秒）';
+
+  @override
+  String get fieldMinIncrement => '最小增量 kg';
+
+  @override
+  String get invalidNumbersNotSaved => '数值不合法，未保存';
+
+  @override
+  String get addNote => '添加备注';
+
+  @override
+  String get editNote => '编辑备注';
+
+  @override
+  String get fieldGymOptional => '场馆（可选）';
+
+  @override
+  String get hintGym => '如：黑熊猫';
+
+  @override
+  String get hintEquipment => '如：机器A';
+
+  @override
+  String get fieldNote => '备注';
+
+  @override
+  String get hintNote => '如：20kg 合适';
+
+  @override
+  String get guideHowTo => '怎么做';
+
+  @override
+  String get guideCommonMistakes => '常见错误';
+
+  @override
+  String get guideWhichMachine => '找哪台机器';
+
+  @override
+  String get guideWhichMachineHint =>
+      '不同健身房的机器长得不一样，对上一种就行。找到后在下面「场馆 / 器械备注」拍张照，下次直接认。';
+
+  @override
+  String get figureUnavailable => '暂无示意';
+
+  @override
+  String photoOfLabel(String label) {
+    return '$label 的照片';
+  }
+
+  @override
+  String takePhotoOfLabel(String label) {
+    return '给 $label 拍照';
+  }
+
+  @override
+  String get takePhoto => '拍照';
+
+  @override
+  String get pickFromGallery => '从相册选';
+
+  @override
+  String get cameraOpenFailed => '无法打开相机 / 相册';
+
+  @override
+  String get photoSaveFailed => '保存照片失败';
+
+  @override
+  String get replacePhoto => '换一张';
+
+  @override
+  String get deletePhoto => '删除照片';
+
+  @override
+  String get deletePhotoTitle => '删除这张照片？';
+
+  @override
+  String get deletePhotoBody => '备注本身保留，只删照片。';
+
+  @override
+  String get photoFileMissing => '照片文件丢失';
+
+  @override
+  String get noActiveWorkoutBack => '没有进行中的训练，返回';
+
+  @override
+  String get addExercise => '添加动作';
+
+  @override
+  String get discardWorkout => '放弃训练';
+
+  @override
+  String get workoutEmptyHint => '点右上角 + 添加动作';
+
+  @override
+  String get finishWorkout => '结束训练';
+
+  @override
+  String get pickEquipmentLabelFirst => '先选一个器械标签';
+
+  @override
+  String labelHasNoPhoto(String label) {
+    return '「$label」还没有照片，在动作详情页可以拍一张';
+  }
+
+  @override
+  String removeExerciseTitle(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String removeExerciseBody(int sets) {
+    return '已完成的 $sets 组会一起删除。';
+  }
+
+  @override
+  String get finishWorkoutTitle => '结束训练？';
+
+  @override
+  String get finishWorkoutBodyEmpty => '还没有完成任何一组。结束后会保存为一次空训练。';
+
+  @override
+  String finishWorkoutBody(int sets) {
+    return '已完成 $sets 组，未填写的空组会被清理。';
+  }
+
+  @override
+  String get saveFailedRetry => '保存失败，请重试';
+
+  @override
+  String targetRepsMeta(int min, int max) {
+    return '目标 $min–$max 次';
+  }
+
+  @override
+  String restMeta(int seconds) {
+    return '休息 ${seconds}s';
+  }
+
+  @override
+  String get hideRir => '隐藏 RIR';
+
+  @override
+  String get recordRir => '记录 RIR';
+
+  @override
+  String get applyLast => '沿用上次';
+
+  @override
+  String get equipmentLabelMenu => '器械 / 场馆标签';
+
+  @override
+  String get viewExerciseGuide => '查看动作要领';
+
+  @override
+  String get removeExercise => '删除动作';
+
+  @override
+  String get lastTimeNone => '上次：无记录';
+
+  @override
+  String lastTimeValue(String summary) {
+    return '上次：$summary';
+  }
+
+  @override
+  String get addSet => '添加一组';
+
+  @override
+  String get equipmentChipDefault => '器械';
+
+  @override
+  String get equipmentLabelHint => '不同健身房、不同机器的重量不可比。上次表现与建议按标签分开算。';
+
+  @override
+  String get noEquipmentDistinction => '不区分器械';
+
+  @override
+  String get newLabel => '新建标签';
+
+  @override
+  String get restFinished => '休息结束';
+
+  @override
+  String get restPaused => '已暂停';
+
+  @override
+  String get restGotIt => '知道了';
+
+  @override
+  String get restSkip => '跳过';
+
+  @override
+  String get restResume => '继续';
+
+  @override
+  String get restPause => '暂停';
+
+  @override
+  String get restReset => '重置';
+
+  @override
+  String get restNotificationChannelName => '休息结束提醒';
+
+  @override
+  String get restNotificationChannelDescription => '组间休息倒计时结束时提醒';
+
+  @override
+  String get restNotificationBody => '开始下一组';
+
+  @override
+  String get undoComplete => '取消完成';
+
+  @override
+  String get completeSet => '完成本组';
+
+  @override
+  String get keypadNext => '下一项';
+
+  @override
+  String get workoutComplete => '训练完成';
+
+  @override
+  String get statDuration => '时长';
+
+  @override
+  String get statSets => '组数';
+
+  @override
+  String get statVolume => '容量';
+
+  @override
+  String get noCompletedSets => '未完成任何一组';
+
+  @override
+  String get historyEmpty => '还没有训练记录';
+
+  @override
+  String get sessionDetailTitle => '训练详情';
+
+  @override
+  String get doItAgain => '再练一次';
+
+  @override
+  String get deleteSession => '删除记录';
+
+  @override
+  String get deleteSessionTitle => '删除这次训练记录？';
+
+  @override
+  String get deleteSessionBody => '动作的历史表现与个人记录会随之变化。';
+
+  @override
+  String setLine(String weight, String reps) {
+    return '$weight kg  ×  $reps 次';
+  }
+
+  @override
+  String get suggestInsufficientTitle => '还没有足够记录';
+
+  @override
+  String get suggestInsufficientReason => '完成一次训练后就会给出建议';
+
+  @override
+  String get suggestInsufficientNext => '按目标次数区间选一个能做到下限的重量';
+
+  @override
+  String get suggestDecreaseTitle => '重量偏高，下次降重';
+
+  @override
+  String suggestReasonFirstSetBelow(int reps, int min) {
+    return '第 1 组只做了 $reps 次，低于目标下限 $min 次';
+  }
+
+  @override
+  String get suggestReasonFirstSetRirZero => '第 1 组 RIR 为 0（没有余力）';
+
+  @override
+  String suggestNextDecreaseUnknown(int min) {
+    return '降到能做 $min 次以上的重量';
+  }
+
+  @override
+  String suggestNextWeightReps(String weight, String range) {
+    return '${weight}kg × $range 次';
+  }
+
+  @override
+  String get suggestIncreaseTitle => '下次可小幅加重';
+
+  @override
+  String suggestReasonAllAtTop(int sets, int max) {
+    return '$sets 组均达到 $max 次';
+  }
+
+  @override
+  String suggestReasonRirAtLeast(int rir) {
+    return '，RIR ≥ $rir';
+  }
+
+  @override
+  String suggestReasonStreak(int times) {
+    return '，已连续 $times 次';
+  }
+
+  @override
+  String suggestNextIncreaseUnknown(int min) {
+    return '加最小一档重量，次数回到 $min 附近是正常的';
+  }
+
+  @override
+  String suggestNextIncrease(String weight, String range, int min) {
+    return '${weight}kg × $range 次（次数回落到 $min 附近是正常的）';
+  }
+
+  @override
+  String get suggestHoldTitle => '当前重量合适，保持';
+
+  @override
+  String get suggestHoldFadeOutTitle => '重量合适，后段掉次数明显';
+
+  @override
+  String suggestReasonInRange(int inRange, int total, String range) {
+    return '$inRange/$total 组在 $range 次内';
+  }
+
+  @override
+  String get suggestReasonOneRirZero => '，但有一组 RIR 为 0';
+
+  @override
+  String get suggestNextHoldUnknown => '维持当前重量';
+
+  @override
+  String suggestNextHold(String weight, int sets, int max) {
+    return '维持 ${weight}kg；$sets 组都做到 $max 次后加重';
+  }
+
+  @override
+  String suggestReasonFadeOut(int reps, String rest) {
+    return '第 1 组 $reps 次达标，之后掉到 $rest 次';
+  }
+
+  @override
+  String get suggestNextFadeOutUnknown => '保持重量，先把后几组补齐';
+
+  @override
+  String suggestNextFadeOut(String weight, int min) {
+    return '维持 ${weight}kg，休息足一点，先把后几组补到 $min 次';
+  }
+
+  @override
+  String suggestReasonGeneric(String reps, String range) {
+    return '本次 $reps 次，目标 $range';
+  }
+
+  @override
+  String suggestNextGeneric(String weight) {
+    return '维持 ${weight}kg，稳定在区间内再加';
+  }
+
+  @override
+  String suggestCompactLine(String title, String next) {
+    return '$title：$next';
+  }
+
+  @override
+  String suggestNextLabel(String next) {
+    return '下次：$next';
+  }
 }

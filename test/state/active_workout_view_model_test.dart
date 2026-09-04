@@ -54,18 +54,33 @@ void main() {
 
     final lat = st.session.exercises[0];
     expect(lat.exerciseName, '高位下拉');
-    expect(lat.sets.map((s) => s.weightKg), [20, 20, 20]);
+    expect(lat.sets.map((s) => s.weightKg), [18.16, 22.7, 18.16], reason: '逐组照抄上次');
     expect(lat.sets.map((s) => s.reps), [12, 12, 12]);
     expect(lat.sets.every((s) => !s.isCompleted), isTrue);
     expect(st.lastByExercise[lat.id]!.sets.length, 3);
 
-    final press = st.session.exercises[2]; // 器械肩推 上次只做了 2 组
-    expect(press.sets.map((s) => s.weightKg), [10, 10, 10], reason: '第 3 组继承上次最后一组');
+    final press = st.session.exercises[2]; // 器械肩推 上次 12kg × 12/12/9
+    expect(press.sets.map((s) => s.weightKg), [12, 12, 12]);
+    expect(press.sets.map((s) => s.reps), [12, 12, 9]);
 
     expect(
       () => container.read(activeWorkoutProvider.notifier).start(),
       throwsStateError,
     );
+  });
+
+  test('模板组数多于上次组数时，多出的组继承上次最后一组', () async {
+    await container.read(activeWorkoutProvider.future);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final routine = await container.read(routineRepositoryProvider).getById('rt_b_chest_arm');
+    await vm.start(routine: routine);
+
+    final st = container.read(activeWorkoutProvider).value!;
+    // 上斜胸推上次（9/3 认错机器那次）只做了 2 组 5kg × 9。
+    final incline = st.session.exercises[1];
+    expect(incline.exerciseName, '上斜胸推');
+    expect(incline.sets.map((s) => s.weightKg), [5, 5, 5]);
+    expect(incline.sets.map((s) => s.reps), [9, 9, 9]);
   });
 
   test('完成最后一组：自动补一组并继承、开始休息计时、rest_ends_at 落库', () async {
@@ -83,7 +98,7 @@ void main() {
     expect(after.sets.length, 4);
     expect(after.sets[2].isCompleted, isTrue);
     expect(after.sets[2].completedAt, clock.now());
-    expect(after.sets[3].weightKg, 20);
+    expect(after.sets[3].weightKg, 18.16);
     expect(after.sets[3].reps, 10, reason: '继承刚完成那组的次数');
 
     final timer = container.read(restTimerProvider);
@@ -123,7 +138,7 @@ void main() {
     vm.editSet(setId, weightKg: 22.5);
     vm.editSet(setId, weightKg: 25);
     expect(container.read(activeWorkoutProvider).value!.setById(setId)!.weightKg, 25);
-    expect((await repo.getExercise(st.session.exercises[0].id))!.sets[0].weightKg, 20);
+    expect((await repo.getExercise(st.session.exercises[0].id))!.sets[0].weightKg, 18.16);
 
     await Future<void>.delayed(const Duration(milliseconds: 400));
     expect((await repo.getExercise(st.session.exercises[0].id))!.sets[0].weightKg, 25);
@@ -217,7 +232,8 @@ void main() {
     st = container.read(activeWorkoutProvider).value!;
     final after = st.session.exercises[0];
     expect(after.sets.length, 3, reason: '上次 3 组，删掉一组后补回');
-    expect(after.sets.map((s) => s.weightKg), [20, 20, 20]);
+    expect(after.sets.map((s) => s.weightKg), [18.16, 22.7, 22.7],
+        reason: '前两组照抄上次，补回的那组继承前一组');
     expect(after.sets.map((s) => s.reps), [12, 12, 12]);
   });
 
@@ -226,18 +242,22 @@ void main() {
     final vm = container.read(activeWorkoutProvider.notifier);
     final source = (await container
         .read(workoutRepositoryProvider)
-        .getSession('seed_session_b_20260903'))!;
+        .getSession('seed_session_2_20260901'))!;
 
     await vm.startFromSession(source);
 
     final st = container.read(activeWorkoutProvider).value!;
     expect(st.session.routineId, isNull);
     expect(st.session.routineName, 'B 胸 + 手臂');
-    expect(st.session.exercises.map((e) => e.exerciseName), ['上斜胸推', '哑铃弯举', '二头弯举机']);
-    expect(st.session.exercises[0].sets.length, 2, reason: '上次完成 2 组');
-    expect(st.session.exercises[1].sets.length, 1);
-    expect(st.session.exercises[0].sets[0].weightKg, 2.5, reason: '按上次表现预填');
-    expect(st.session.exercises[2].targetRepMax, 15);
+    expect(st.session.exercises.map((e) => e.exerciseName),
+        ['蝴蝶机夹胸', '水平胸推', '上斜胸推', '二头弯举机', '哑铃弯举']);
+    expect(st.session.exercises.map((e) => e.sets.length), [3, 2, 2, 1, 1],
+        reason: '组数 = 上次完成组数');
+    expect(st.session.exercises[1].equipmentLabel, 'Hammer', reason: '沿用器械标签');
+    expect(st.session.exercises[2].sets[0].weightKg, 5,
+        reason: '组数来自被复制的那次，重量按该动作最近一次（9/3 的 5kg）预填');
+    expect(st.session.exercises[0].sets[0].weightKg, isNull, reason: '上次没记配重');
+    expect(st.session.exercises[4].targetRepMax, 15);
   });
 
   test('isStale：开始超过 12 小时', () async {

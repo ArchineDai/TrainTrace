@@ -26,8 +26,9 @@ class SeedLoader {
   final Clock _clock;
   final AssetReader _read;
 
-  /// v1 首版；v2 给 16 个内置动作补要领 / 常见错误 / 常见机器。
-  static const seedVersion = 2;
+  /// v1 首版；v2 给 16 个内置动作补要领 / 常见错误 / 常见机器；
+  /// v3 更正内置的三次历史记录（日期 / 动作 / 组数与实际不符）。
+  static const seedVersion = 3;
   static const _kSeededVersion = 'seededVersion';
 
   static const exercisesAsset = 'assets/seed/exercises.json';
@@ -132,6 +133,12 @@ class SeedLoader {
     final endedAt = startedAt.add(Duration(minutes: minutes));
     final sessionId = s['id'] as String;
 
+    // 已导过就整条跳过：否则 session 被 insertOrIgnore 吃掉，子表还会再插一遍。
+    final existing = await (_db.select(_db.workoutSessions)
+          ..where((t) => t.id.equals(sessionId)))
+        .getSingleOrNull();
+    if (existing != null) return;
+
     await _db.into(_db.workoutSessions).insert(
           WorkoutSessionsCompanion.insert(
             id: sessionId,
@@ -178,6 +185,7 @@ class SeedLoader {
                 id: newId(),
                 workoutExerciseId: weId,
                 setIndex: j,
+                setType: Value(_setType(st['setType'])),
                 weightKg: Value(_double(st['weightKg'])),
                 reps: Value(_int(st['reps'])),
                 rir: Value(_int(st['rir'])),
@@ -192,6 +200,29 @@ class SeedLoader {
   /// 种子版本升级时只补差量，不覆盖用户改过的目标 / 增量。
   Future<void> _migrateSeed(int from) async {
     if (from < 2) await _fillExerciseGuides();
+    if (from < 3) await _reseedHistory();
+  }
+
+  /// v2 → v3：内置示例历史与用户的真实记录不符（日期错位、缺 9/3 那次、
+  /// 少了蝴蝶机夹胸与水平胸推），整体换成更正后的三次。
+  ///
+  /// 老的两条按 id 软删除（历史查询都过滤 `deletedAt IS NULL`），更正后的三条
+  /// 用新 id 插入。用户自己练出来的 session 不在这两个 id 里，不受影响。
+  Future<void> _reseedHistory() async {
+    const legacyIds = ['seed_session_a_20260901', 'seed_session_b_20260903'];
+    final history = _list(await _read(historyAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      await (_db.update(_db.workoutSessions)
+            ..where((t) => t.id.isIn(legacyIds) & t.deletedAt.isNull()))
+          .write(WorkoutSessionsCompanion(
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+      ));
+      for (final s in history) {
+        await _insertHistorySession(s, now);
+      }
+    });
   }
 
   /// v1 → v2：给已存在的内置动作写入要领 / 常见错误 / 常见机器。
@@ -221,6 +252,11 @@ class SeedLoader {
   static int? _int(Object? v) => v == null ? null : (v as num).toInt();
 
   static double? _double(Object? v) => v == null ? null : (v as num).toDouble();
+
+  /// 组类型白名单。core 不 import features，所以不复用 `SetType`；
+  /// 种子里写错的值退回 working，不静默造出库里读不出的类型。
+  static String _setType(Object? v) =>
+      const {'warmup', 'working', 'drop'}.contains(v) ? v as String : 'working';
 
   static List<String> _strings(Object? v) =>
       v == null ? const [] : (v as List).cast<String>();

@@ -10,15 +10,13 @@ enum SessionStatus {
       );
 }
 
-/// 组类型。V0.1 UI 只用 [working]，字段先留着。
+/// 组类型。V0.1 UI 只用 [working]，其余先留着。
+///
+/// 展示名见 `presentation/widgets/set_type_labels.dart`。
 enum SetType {
-  warmup('热身'),
-  working('正式'),
-  drop('递减');
-
-  const SetType(this.label);
-
-  final String label;
+  warmup,
+  working,
+  drop;
 
   static SetType parse(String? raw) => values.firstWhere(
         (v) => v.name == raw,
@@ -101,6 +99,7 @@ class WorkoutExercise {
     required this.sessionId,
     required this.exerciseId,
     required this.exerciseName,
+    this.exerciseNameEn,
     required this.sortOrder,
     this.equipmentLabel,
     this.targetRepMin,
@@ -114,8 +113,12 @@ class WorkoutExercise {
   final String sessionId;
   final String exerciseId;
 
-  /// join 出来的展示字段。
-  final String exerciseName;
+  /// join 出来的展示字段（中文名）。**null = 动作已被删除**，展示时走
+  /// `exerciseDisplayName` 回落到 l10n 的"（已删除的动作）"。
+  final String? exerciseName;
+
+  /// join 出来的英文名，英文界面优先用它；没有就回落中文名。
+  final String? exerciseNameEn;
   final int sortOrder;
 
   /// "黑熊猫 机器A"。为空视为默认器械。
@@ -146,6 +149,7 @@ class WorkoutExercise {
       sessionId: sessionId,
       exerciseId: exerciseId,
       exerciseName: exerciseName,
+      exerciseNameEn: exerciseNameEn,
       sortOrder: sortOrder ?? this.sortOrder,
       equipmentLabel:
           clearEquipmentLabel ? null : (equipmentLabel ?? this.equipmentLabel),

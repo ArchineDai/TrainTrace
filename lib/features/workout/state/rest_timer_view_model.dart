@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/log.dart';
 import '../../../core/time/clock.dart';
 import '../../../services/rest_notifier.dart';
+import '../../settings/state/app_localizations_provider.dart';
 import '../models/rest_timer_state.dart';
 
 /// 休息倒计时。全局单例：训练页与首页横幅都要读它。
@@ -19,6 +20,17 @@ class RestTimerViewModel extends Notifier<RestTimerState> {
 
   Clock get _clock => ref.read(clockProvider);
   RestNotifier get _notifier => ref.read(restNotifierProvider);
+
+  /// 提醒文案在这里取好传给服务层 —— 服务层不认识 l10n。
+  RestNotificationText get _notificationText {
+    final l10n = ref.read(appLocalizationsProvider);
+    return RestNotificationText(
+      channelName: l10n.restNotificationChannelName,
+      channelDescription: l10n.restNotificationChannelDescription,
+      title: l10n.restFinished,
+      body: l10n.restNotificationBody,
+    );
+  }
 
   Future<void> start(int seconds) =>
       _set(RestTimerState.start(_clock.now(), seconds));
@@ -43,7 +55,7 @@ class RestTimerViewModel extends Notifier<RestTimerState> {
     try {
       final end = next.endsAt;
       if (end != null && next.isRunning(_clock.now())) {
-        await _notifier.scheduleRestEnd(end);
+        await _notifier.scheduleRestEnd(end, text: _notificationText);
       } else {
         await _notifier.cancelRestEnd();
       }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants.dart';
 import '../../exercises/data/exercise_repository.dart';
 import '../../history/data/history_repository.dart';
+import '../../settings/state/app_localizations_provider.dart';
 import '../models/suggestion.dart';
 import '../suggestion_engine.dart';
 
@@ -43,10 +44,14 @@ final suggestionProvider =
         equipmentLabel: q.equipmentLabel,
         limit: AppConstants.suggestionLookback,
       );
-  return SuggestionEngine.evaluate(SuggestionInput(
-    recent: recent,
-    targetRepMin: q.targetRepMin ?? exercise?.defaultRepMin ?? AppConstants.defaultRepMin,
-    targetRepMax: q.targetRepMax ?? exercise?.defaultRepMax ?? AppConstants.defaultRepMax,
-    minIncrementKg: exercise?.minIncrementKg ?? 2.5,
-  ));
+  return SuggestionEngine.evaluate(
+    SuggestionInput(
+      recent: recent,
+      targetRepMin: q.targetRepMin ?? exercise?.defaultRepMin ?? AppConstants.defaultRepMin,
+      targetRepMax: q.targetRepMax ?? exercise?.defaultRepMax ?? AppConstants.defaultRepMax,
+      minIncrementKg: exercise?.minIncrementKg ?? 2.5,
+    ),
+    // watch 而非 read：用户在设置里改语言后建议文案要跟着重算。
+    ref.watch(appLocalizationsProvider),
+  );
 });

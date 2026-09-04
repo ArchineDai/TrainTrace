@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../exercises/models/exercise.dart';
+import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
 import '../data/routine_repository.dart';
 import '../models/routine.dart';
@@ -29,6 +31,7 @@ class _DraftItem {
     this.id,
     required this.exerciseId,
     required this.exerciseName,
+    this.exerciseNameEn,
     this.targetSets = AppConstants.defaultTargetSets,
     required this.targetRepMin,
     required this.targetRepMax,
@@ -37,7 +40,10 @@ class _DraftItem {
 
   final String? id;
   final String exerciseId;
-  final String exerciseName;
+
+  /// 展示用的动作名快照（草稿只在本页存活，不写库）。
+  final String? exerciseName;
+  final String? exerciseNameEn;
   int targetSets;
   int targetRepMin;
   int targetRepMax;
@@ -78,6 +84,7 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
             id: e.id,
             exerciseId: e.exerciseId,
             exerciseName: e.exerciseName,
+            exerciseNameEn: e.exerciseNameEn,
             targetSets: e.targetSets,
             targetRepMin: e.targetRepMin,
             targetRepMax: e.targetRepMax,
@@ -93,15 +100,16 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
       if (r != null) _loadFrom(r);
     }
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final canSave = _name.text.trim().isNotEmpty && !_saving;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isNew ? '新建模板' : '编辑模板'),
+        title: Text(_isNew ? l10n.routinesNewRoutine : l10n.routinesEditRoutine),
         actions: [
           TextButton(
             onPressed: canSave ? _save : null,
-            child: const Text('保存'),
+            child: Text(l10n.actionSave),
           ),
         ],
       ),
@@ -111,7 +119,10 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: TextField(
               controller: _name,
-              decoration: const InputDecoration(labelText: '模板名称', hintText: '如：A 背 + 肩'),
+              decoration: InputDecoration(
+                labelText: l10n.routineNameLabel,
+                hintText: l10n.routineNameHint,
+              ),
               textInputAction: TextInputAction.done,
               onChanged: (_) => setState(() {}),
             ),
@@ -120,7 +131,7 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
             child: _items.isEmpty
                 ? Center(
                     child: Text(
-                      '还没有动作，点下方添加',
+                      l10n.routineEmptyItems,
                       style: TextStyle(
                         fontSize: AppTextSize.md,
                         color: scheme.onSurfaceVariant,
@@ -152,7 +163,7 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
                 child: OutlinedButton.icon(
                   onPressed: _addExercise,
                   icon: const Icon(Icons.add),
-                  label: const Text('添加动作'),
+                  label: Text(l10n.addExercise),
                 ),
               ),
             ),
@@ -170,6 +181,7 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
     setState(() => _items.add(_DraftItem(
           exerciseId: e.id,
           exerciseName: e.nameZh,
+          exerciseNameEn: e.nameEn,
           targetRepMin: e.defaultRepMin,
           targetRepMax: e.defaultRepMax,
           restSeconds: e.defaultRestSeconds,
@@ -197,7 +209,7 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
         await repo.update(widget.routineId!, name: _name.text, items: drafts);
       }
       if (mounted) {
-        AppTheme.showToast(context, '已保存');
+        AppTheme.showToast(context, AppLocalizations.of(context).toastSaved);
         context.pop();
       }
     } finally {
@@ -223,6 +235,7 @@ class _ItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
@@ -231,13 +244,20 @@ class _ItemTile extends StatelessWidget {
           index: index,
           child: Icon(Icons.drag_handle, color: scheme.onSurfaceVariant),
         ),
-        title: Text(item.exerciseName),
+        title: Text(
+          exerciseDisplayName(context, item.exerciseName, item.exerciseNameEn),
+        ),
         subtitle: Text(
-          '${item.targetSets} 组 · ${item.targetRepMin}–${item.targetRepMax} 次 · 休息 ${item.restSeconds}s',
+          l10n.routineItemMeta(
+            item.targetSets,
+            item.targetRepMin,
+            item.targetRepMax,
+            item.restSeconds,
+          ),
         ),
         trailing: IconButton(
           icon: const Icon(Icons.close),
-          tooltip: '移除',
+          tooltip: l10n.actionRemove,
           onPressed: onRemove,
         ),
         onTap: onEdit,
@@ -261,6 +281,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isPreset = AppConstants.repRangePresets
         .any((p) => p.$1 == item.targetRepMin && p.$2 == item.targetRepMax);
     return SafeArea(
@@ -271,11 +292,11 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              item.exerciseName,
+              exerciseDisplayName(context, item.exerciseName, item.exerciseNameEn),
               style: TextStyle(fontSize: AppTextSize.lg, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
-            _label(context, '组数'),
+            _label(context, l10n.fieldSets),
             Row(
               children: [
                 IconButton.outlined(
@@ -304,7 +325,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            _label(context, '目标次数'),
+            _label(context, l10n.fieldTargetReps),
             Wrap(
               spacing: 8,
               children: [
@@ -318,14 +339,18 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
                     }),
                   ),
                 ChoiceChip(
-                  label: Text(isPreset ? '自定义' : '${item.targetRepMin}–${item.targetRepMax}'),
+                  label: Text(
+                    isPreset
+                        ? l10n.actionCustom
+                        : '${item.targetRepMin}–${item.targetRepMax}',
+                  ),
                   selected: !isPreset,
                   onSelected: (_) => _customRange(context),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            _label(context, '休息时间'),
+            _label(context, l10n.fieldRestTime),
             Wrap(
               spacing: 8,
               children: [
@@ -342,7 +367,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('完成'),
+                child: Text(l10n.actionDone),
               ),
             ),
           ],
@@ -363,19 +388,20 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
       );
 
   Future<void> _customRange(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     final minC = TextEditingController(text: '${item.targetRepMin}');
     final maxC = TextEditingController(text: '${item.targetRepMax}');
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('自定义次数区间'),
+        title: Text(l10n.customRepRangeTitle),
         content: Row(
           children: [
             Expanded(
               child: TextField(
                 controller: minC,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: '下限'),
+                decoration: InputDecoration(labelText: l10n.fieldRepRangeMin),
               ),
             ),
             const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('–')),
@@ -383,14 +409,20 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
               child: TextField(
                 controller: maxC,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: '上限'),
+                decoration: InputDecoration(labelText: l10n.fieldRepRangeMax),
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('确定')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.actionConfirm),
+          ),
         ],
       ),
     );

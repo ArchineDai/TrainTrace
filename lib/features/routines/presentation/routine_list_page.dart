@@ -6,7 +6,9 @@ import '../../../core/formatters.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
+import '../../exercises/presentation/exercise_labels.dart';
 import '../../history/state/history_list_view_model.dart';
 import '../data/routine_repository.dart';
 import '../models/routine.dart';
@@ -26,15 +28,16 @@ class RoutineListPage extends ConsumerWidget {
     final lastPerformed = ref.watch(routineLastPerformedProvider);
     final now = ref.read(clockProvider).now();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('模板'),
+        title: Text(l10n.tabRoutines),
         actions: [
           IconButton(
             onPressed: () => context.push(AppRoutes.routineNew),
             icon: const Icon(Icons.add),
-            tooltip: '新建模板',
+            tooltip: l10n.routinesNewRoutine,
           ),
         ],
       ),
@@ -43,7 +46,7 @@ class RoutineListPage extends ConsumerWidget {
           : routines.isEmpty
               ? Center(
                   child: Text(
-                    '还没有模板，点右上角 + 新建',
+                    l10n.routinesEmpty,
                     style: TextStyle(
                       fontSize: AppTextSize.md,
                       color: scheme.onSurfaceVariant,
@@ -78,7 +81,10 @@ class _RoutineTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final names = routine.exercises.map((e) => e.exerciseName).join(' · ');
+    final l10n = AppLocalizations.of(context);
+    final names = routine.exercises
+        .map((e) => exerciseDisplayName(context, e.exerciseName, e.exerciseNameEn))
+        .join(' · ');
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(AppTheme.radius),
@@ -102,8 +108,10 @@ class _RoutineTile extends ConsumerWidget {
                   ),
                   Text(
                     lastPerformed == null
-                        ? '未练过'
-                        : '上次 ${Formatters.relativeDay(lastPerformed!, now)}',
+                        ? l10n.routineNeverPerformed
+                        : l10n.routineLastPerformed(
+                            Formatters.relativeDay(lastPerformed!, now, l10n),
+                          ),
                     style: TextStyle(
                       fontSize: AppTextSize.sm,
                       color: scheme.onSurfaceVariant,
@@ -114,8 +122,8 @@ class _RoutineTile extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(
                 routine.exercises.isEmpty
-                    ? '没有动作'
-                    : '${routine.exercises.length} 个动作 · $names',
+                    ? l10n.routineNoExercises
+                    : '${l10n.exerciseCount(routine.exercises.length)} · $names',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -131,15 +139,16 @@ class _RoutineTile extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('删除「${routine.name}」？'),
-        content: const Text('历史训练记录不受影响。'),
+        title: Text(l10n.routineDeleteTitle(routine.name)),
+        content: Text(l10n.routineDeleteBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -147,14 +156,14 @@ class _RoutineTile extends ConsumerWidget {
               foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('删除'),
+            child: Text(l10n.actionDelete),
           ),
         ],
       ),
     );
     if (ok == true) {
       await ref.read(routineRepositoryProvider).softDelete(routine.id);
-      if (context.mounted) AppTheme.showToast(context, '已删除');
+      if (context.mounted) AppTheme.showToast(context, l10n.toastDeleted);
     }
   }
 }

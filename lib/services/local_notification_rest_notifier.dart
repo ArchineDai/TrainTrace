@@ -21,27 +21,26 @@ class LocalNotificationRestNotifier implements RestNotifier {
   static const _notificationId = 1001;
   static const _channelId = 'rest_timer';
 
-  static const _androidDetails = AndroidNotificationDetails(
-    _channelId,
-    '休息结束提醒',
-    channelDescription: '组间休息倒计时结束时提醒',
-    importance: Importance.max,
-    priority: Priority.high,
-    category: AndroidNotificationCategory.alarm,
-    playSound: true,
-    enableVibration: true,
-    // 训练中手机常在桌上 / 口袋里，需要能穿过免打扰的提示。
-    audioAttributesUsage: AudioAttributesUsage.alarm,
-  );
-
-  static const _details = NotificationDetails(
-    android: _androidDetails,
-    iOS: DarwinNotificationDetails(
-      presentAlert: true,
-      presentSound: true,
-      interruptionLevel: InterruptionLevel.timeSensitive,
-    ),
-  );
+  static NotificationDetails _details(RestNotificationText text) =>
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          text.channelName,
+          channelDescription: text.channelDescription,
+          importance: Importance.max,
+          priority: Priority.high,
+          category: AndroidNotificationCategory.alarm,
+          playSound: true,
+          enableVibration: true,
+          // 训练中手机常在桌上 / 口袋里，需要能穿过免打扰的提示。
+          audioAttributesUsage: AudioAttributesUsage.alarm,
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentSound: true,
+          interruptionLevel: InterruptionLevel.timeSensitive,
+        ),
+      );
 
   bool _initialized = false;
   bool _exactAllowed = false;
@@ -86,16 +85,19 @@ class LocalNotificationRestNotifier implements RestNotifier {
   }
 
   @override
-  Future<void> scheduleRestEnd(DateTime at) async {
+  Future<void> scheduleRestEnd(
+    DateTime at, {
+    required RestNotificationText text,
+  }) async {
     if (!_initialized) return;
     final scheduled = tz.TZDateTime.from(at.toUtc(), tz.UTC);
     if (!scheduled.isAfter(tz.TZDateTime.now(tz.UTC))) return;
     await _plugin.zonedSchedule(
       id: _notificationId,
-      title: '休息结束',
-      body: '开始下一组',
+      title: text.title,
+      body: text.body,
       scheduledDate: scheduled,
-      notificationDetails: _details,
+      notificationDetails: _details(text),
       androidScheduleMode: _exactAllowed
           ? AndroidScheduleMode.exactAllowWhileIdle
           : AndroidScheduleMode.inexactAllowWhileIdle,

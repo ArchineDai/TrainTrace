@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// 一组里可编辑的两个字段。
 enum SetField { weight, reps }
@@ -40,6 +41,7 @@ class SetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: isCompleted ? AppTheme.of(context).setDoneSurface : null,
@@ -73,7 +75,7 @@ class SetRow extends StatelessWidget {
           Expanded(
             child: _FieldBox(
               text: repsText,
-              unit: '次',
+              unit: l10n.unitReps,
               focused: focusedField == SetField.reps,
               completed: isCompleted,
               onTap: () => onTapField(SetField.reps),
@@ -91,12 +93,12 @@ class SetRow extends StatelessWidget {
                       foregroundColor: AppTheme.of(context).onSetDone,
                     ),
                     icon: const Icon(Icons.check),
-                    tooltip: '取消完成',
+                    tooltip: l10n.undoComplete,
                   )
                 : IconButton.outlined(
                     onPressed: onToggleComplete,
                     icon: const Icon(Icons.check),
-                    tooltip: '完成本组',
+                    tooltip: l10n.completeSet,
                   ),
           ),
         ],

@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../data/exercise_repository.dart';
 import '../models/exercise.dart';
 import '../state/exercise_list_view_model.dart';
+import 'exercise_labels.dart';
 
 /// 动作选择器。模态进入，选中后 `context.pop(exerciseId)` 回传。
 ///
@@ -40,16 +42,17 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
           (e.nameEn?.toLowerCase().contains(q) ?? false);
     }).toList();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('选择动作'),
+        title: Text(l10n.pickExerciseTitle),
         actions: [
           // 创建一律是标题行右侧的加号图标，和模板页一致（ui-conventions 操作语法）。
           IconButton(
             onPressed: () => _createCustom(context),
             icon: const Icon(Icons.add),
-            tooltip: '新建动作',
+            tooltip: l10n.newExercise,
           ),
         ],
       ),
@@ -61,7 +64,7 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
               controller: _search,
               autofocus: false,
               decoration: InputDecoration(
-                hintText: '搜索动作',
+                hintText: l10n.searchExercise,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _search.text.isEmpty
                     ? null
@@ -80,14 +83,14 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _GroupChip(
-                  label: '全部',
+                  label: l10n.filterAll,
                   selected: _group == null,
                   onTap: () => setState(() => _group = null),
                 ),
                 for (final g in MuscleGroup.values)
                   if (g != MuscleGroup.other || all.any((e) => e.muscleGroup == g))
                     _GroupChip(
-                      label: g.label,
+                      label: g.label(l10n),
                       selected: _group == g,
                       onTap: () => setState(() => _group = g),
                     ),
@@ -99,7 +102,7 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
             child: filtered.isEmpty
                 ? Center(
                     child: Text(
-                      all.isEmpty ? '动作库为空' : '没有匹配的动作',
+                      all.isEmpty ? l10n.exerciseLibraryEmpty : l10n.noMatchingExercise,
                       style: TextStyle(
                         fontSize: AppTextSize.md,
                         color: scheme.onSurfaceVariant,
@@ -113,15 +116,15 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
                       final e = filtered[i];
                       return ListTile(
                         minTileHeight: AppTheme.minTouch + 8,
-                        title: Text(e.nameZh),
+                        title: Text(e.displayName(context)),
                         subtitle: Text(
-                          '${e.muscleGroup.label} · ${e.equipmentType.label}'
-                          '${e.isCustom ? ' · 自定义' : ''}'
-                          ' · ${e.defaultRepMin}–${e.defaultRepMax} 次',
+                          '${e.muscleGroup.label(l10n)} · ${e.equipmentType.label(l10n)}'
+                          '${e.isCustom ? ' · ${l10n.actionCustom}' : ''}'
+                          ' · ${l10n.exerciseRepRange(e.defaultRepMin, e.defaultRepMax)}',
                         ),
                         // 新手先看要领再选；点行本身仍是选中。
                         trailing: IconButton(
-                          tooltip: '动作要领',
+                          tooltip: l10n.exerciseGuide,
                           icon: const Icon(Icons.info_outline),
                           onPressed: () =>
                               context.push(AppRoutes.exerciseDetail(e.id)),
@@ -196,34 +199,35 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
   @override
   Widget build(BuildContext context) {
     final valid = _name.text.trim().isNotEmpty;
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('新建动作'),
+      title: Text(l10n.newExercise),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _name,
             autofocus: true,
-            decoration: const InputDecoration(labelText: '名称'),
+            decoration: InputDecoration(labelText: l10n.fieldName),
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<MuscleGroup>(
             initialValue: _group,
-            decoration: const InputDecoration(labelText: '肌群'),
+            decoration: InputDecoration(labelText: l10n.fieldMuscleGroup),
             items: [
               for (final g in MuscleGroup.values)
-                DropdownMenuItem(value: g, child: Text(g.label)),
+                DropdownMenuItem(value: g, child: Text(g.label(l10n))),
             ],
             onChanged: (v) => setState(() => _group = v ?? _group),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<EquipmentType>(
             initialValue: _equipment,
-            decoration: const InputDecoration(labelText: '器械'),
+            decoration: InputDecoration(labelText: l10n.fieldEquipment),
             items: [
               for (final t in EquipmentType.values)
-                DropdownMenuItem(value: t, child: Text(t.label)),
+                DropdownMenuItem(value: t, child: Text(t.label(l10n))),
             ],
             onChanged: (v) => setState(() => _equipment = v ?? _equipment),
           ),
@@ -232,11 +236,11 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton(
           onPressed: valid && !_saving ? _save : null,
-          child: const Text('创建'),
+          child: Text(l10n.actionCreate),
         ),
       ],
     );

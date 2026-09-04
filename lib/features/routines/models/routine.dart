@@ -1,10 +1,12 @@
-/// 模板里的一个动作及其目标。`exerciseName` 是 join 出来的展示字段。
+/// 模板里的一个动作及其目标。`exerciseName` / `exerciseNameEn` 是 join 出来的
+/// 展示字段。
 class RoutineExercise {
   const RoutineExercise({
     required this.id,
     required this.routineId,
     required this.exerciseId,
     required this.exerciseName,
+    this.exerciseNameEn,
     required this.sortOrder,
     this.targetSets = 3,
     required this.targetRepMin,
@@ -16,7 +18,12 @@ class RoutineExercise {
   final String id;
   final String routineId;
   final String exerciseId;
-  final String exerciseName;
+
+  /// 中文名。**null = 动作已被删除**，展示时走 `exerciseDisplayName`。
+  final String? exerciseName;
+
+  /// 英文名，英文界面优先用它。
+  final String? exerciseNameEn;
   final int sortOrder;
   final int targetSets;
   final int targetRepMin;
@@ -37,6 +44,7 @@ class RoutineExercise {
       routineId: routineId,
       exerciseId: exerciseId,
       exerciseName: exerciseName,
+      exerciseNameEn: exerciseNameEn,
       sortOrder: sortOrder ?? this.sortOrder,
       targetSets: targetSets ?? this.targetSets,
       targetRepMin: targetRepMin ?? this.targetRepMin,

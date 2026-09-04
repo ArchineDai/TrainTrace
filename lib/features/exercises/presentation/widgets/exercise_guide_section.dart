@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../models/exercise.dart';
 import 'exercise_figure.dart';
 import 'exercise_figure_data.dart';
@@ -25,6 +26,7 @@ class ExerciseGuideSection extends StatelessWidget {
     if (!_hasAnything) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
     final colors = AppTheme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +34,7 @@ class ExerciseGuideSection extends StatelessWidget {
         Center(child: ExerciseFigure(exerciseId: exercise.id, size: 200)),
         const SizedBox(height: 20),
         if (exercise.cues.isNotEmpty) ...[
-          _Title(text: '怎么做'),
+          _Title(text: l10n.guideHowTo),
           for (var i = 0; i < exercise.cues.length; i++)
             _Bullet(
               marker: '${i + 1}',
@@ -42,15 +44,15 @@ class ExerciseGuideSection extends StatelessWidget {
           const SizedBox(height: 16),
         ],
         if (exercise.commonMistakes.isNotEmpty) ...[
-          _Title(text: '常见错误'),
+          _Title(text: l10n.guideCommonMistakes),
           for (final m in exercise.commonMistakes)
             _Bullet(marker: '×', markerColor: colors.danger, text: m),
           const SizedBox(height: 16),
         ],
         if (exercise.equipmentVariants.isNotEmpty) ...[
-          _Title(text: '找哪台机器'),
+          _Title(text: l10n.guideWhichMachine),
           Text(
-            '不同健身房的机器长得不一样，对上一种就行。找到后在下面"场馆 / 器械备注"拍张照，下次直接认。',
+            l10n.guideWhichMachineHint,
             style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: 6),

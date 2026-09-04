@@ -24,5 +24,474 @@
     "placeholders": {
       "phase": { "type": "String" }
     }
+  },
+
+  "actionCancel": "取消",
+  "actionSave": "保存",
+  "actionDelete": "删除",
+  "actionConfirm": "确定",
+  "actionDone": "完成",
+  "actionAdd": "添加",
+  "actionRemove": "移除",
+  "actionCreate": "创建",
+  "actionDiscard": "放弃",
+  "actionView": "查看",
+  "actionResume": "继续",
+  "actionStart": "开始",
+  "actionMore": "更多",
+  "actionCustom": "自定义",
+  "toastSaved": "已保存",
+  "toastDeleted": "已删除",
+  "emptyNoRecords": "还没有记录",
+
+  "dateToday": "今天",
+  "dateYesterday": "昨天",
+  "dateDaysAgo": "{days} 天前",
+  "@dateDaysAgo": {
+    "description": "7 天内的相对日期",
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "dateMonthDay": "{date}",
+  "@dateMonthDay": {
+    "description": "同年内的日期，如 9月1日",
+    "placeholders": {
+      "date": { "type": "DateTime", "format": "MMMd" }
+    }
+  },
+  "dateYearMonthDay": "{date}",
+  "@dateYearMonthDay": {
+    "description": "跨年日期，如 2025年12月3日",
+    "placeholders": {
+      "date": { "type": "DateTime", "format": "yMMMd" }
+    }
+  },
+  "dateYearMonth": "{date}",
+  "@dateYearMonth": {
+    "description": "历史页的月份分组标题，如 2026年9月",
+    "placeholders": {
+      "date": { "type": "DateTime", "format": "yMMM" }
+    }
+  },
+  "durationMinutes": "{minutes} 分钟",
+  "@durationMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "durationHoursMinutes": "{hours} 小时 {minutes} 分",
+  "@durationHoursMinutes": {
+    "description": "minutes 已补零，传字符串",
+    "placeholders": {
+      "hours": { "type": "int" },
+      "minutes": { "type": "String" }
+    }
+  },
+
+  "deletedExercise": "（已删除的动作）",
+  "nameWithLabel": "{name}（{label}）",
+  "@nameWithLabel": {
+    "description": "动作名后缀器械标签",
+    "placeholders": {
+      "name": { "type": "String" },
+      "label": { "type": "String" }
+    }
+  },
+  "emptyWorkoutName": "空白训练",
+  "unitReps": "次",
+  "repsValue": "{reps} 次",
+  "@repsValue": {
+    "placeholders": {
+      "reps": { "type": "String" }
+    }
+  },
+
+  "muscleBack": "背",
+  "muscleShoulder": "肩",
+  "muscleChest": "胸",
+  "muscleArm": "手臂",
+  "muscleLeg": "腿",
+  "muscleCore": "核心",
+  "muscleOther": "其他",
+
+  "equipmentMachine": "固定器械",
+  "equipmentDumbbell": "哑铃",
+  "equipmentBarbell": "杠铃",
+  "equipmentCable": "绳索",
+  "equipmentBodyweight": "自重",
+
+  "setTypeWarmup": "热身",
+  "setTypeWorking": "正式",
+  "setTypeDrop": "递减",
+
+  "homeStartEmptyWorkout": "开始空白训练",
+  "homeFromRoutine": "从模板开始",
+  "homeNoRoutines": "还没有模板，去「模板」页新建一个",
+  "homeRecentWorkouts": "最近训练",
+  "workoutInProgressToast": "有一次训练还在进行中，先继续或放弃它",
+  "resumeBannerStaleTitle": "有一次训练超过 12 小时未结束",
+  "resumeBannerTitle": "有一次未完成的训练",
+  "resumeBannerMeta": "{name} · 开始于 {startedAt} · 已完成 {sets} 组",
+  "@resumeBannerMeta": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "startedAt": { "type": "String" },
+      "sets": { "type": "int" }
+    }
+  },
+  "finishAndSave": "结束并保存",
+  "discardWorkoutTitle": "放弃这次训练？",
+  "discardWorkoutBody": "本次记录会被丢弃，无法恢复。",
+  "routineNoExercises": "没有动作",
+  "routineNeverPerformed": "未练过",
+  "routineLastPerformed": "上次 {date}",
+  "@routineLastPerformed": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "exerciseCount": "{count} 个动作",
+  "@exerciseCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sessionMetaExercisesSets": "{exercises} 个动作 · {sets} 组",
+  "@sessionMetaExercisesSets": {
+    "placeholders": {
+      "exercises": { "type": "int" },
+      "sets": { "type": "int" }
+    }
+  },
+
+  "routinesNewRoutine": "新建模板",
+  "routinesEditRoutine": "编辑模板",
+  "routinesEmpty": "还没有模板，点右上角 + 新建",
+  "routineNameLabel": "模板名称",
+  "routineNameHint": "如：A 背 + 肩",
+  "routineEmptyItems": "还没有动作，点下方添加",
+  "routineDeleteTitle": "删除「{name}」？",
+  "@routineDeleteTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "routineDeleteBody": "历史训练记录不受影响。",
+  "routineItemMeta": "{sets} 组 · {min}–{max} 次 · 休息 {rest}s",
+  "@routineItemMeta": {
+    "placeholders": {
+      "sets": { "type": "int" },
+      "min": { "type": "int" },
+      "max": { "type": "int" },
+      "rest": { "type": "int" }
+    }
+  },
+  "fieldSets": "组数",
+  "fieldTargetReps": "目标次数",
+  "fieldRestTime": "休息时间",
+  "customRepRangeTitle": "自定义次数区间",
+  "fieldRepRangeMin": "下限",
+  "fieldRepRangeMax": "上限",
+
+  "pickExerciseTitle": "选择动作",
+  "newExercise": "新建动作",
+  "searchExercise": "搜索动作",
+  "filterAll": "全部",
+  "exerciseLibraryEmpty": "动作库为空",
+  "noMatchingExercise": "没有匹配的动作",
+  "exerciseGuide": "动作要领",
+  "fieldName": "名称",
+  "fieldMuscleGroup": "肌群",
+  "fieldEquipment": "器械",
+  "exerciseRepRange": "{min}–{max} 次",
+  "@exerciseRepRange": {
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+
+  "exerciseNotFound": "动作不存在或已删除",
+  "editTargets": "编辑目标",
+  "exerciseDefaultsMeta": "目标 {min}–{max} 次 · 休息 {rest}s · 最小增量 {increment} kg",
+  "@exerciseDefaultsMeta": {
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" },
+      "rest": { "type": "int" },
+      "increment": { "type": "String" }
+    }
+  },
+  "nextSuggestion": "下次建议",
+  "personalRecords": "个人记录",
+  "prMaxWeight": "最大重量",
+  "prMaxSetVolume": "单组容量",
+  "prEstimatedOneRm": "估算 1RM",
+  "recentRecords": "最近记录",
+  "equipmentNotesSection": "场馆 / 器械备注",
+  "equipmentNotesEmpty": "同一动作在不同健身房、不同机器上的合适重量不可比，记在这里。",
+  "fieldRepMin": "次数下限",
+  "fieldRepMax": "次数上限",
+  "fieldRestSeconds": "休息（秒）",
+  "fieldMinIncrement": "最小增量 kg",
+  "invalidNumbersNotSaved": "数值不合法，未保存",
+  "addNote": "添加备注",
+  "editNote": "编辑备注",
+  "fieldGymOptional": "场馆（可选）",
+  "hintGym": "如：黑熊猫",
+  "hintEquipment": "如：机器A",
+  "fieldNote": "备注",
+  "hintNote": "如：20kg 合适",
+
+  "guideHowTo": "怎么做",
+  "guideCommonMistakes": "常见错误",
+  "guideWhichMachine": "找哪台机器",
+  "guideWhichMachineHint": "不同健身房的机器长得不一样，对上一种就行。找到后在下面「场馆 / 器械备注」拍张照，下次直接认。",
+  "figureUnavailable": "暂无示意",
+
+  "photoOfLabel": "{label} 的照片",
+  "@photoOfLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "takePhotoOfLabel": "给 {label} 拍照",
+  "@takePhotoOfLabel": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "takePhoto": "拍照",
+  "pickFromGallery": "从相册选",
+  "cameraOpenFailed": "无法打开相机 / 相册",
+  "photoSaveFailed": "保存照片失败",
+  "replacePhoto": "换一张",
+  "deletePhoto": "删除照片",
+  "deletePhotoTitle": "删除这张照片？",
+  "deletePhotoBody": "备注本身保留，只删照片。",
+  "photoFileMissing": "照片文件丢失",
+
+  "noActiveWorkoutBack": "没有进行中的训练，返回",
+  "addExercise": "添加动作",
+  "discardWorkout": "放弃训练",
+  "workoutEmptyHint": "点右上角 + 添加动作",
+  "finishWorkout": "结束训练",
+  "pickEquipmentLabelFirst": "先选一个器械标签",
+  "labelHasNoPhoto": "「{label}」还没有照片，在动作详情页可以拍一张",
+  "@labelHasNoPhoto": {
+    "placeholders": {
+      "label": { "type": "String" }
+    }
+  },
+  "removeExerciseTitle": "删除「{name}」？",
+  "@removeExerciseTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "removeExerciseBody": "已完成的 {sets} 组会一起删除。",
+  "@removeExerciseBody": {
+    "placeholders": {
+      "sets": { "type": "int" }
+    }
+  },
+  "finishWorkoutTitle": "结束训练？",
+  "finishWorkoutBodyEmpty": "还没有完成任何一组。结束后会保存为一次空训练。",
+  "finishWorkoutBody": "已完成 {sets} 组，未填写的空组会被清理。",
+  "@finishWorkoutBody": {
+    "placeholders": {
+      "sets": { "type": "int" }
+    }
+  },
+  "saveFailedRetry": "保存失败，请重试",
+
+  "targetRepsMeta": "目标 {min}–{max} 次",
+  "@targetRepsMeta": {
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "restMeta": "休息 {seconds}s",
+  "@restMeta": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "hideRir": "隐藏 RIR",
+  "recordRir": "记录 RIR",
+  "applyLast": "沿用上次",
+  "equipmentLabelMenu": "器械 / 场馆标签",
+  "viewExerciseGuide": "查看动作要领",
+  "removeExercise": "删除动作",
+  "lastTimeNone": "上次：无记录",
+  "lastTimeValue": "上次：{summary}",
+  "@lastTimeValue": {
+    "placeholders": {
+      "summary": { "type": "String" }
+    }
+  },
+  "addSet": "添加一组",
+  "equipmentChipDefault": "器械",
+  "equipmentLabelHint": "不同健身房、不同机器的重量不可比。上次表现与建议按标签分开算。",
+  "noEquipmentDistinction": "不区分器械",
+  "newLabel": "新建标签",
+
+  "restFinished": "休息结束",
+  "restPaused": "已暂停",
+  "restGotIt": "知道了",
+  "restSkip": "跳过",
+  "restResume": "继续",
+  "restPause": "暂停",
+  "restReset": "重置",
+  "restNotificationChannelName": "休息结束提醒",
+  "restNotificationChannelDescription": "组间休息倒计时结束时提醒",
+  "restNotificationBody": "开始下一组",
+
+  "undoComplete": "取消完成",
+  "completeSet": "完成本组",
+  "keypadNext": "下一项",
+
+  "workoutComplete": "训练完成",
+  "statDuration": "时长",
+  "statSets": "组数",
+  "statVolume": "容量",
+  "noCompletedSets": "未完成任何一组",
+
+  "historyEmpty": "还没有训练记录",
+  "sessionDetailTitle": "训练详情",
+  "doItAgain": "再练一次",
+  "deleteSession": "删除记录",
+  "deleteSessionTitle": "删除这次训练记录？",
+  "deleteSessionBody": "动作的历史表现与个人记录会随之变化。",
+  "setLine": "{weight} kg  ×  {reps} 次",
+  "@setLine": {
+    "description": "历史详情里的一组，weight / reps 可能是 '—'",
+    "placeholders": {
+      "weight": { "type": "String" },
+      "reps": { "type": "String" }
+    }
+  },
+
+  "suggestInsufficientTitle": "还没有足够记录",
+  "suggestInsufficientReason": "完成一次训练后就会给出建议",
+  "suggestInsufficientNext": "按目标次数区间选一个能做到下限的重量",
+  "suggestDecreaseTitle": "重量偏高，下次降重",
+  "suggestReasonFirstSetBelow": "第 1 组只做了 {reps} 次，低于目标下限 {min} 次",
+  "@suggestReasonFirstSetBelow": {
+    "placeholders": {
+      "reps": { "type": "int" },
+      "min": { "type": "int" }
+    }
+  },
+  "suggestReasonFirstSetRirZero": "第 1 组 RIR 为 0（没有余力）",
+  "suggestNextDecreaseUnknown": "降到能做 {min} 次以上的重量",
+  "@suggestNextDecreaseUnknown": {
+    "placeholders": {
+      "min": { "type": "int" }
+    }
+  },
+  "suggestNextWeightReps": "{weight}kg × {range} 次",
+  "@suggestNextWeightReps": {
+    "placeholders": {
+      "weight": { "type": "String" },
+      "range": { "type": "String" }
+    }
+  },
+  "suggestIncreaseTitle": "下次可小幅加重",
+  "suggestReasonAllAtTop": "{sets} 组均达到 {max} 次",
+  "@suggestReasonAllAtTop": {
+    "placeholders": {
+      "sets": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "suggestReasonRirAtLeast": "，RIR ≥ {rir}",
+  "@suggestReasonRirAtLeast": {
+    "placeholders": {
+      "rir": { "type": "int" }
+    }
+  },
+  "suggestReasonStreak": "，已连续 {times} 次",
+  "@suggestReasonStreak": {
+    "placeholders": {
+      "times": { "type": "int" }
+    }
+  },
+  "suggestNextIncreaseUnknown": "加最小一档重量，次数回到 {min} 附近是正常的",
+  "@suggestNextIncreaseUnknown": {
+    "placeholders": {
+      "min": { "type": "int" }
+    }
+  },
+  "suggestNextIncrease": "{weight}kg × {range} 次（次数回落到 {min} 附近是正常的）",
+  "@suggestNextIncrease": {
+    "placeholders": {
+      "weight": { "type": "String" },
+      "range": { "type": "String" },
+      "min": { "type": "int" }
+    }
+  },
+  "suggestHoldTitle": "当前重量合适，保持",
+  "suggestHoldFadeOutTitle": "重量合适，后段掉次数明显",
+  "suggestReasonInRange": "{inRange}/{total} 组在 {range} 次内",
+  "@suggestReasonInRange": {
+    "placeholders": {
+      "inRange": { "type": "int" },
+      "total": { "type": "int" },
+      "range": { "type": "String" }
+    }
+  },
+  "suggestReasonOneRirZero": "，但有一组 RIR 为 0",
+  "suggestNextHoldUnknown": "维持当前重量",
+  "suggestNextHold": "维持 {weight}kg；{sets} 组都做到 {max} 次后加重",
+  "@suggestNextHold": {
+    "placeholders": {
+      "weight": { "type": "String" },
+      "sets": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "suggestReasonFadeOut": "第 1 组 {reps} 次达标，之后掉到 {rest} 次",
+  "@suggestReasonFadeOut": {
+    "placeholders": {
+      "reps": { "type": "int" },
+      "rest": { "type": "String" }
+    }
+  },
+  "suggestNextFadeOutUnknown": "保持重量，先把后几组补齐",
+  "suggestNextFadeOut": "维持 {weight}kg，休息足一点，先把后几组补到 {min} 次",
+  "@suggestNextFadeOut": {
+    "placeholders": {
+      "weight": { "type": "String" },
+      "min": { "type": "int" }
+    }
+  },
+  "suggestReasonGeneric": "本次 {reps} 次，目标 {range}",
+  "@suggestReasonGeneric": {
+    "placeholders": {
+      "reps": { "type": "String" },
+      "range": { "type": "String" }
+    }
+  },
+  "suggestNextGeneric": "维持 {weight}kg，稳定在区间内再加",
+  "@suggestNextGeneric": {
+    "placeholders": {
+      "weight": { "type": "String" }
+    }
+  },
+  "suggestCompactLine": "{title}：{next}",
+  "@suggestCompactLine": {
+    "placeholders": {
+      "title": { "type": "String" },
+      "next": { "type": "String" }
+    }
+  },
+  "suggestNextLabel": "下次：{next}",
+  "@suggestNextLabel": {
+    "placeholders": {
+      "next": { "type": "String" }
+    }
   }
 }

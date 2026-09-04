@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'exercise_figure_data.dart';
 
 /// 动作示意动画：火柴人在起止两帧间往返。
@@ -93,7 +94,7 @@ class _ExerciseFigureState extends State<ExerciseFigure>
                     Icon(Icons.accessibility_new, color: scheme.onSurfaceVariant),
                     const SizedBox(height: 4),
                     Text(
-                      '暂无示意',
+                      AppLocalizations.of(context).figureUnavailable,
                       style: TextStyle(
                         fontSize: AppTextSize.xs,
                         color: scheme.onSurfaceVariant,

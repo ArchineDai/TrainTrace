@@ -1,36 +1,58 @@
 [
   {
-    "id": "seed_session_a_20260901",
+    "id": "seed_session_1_20260830",
     "routineId": "rt_a_back_shoulder",
     "routineName": "A 背 + 肩",
-    "startedAt": "2026-09-01T18:30:00+08:00",
-    "durationMinutes": 55,
+    "startedAt": "2026-08-30T18:30:00+08:00",
     "exercises": [
-      {"exerciseId": "ex_lat_pulldown", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90,
+      {"exerciseId": "ex_lat_pulldown", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "重量合适",
        "sets": [{"weightKg": 20, "reps": 12}, {"weightKg": 20, "reps": 12}, {"weightKg": 20, "reps": 12}]},
-      {"exerciseId": "ex_seated_row", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90,
-       "sets": [{"weightKg": 19, "reps": 12}, {"weightKg": 19, "reps": 12}, {"weightKg": 19, "reps": 12}]},
-      {"exerciseId": "ex_shoulder_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90,
-       "sets": [{"weightKg": 10, "reps": 12}, {"weightKg": 10, "reps": 12}]},
-      {"exerciseId": "ex_lateral_raise", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "偏重",
-       "sets": [{"weightKg": 5, "reps": 8, "rir": 1}, {"weightKg": 5, "reps": 8, "rir": 0}, {"weightKg": 5, "reps": 8, "rir": 0}]},
-      {"exerciseId": "ex_reverse_pec_deck", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "后两组力竭",
-       "sets": [{"weightKg": 12, "reps": 12, "rir": 1}, {"weightKg": 12, "reps": 6, "rir": 0}, {"weightKg": 12, "reps": 6, "rir": 0}]}
+      {"exerciseId": "ex_seated_row", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "最后一组接近力竭",
+       "sets": [{"weightKg": 19, "reps": 12}, {"weightKg": 19, "reps": 12}, {"weightKg": 19, "reps": 12, "rir": 1}]},
+      {"exerciseId": "ex_shoulder_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "10kg 可作为这台机器基准",
+       "sets": [{"setType": "warmup", "weightKg": 5, "reps": 15}, {"weightKg": 10, "reps": 12}, {"weightKg": 10, "reps": 12}]},
+      {"exerciseId": "ex_lateral_raise", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "明显偏重",
+       "sets": [{"weightKg": 5, "reps": 8}, {"weightKg": 5, "reps": 8}, {"weightKg": 5, "reps": 8}]},
+      {"exerciseId": "ex_reverse_pec_deck", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "后两组力竭，12kg 偏重",
+       "sets": [{"weightKg": 12, "reps": 12}, {"weightKg": 12, "reps": 6, "rir": 0}, {"weightKg": 12, "reps": 6, "rir": 0}]}
     ]
   },
   {
-    "id": "seed_session_b_20260903",
+    "id": "seed_session_2_20260901",
     "routineId": "rt_b_chest_arm",
     "routineName": "B 胸 + 手臂",
-    "startedAt": "2026-09-03T18:30:00+08:00",
-    "durationMinutes": 40,
+    "startedAt": "2026-09-01T18:30:00+08:00",
     "exercises": [
-      {"exerciseId": "ex_incline_chest_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "单边 2.5kg",
+      {"exerciseId": "ex_pec_deck", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "重量偏重，后续更适合 10～15 次",
+       "sets": [{"reps": 8}, {"reps": 8}, {"reps": 8}]},
+      {"exerciseId": "ex_chest_press", "equipmentLabel": "Hammer", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "空载，左侧先力竭",
+       "sets": [{"weightKg": 0, "reps": 6}, {"weightKg": 0, "reps": 8}]},
+      {"exerciseId": "ex_incline_chest_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "单边 2.5kg，三头参与明显",
        "sets": [{"weightKg": 2.5, "reps": 12}, {"weightKg": 2.5, "reps": 12}]},
-      {"exerciseId": "ex_dumbbell_curl", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60, "note": "较合适",
-       "sets": [{"weightKg": 5, "reps": 10, "rir": 2}]},
-      {"exerciseId": "ex_machine_curl", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60, "note": "明显偏重",
-       "sets": [{"weightKg": 12, "reps": 5, "rir": 0}]}
+      {"exerciseId": "ex_machine_curl", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60, "note": "直接力竭，明显过重",
+       "sets": [{"weightKg": 12, "reps": 5, "rir": 0}]},
+      {"exerciseId": "ex_dumbbell_curl", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 60, "note": "比器械合适很多",
+       "sets": [{"weightKg": 5, "reps": 10}]}
+    ]
+  },
+  {
+    "id": "seed_session_3_20260903",
+    "routineId": "rt_a_back_shoulder",
+    "routineName": "A 背 + 肩",
+    "startedAt": "2026-09-03T18:30:00+08:00",
+    "exercises": [
+      {"exerciseId": "ex_incline_chest_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "当时认错机器，算额外刺激",
+       "sets": [{"weightKg": 5, "reps": 9}, {"weightKg": 5, "reps": 9}]},
+      {"exerciseId": "ex_shoulder_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "第二组接近力竭",
+       "sets": [{"weightKg": 12, "reps": 12}, {"weightKg": 12, "reps": 12, "rir": 1}, {"weightKg": 12, "reps": 9}]},
+      {"exerciseId": "ex_lat_pulldown", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "22.7kg 最后出现代偿",
+       "sets": [{"weightKg": 18.16, "reps": 12}, {"weightKg": 22.7, "reps": 12}, {"weightKg": 18.16, "reps": 12}]},
+      {"exerciseId": "ex_seated_row", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "第 3 组约 9 个完整 + 3 个半程",
+       "sets": [{"weightKg": 18, "reps": 12}, {"weightKg": 18, "reps": 12}, {"weightKg": 18, "reps": 12}]},
+      {"exerciseId": "ex_lateral_raise", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "比 5kg 明显更合适",
+       "sets": [{"weightKg": 2.5, "reps": 12}, {"weightKg": 2.5, "reps": 12}, {"weightKg": 2.5, "reps": 12}]},
+      {"exerciseId": "ex_reverse_pec_deck", "targetRepMin": 12, "targetRepMax": 20, "restSeconds": 60, "note": "后两组力竭；休息约 1 分钟也偏短",
+       "sets": [{"weightKg": 12, "reps": 12}, {"weightKg": 12, "reps": 6, "rir": 0}, {"weightKg": 12, "reps": 6, "rir": 0}]}
     ]
   }
 ]

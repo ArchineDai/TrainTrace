@@ -6,7 +6,9 @@ import '../../../core/formatters.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
+import '../../exercises/presentation/exercise_labels.dart';
 import '../../workout/data/workout_repository.dart';
 import '../../workout/models/workout_session.dart';
 import '../../workout/state/active_workout_view_model.dart';
@@ -22,10 +24,11 @@ class SessionDetailPage extends ConsumerWidget {
     final session = ref.watch(sessionDetailProvider(sessionId)).value;
     final now = ref.read(clockProvider).now();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(session?.routineName ?? '训练详情'),
+        title: Text(session?.routineName ?? l10n.sessionDetailTitle),
         actions: [
           if (session != null)
             PopupMenuButton<String>(
@@ -35,10 +38,13 @@ class SessionDetailPage extends ConsumerWidget {
                 _ => null,
               },
               itemBuilder: (_) => [
-                const PopupMenuItem(value: 'again', child: Text('再练一次')),
+                PopupMenuItem(value: 'again', child: Text(l10n.doItAgain)),
                 PopupMenuItem(
                   value: 'delete',
-                  child: Text('删除记录', style: TextStyle(color: AppTheme.of(context).danger)),
+                  child: Text(
+                    l10n.deleteSession,
+                    style: TextStyle(color: AppTheme.of(context).danger),
+                  ),
                 ),
               ],
             ),
@@ -50,14 +56,14 @@ class SessionDetailPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 Text(
-                  '${Formatters.dateTime(session.startedAt, now)}'
-                  '${session.duration == null ? '' : ' · ${Formatters.duration(session.duration!)}'}'
+                  '${Formatters.dateTime(session.startedAt, now, l10n)}'
+                  '${session.duration == null ? '' : ' · ${Formatters.duration(session.duration!, l10n)}'}'
                   '${session.gymName == null ? '' : ' · ${session.gymName}'}',
                   style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${session.exercises.length} 个动作 · ${session.completedSetCount} 组'
+                  '${l10n.sessionMetaExercisesSets(session.exercises.length, session.completedSetCount)}'
                   ' · ${Formatters.kg(session.totalVolumeKg)} kg',
                   style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
                 ),
@@ -78,7 +84,7 @@ class SessionDetailPage extends ConsumerWidget {
   Future<void> _again(BuildContext context, WidgetRef ref, WorkoutSession session) async {
     final vm = ref.read(activeWorkoutProvider.notifier);
     if (vm.hasActive) {
-      AppTheme.showToast(context, '有一次训练还在进行中，先继续或放弃它');
+      AppTheme.showToast(context, AppLocalizations.of(context).workoutInProgressToast);
       return;
     }
     await vm.startFromSession(session);
@@ -86,20 +92,24 @@ class SessionDetailPage extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, WorkoutSession session) async {
+    final l10n = AppLocalizations.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('删除这次训练记录？'),
-        content: const Text('动作的历史表现与个人记录会随之变化。'),
+        title: Text(l10n.deleteSessionTitle),
+        content: Text(l10n.deleteSessionBody),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.of(ctx).danger,
               foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('删除'),
+            child: Text(l10n.actionDelete),
           ),
         ],
       ),
@@ -107,7 +117,7 @@ class SessionDetailPage extends ConsumerWidget {
     if (ok != true) return;
     await ref.read(workoutRepositoryProvider).deleteSession(session.id);
     if (context.mounted) {
-      AppTheme.showToast(context, '已删除');
+      AppTheme.showToast(context, l10n.toastDeleted);
       context.pop();
     }
   }
@@ -118,9 +128,21 @@ class _ExerciseBlock extends StatelessWidget {
 
   final WorkoutExercise exercise;
 
+  /// 动作名 +（器械标签）。
+  String _title(BuildContext context, AppLocalizations l10n) {
+    final name = exerciseDisplayName(
+      context,
+      exercise.exerciseName,
+      exercise.exerciseNameEn,
+    );
+    final label = exercise.equipmentLabel;
+    return label == null ? name : l10n.nameWithLabel(name, label);
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final sets = exercise.completedSets;
     return Card(
       child: Padding(
@@ -134,8 +156,7 @@ class _ExerciseBlock extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      exercise.exerciseName +
-                          (exercise.equipmentLabel == null ? '' : '（${exercise.equipmentLabel}）'),
+                      _title(context, l10n),
                       style: TextStyle(fontSize: AppTextSize.md, fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -151,7 +172,7 @@ class _ExerciseBlock extends StatelessWidget {
             const SizedBox(height: 8),
             if (sets.isEmpty)
               Text(
-                '未完成任何一组',
+                l10n.noCompletedSets,
                 style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
               )
             else
@@ -168,8 +189,12 @@ class _ExerciseBlock extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${sets[i].weightKg == null ? '—' : Formatters.kg(sets[i].weightKg!)} kg'
-                        '  ×  ${sets[i].reps ?? '—'} 次',
+                        l10n.setLine(
+                          sets[i].weightKg == null
+                              ? '—'
+                              : Formatters.kg(sets[i].weightKg!),
+                          '${sets[i].reps ?? '—'}',
+                        ),
                         style: TextStyle(fontSize: AppTextSize.md),
                       ),
                       if (sets[i].rir != null) ...[

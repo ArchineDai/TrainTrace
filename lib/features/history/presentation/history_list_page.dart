@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/formatters.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/time/clock.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../models/history_models.dart';
 import '../state/history_list_view_model.dart';
@@ -18,16 +19,16 @@ class HistoryListPage extends ConsumerWidget {
     final summaries = ref.watch(sessionSummariesProvider).value;
     final now = ref.read(clockProvider).now();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      // 文案随 backlog D-11 统一迁 ARB。
-      appBar: AppBar(title: const Text('历史')),
+      appBar: AppBar(title: Text(l10n.tabHistory)),
       body: summaries == null
           ? const SizedBox.shrink()
           : summaries.isEmpty
               ? Center(
                   child: Text(
-                    '还没有训练记录',
+                    l10n.historyEmpty,
                     style: TextStyle(fontSize: AppTextSize.md, color: scheme.onSurfaceVariant),
                   ),
                 )
@@ -40,10 +41,11 @@ class HistoryListPage extends ConsumerWidget {
 
   List<Widget> _grouped(BuildContext context, List<SessionSummary> list, DateTime now) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final out = <Widget>[];
     String? month;
     for (final s in list) {
-      final m = Formatters.monthLabel(s.startedAt);
+      final m = Formatters.monthLabel(s.startedAt, l10n);
       if (m != month) {
         month = m;
         out.add(Padding(
@@ -73,15 +75,16 @@ class _SessionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final d = summary.duration;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        title: Text(summary.routineName ?? '空白训练'),
+        title: Text(summary.routineName ?? l10n.emptyWorkoutName),
         subtitle: Text(
-          '${Formatters.dateTime(summary.startedAt, now)}'
-          '${d == null ? '' : ' · ${Formatters.duration(d)}'}'
-          '\n${summary.exerciseCount} 个动作 · ${summary.setCount} 组'
+          '${Formatters.dateTime(summary.startedAt, now, l10n)}'
+          '${d == null ? '' : ' · ${Formatters.duration(d, l10n)}'}'
+          '\n${l10n.sessionMetaExercisesSets(summary.exerciseCount, summary.setCount)}'
           ' · ${Formatters.kg(summary.totalVolumeKg)} kg'
           '${summary.gymName == null ? '' : ' · ${summary.gymName}'}',
           style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),

@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../core/formatters.dart';
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../exercises/presentation/exercise_labels.dart';
 import '../../../history/models/history_models.dart';
+import '../../../suggestion/presentation/suggestion_card.dart';
+import '../../../suggestion/state/suggestion_provider.dart';
 import '../../models/numeric_input.dart';
 import '../../models/workout_session.dart';
 import 'set_row.dart';
@@ -56,10 +60,13 @@ class WorkoutExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final colors = AppTheme.of(context);
+    final l10n = AppLocalizations.of(context);
     final target = exercise.targetRepMin != null && exercise.targetRepMax != null
-        ? '目标 ${exercise.targetRepMin}–${exercise.targetRepMax} 次'
+        ? l10n.targetRepsMeta(exercise.targetRepMin!, exercise.targetRepMax!)
         : null;
-    final rest = exercise.restSeconds == null ? null : '休息 ${exercise.restSeconds}s';
+    final rest = exercise.restSeconds == null
+        ? null
+        : l10n.restMeta(exercise.restSeconds!);
     final meta = [target, rest].whereType<String>().join(' · ');
 
     return Card(
@@ -79,7 +86,11 @@ class WorkoutExerciseCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          exercise.exerciseName,
+                          exerciseDisplayName(
+                            context,
+                            exercise.exerciseName,
+                            exercise.exerciseNameEn,
+                          ),
                           style: TextStyle(
                             fontSize: AppTextSize.lg,
                             fontWeight: FontWeight.w600,
@@ -103,29 +114,30 @@ class WorkoutExerciseCard extends StatelessWidget {
                   onLongPress: onLongPressLabel,
                 ),
                 PopupMenuButton<ExerciseCardAction>(
-                  tooltip: '更多',
+                  tooltip: l10n.actionMore,
                   onSelected: onAction,
                   itemBuilder: (_) => [
                     PopupMenuItem(
                       value: ExerciseCardAction.toggleRir,
-                      child: Text(rirExpanded ? '隐藏 RIR' : '记录 RIR'),
+                      child: Text(rirExpanded ? l10n.hideRir : l10n.recordRir),
                     ),
                     if (last != null)
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: ExerciseCardAction.applyLast,
-                        child: Text('沿用上次'),
+                        child: Text(l10n.applyLast),
                       ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: ExerciseCardAction.changeLabel,
-                      child: Text('器械 / 场馆标签'),
+                      child: Text(l10n.equipmentLabelMenu),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: ExerciseCardAction.viewExercise,
-                      child: Text('查看动作要领'),
+                      child: Text(l10n.viewExerciseGuide),
                     ),
                     PopupMenuItem(
                       value: ExerciseCardAction.remove,
-                      child: Text('删除动作', style: TextStyle(color: colors.danger)),
+                      child: Text(l10n.removeExercise,
+                          style: TextStyle(color: colors.danger)),
                     ),
                   ],
                 ),
@@ -138,12 +150,8 @@ class WorkoutExerciseCard extends StatelessWidget {
                 onTap: last == null ? null : () => onAction(ExerciseCardAction.applyLast),
                 child: Text(
                   last == null
-                      ? '上次：无记录'
-                      : '上次：${Formatters.setsSummary([
-                              for (final s in last!.sets)
-                                (weightKg: s.weightKg, reps: s.reps),
-                            ])}'
-                          '${last!.equipmentLabel == null ? '' : '（${last!.equipmentLabel}）'}',
+                      ? l10n.lastTimeNone
+                      : l10n.lastTimeValue(_lastSummary(l10n)),
                   style: TextStyle(
                     fontSize: AppTextSize.sm,
                     color: scheme.onSurfaceVariant,
@@ -151,6 +159,20 @@ class WorkoutExerciseCard extends StatelessWidget {
                 ),
               ),
             ),
+            // ── 建议（一行）：按当前器械标签与本次目标区间算 ────────
+            if (last != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: SuggestionCard(
+                  compact: true,
+                  query: SuggestionQuery(
+                    exerciseId: exercise.exerciseId,
+                    equipmentLabel: exercise.equipmentLabel,
+                    targetRepMin: exercise.targetRepMin,
+                    targetRepMax: exercise.targetRepMax,
+                  ),
+                ),
+              ),
             // ── 各组 ──────────────────────────────────────────
             for (var i = 0; i < exercise.sets.length; i++) ...[
               _dismissible(
@@ -177,12 +199,21 @@ class WorkoutExerciseCard extends StatelessWidget {
             TextButton.icon(
               onPressed: onAddSet,
               icon: const Icon(Icons.add),
-              label: const Text('添加一组'),
+              label: Text(l10n.addSet),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// 上次表现：各组摘要 +（器械标签）。
+  String _lastSummary(AppLocalizations l10n) {
+    final summary = Formatters.setsSummary([
+      for (final s in last!.sets) (weightKg: s.weightKg, reps: s.reps),
+    ]);
+    final label = last!.equipmentLabel;
+    return label == null ? summary : l10n.nameWithLabel(summary, label);
   }
 
   String _text(WorkoutSet set, SetField field) {
@@ -236,7 +267,7 @@ class _LabelChip extends StatelessWidget {
             color: label == null ? scheme.onSurfaceVariant : scheme.onSurface,
           ),
           label: Text(
-            label ?? '器械',
+            label ?? AppLocalizations.of(context).equipmentChipDefault,
             style: TextStyle(
               fontSize: AppTextSize.xs,
               color: label == null ? scheme.onSurfaceVariant : scheme.onSurface,

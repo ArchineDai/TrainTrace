@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/suggestion.dart';
 import '../state/suggestion_provider.dart';
 
@@ -19,6 +20,7 @@ class SuggestionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(suggestionProvider(query)).value;
     if (s == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     final colors = AppTheme.of(context);
     final scheme = Theme.of(context).colorScheme;
     final accent = switch (s.kind) {
@@ -42,7 +44,7 @@ class SuggestionCard extends ConsumerWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              '${s.title}：${s.nextTarget}',
+              l10n.suggestCompactLine(s.title, s.nextTarget),
               style: TextStyle(fontSize: AppTextSize.xs, color: accent),
             ),
           ),
@@ -98,7 +100,7 @@ class SuggestionCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '下次：${s.nextTarget}',
+                        l10n.suggestNextLabel(s.nextTarget),
                         style: TextStyle(fontSize: AppTextSize.sm),
                       ),
                     ],

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/log.dart';
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../data/equipment_photo_store.dart';
 import '../../data/exercise_repository.dart';
 import '../../models/exercise.dart';
@@ -32,6 +33,7 @@ class EquipmentNotePhoto extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final radius = BorderRadius.circular(AppTheme.radius);
 
     Widget child;
@@ -57,7 +59,9 @@ class EquipmentNotePhoto extends ConsumerWidget {
     final canTap = note.hasPhoto || allowPick;
     return Semantics(
       button: canTap,
-      label: note.hasPhoto ? '${note.displayLabel} 的照片' : '给 ${note.displayLabel} 拍照',
+      label: note.hasPhoto
+          ? l10n.photoOfLabel(note.displayLabel)
+          : l10n.takePhotoOfLabel(note.displayLabel),
       child: InkWell(
         borderRadius: radius,
         onTap: !canTap
@@ -85,6 +89,7 @@ abstract final class EquipmentPhotoActions {
 
   /// 弹出"拍照 / 从相册选"，成功后替换旧照片。
   static Future<void> pick(BuildContext context, WidgetRef ref, EquipmentNote note) async {
+    final l10n = AppLocalizations.of(context);
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
@@ -94,13 +99,13 @@ abstract final class EquipmentPhotoActions {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('拍照'),
+              title: Text(l10n.takePhoto),
               minTileHeight: AppTheme.minTouch,
               onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('从相册选'),
+              title: Text(l10n.pickFromGallery),
               minTileHeight: AppTheme.minTouch,
               onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
             ),
@@ -121,7 +126,7 @@ abstract final class EquipmentPhotoActions {
       );
     } catch (e) {
       swallow(e, 'EquipmentPhotoActions.pick');
-      if (context.mounted) AppTheme.showToast(context, '无法打开相机 / 相册');
+      if (context.mounted) AppTheme.showToast(context, l10n.cameraOpenFailed);
       return;
     }
     if (picked == null) return;
@@ -134,7 +139,7 @@ abstract final class EquipmentPhotoActions {
       if (note.hasPhoto) await store.delete(note.photoPath!);
     } catch (e) {
       swallow(e, 'EquipmentPhotoActions.save');
-      if (context.mounted) AppTheme.showToast(context, '保存照片失败');
+      if (context.mounted) AppTheme.showToast(context, l10n.photoSaveFailed);
     }
   }
 
@@ -162,13 +167,14 @@ class EquipmentPhotoViewer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final file = ref.watch(equipmentPhotoFileProvider(note.photoPath ?? '')).value;
     return Scaffold(
       appBar: AppBar(
         title: Text(note.displayLabel),
         actions: [
           IconButton(
-            tooltip: '换一张',
+            tooltip: l10n.replacePhoto,
             icon: const Icon(Icons.photo_camera_outlined),
             onPressed: () async {
               await EquipmentPhotoActions.pick(context, ref, note);
@@ -176,17 +182,23 @@ class EquipmentPhotoViewer extends ConsumerWidget {
             },
           ),
           IconButton(
-            tooltip: '删除照片',
+            tooltip: l10n.deletePhoto,
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
               final ok = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('删除这张照片？'),
-                  content: const Text('备注本身保留，只删照片。'),
+                  title: Text(l10n.deletePhotoTitle),
+                  content: Text(l10n.deletePhotoBody),
                   actions: [
-                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-                    FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('删除')),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: Text(l10n.actionCancel),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: Text(l10n.actionDelete),
+                    ),
                   ],
                 ),
               );
@@ -209,7 +221,7 @@ class EquipmentPhotoViewer extends ConsumerWidget {
                         file,
                         fit: BoxFit.contain,
                         errorBuilder: (_, _, _) => Text(
-                          '照片文件丢失',
+                          l10n.photoFileMissing,
                           style: TextStyle(color: scheme.onSurfaceVariant),
                         ),
                       ),

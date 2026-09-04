@@ -38,17 +38,22 @@
   而非设置项；键盘弹出时列表底部可能被遮住（Phase 6 打磨）。
 - **D-9 字体许可署名**：两套字体都是 SIL OFL 1.1，许可文本已随 `assets/fonts/*-OFL.txt`
   打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。
-- **D-11 文案迁移到 ARB**（2026-09-04 起）：多语言基础设施已落地（`docs/i18n.md`），
-  设置页 / Tab 栏 / 占位页已迁。其余约 170 处硬编码中文逐页迁，每页迁完跑
-  `pwsh scripts/check_l10n.ps1`。按数量：`home_page`（25）、`routine_edit_page`（20）、
-  `active_workout_page`（16）、`exercise_picker_page`（14）、`routine_list_page`（12）、
-  `exercise.dart` 的枚举展示名（12，改成 presentation 层扩展，model 不 import l10n）、
-  `workout_exercise_card` / `equipment_label_sheet`（各 11）、`workout_summary_page` /
-  `rest_timer_bar`（各 7）、`local_notification_rest_notifier`（4，调用方传字符串）、
-  `set_row` / `numeric_keypad` / `workout_session.dart`（8）。`dev_playground_page`（13）
-  随 D-6 删除，不迁。动作名已有 `name` / `nameEn` 双字段，按 `effective` 选字段即可。
+- **D-16 动作要领只有中文**：`assets/seed/exercises.json` 的 `cues` /
+  `commonMistakes` / `equipmentVariants` 三段是中文教练话术，没有英文版，英文界面上
+  这三块仍显示中文（`name` / `nameEn` 已双语，标题不受影响）。要补就是给 16 个内置
+  动作各写三段英文，属内容工作不是代码工作：加 `cuesEn` 等字段，`Exercise` 上按语言
+  选字段（同 `exerciseDisplayName` 的做法）。自定义动作这三段本来就空。
 
 ## 已了结
+
+- **D-11 文案迁移到 ARB**（2026-09-04）：`lib/` 里的界面文案全部走 ARB，约 150 个 key。
+  枚举展示名移到 presentation 层扩展（`exercise_labels.dart` / `set_type_labels.dart`），
+  `Formatters` 的日期 / 时长方法与 `SuggestionEngine.evaluate` 收 `AppLocalizations` 参数，
+  服务层文案由调用方经新增的 `appLocalizationsProvider` 取好传入
+  （`RestNotifier.scheduleRestEnd(at, text:)`）。join 出来的动作名改成可空的
+  `exerciseName` / `exerciseNameEn`，展示走 `exerciseDisplayName`。细则见 `docs/i18n.md`。
+  剩下的中文只有 `dev_playground_page`（随 D-6 删）和语言自称 `'中文'`。
+  内容侧的英文缺口另记 D-16。
 
 - **D-7 中文字体**（2026-09-04）：先选 MiSans，三档 24 MB 且许可禁止改编无法子集，
   改为 Noto Sans SC 子集化（GB2312 + UI 符号，9259 字符）+ IBM Plex Sans，
