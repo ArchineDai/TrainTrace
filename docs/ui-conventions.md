@@ -30,9 +30,11 @@
   分隔线、按钮尺寸完全一致。
 - 两套 `ColorScheme` 手写在 `AppTheme` 里，不用 `fromSeed`。暗色近黑底 `#0C0D10`，
   亮色冷白底 `#F4F5F7`，`surfaceTint` 透明，面板不随海拔变色。
-- 品牌橙 `#FF7A1A` 在暗色下是 `primary`，能当文字。在亮色下对白底只有约 2.4:1，
-  所以亮色 `primary` 换成加深的 `#B34A08`；橙本身只做填充（进度条、当前组标记、
-  按钮底、标签底），且填充上必须带墨色文字或墨色线，不能独自承载信息。
+- 品牌橙 `#FF7A1A` 是亮暗共同的 `primary`，`onPrimary` 一律墨色，填充在两套主题里
+  同一个颜色。橙在白底上只有约 2.4:1，不能当文字：要橙色文字用
+  `AppTheme.of(context).accentText`（暗色下是橙，亮色下加深到 `#B34A08`）。
+  `TextButton` 已默认走 accentText。亮色下橙填充必须带墨色文字或墨色线，
+  不能独自承载信息。
 - 语义色亮暗各一版，放在 `AppColors`（`ThemeExtension`），经 `AppTheme.of(context)` 取。
   全部对各自底色满足 4.5:1，由 `test/theme/app_theme_test.dart` 守着。
 - 全部字号启用等宽数字（tabular figures）。

@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 ///
 /// - 身份放在排版和一个橙色上，不放在黑底上。亮暗两套只换底色 token，
 ///   字体、字号、分隔线、按钮尺寸一律相同。
-/// - 品牌橙 [accent] 在暗色下能当文字，在亮色下对白底对比度只有约 2.4:1，
-///   所以亮色下只做填充，文字用加深过的 `colorScheme.primary`。
+/// - 品牌橙 [accent] 是两套主题共同的 `primary`，填充在亮暗下同一个颜色，
+///   压在上面的字一律墨色。橙色本身在白底上只有约 2.4:1，不能当文字：
+///   要橙色文字用 [AppColors.accentText]，亮色下它是加深的 #B34A08。
 /// - 语义色（完成 / 计时 / 建议 / 危险）亮暗各一版，经 [AppTheme.of] 取
 ///   [AppColors]。Material 角色色（surface / outline / primary）经
 ///   `Theme.of(context).colorScheme` 取。
@@ -78,11 +79,14 @@ abstract final class AppTheme {
     scrim: Color(0xFF000000),
   );
 
-  // ── 亮色：冷白底、深橙做文字主色、橙只做填充 ───────────────────
+  // ── 亮色：冷白底、品牌橙做填充、墨字压在橙上 ────────────────────
+  // primary 仍是品牌橙：填充（按钮底、选中段、Tab 胶囊）在亮暗两套里同一个颜色，
+  // 可读性靠 onPrimary 墨字保证（7.4:1）。橙色写在白底上不够清（2.4:1），
+  // 需要橙色文字的地方用 AppColors.accentText，亮色下它是加深的 #B34A08。
   static const ColorScheme _lightScheme = ColorScheme(
     brightness: Brightness.light,
-    primary: Color(0xFFB34A08),
-    onPrimary: Color(0xFFFFFFFF),
+    primary: accent,
+    onPrimary: _ink,
     primaryContainer: Color(0xFFFFE0C7),
     onPrimaryContainer: Color(0xFF5A2600),
     secondary: Color(0xFF5F6670),
@@ -171,8 +175,16 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      // 文字型按钮是"橙色当文字"的典型场景，亮色下要走加深的 accentText。
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: colors.accentText,
+          minimumSize: const Size(minTouch, minTouch),
+        ),
+      ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: scheme.onSurface,
           minimumSize: const Size(minTouch, minTouch),
           side: BorderSide(color: scheme.outline),
           shape: RoundedRectangleBorder(
@@ -266,6 +278,7 @@ abstract final class AppTheme {
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
+    required this.accentText,
     required this.setDone,
     required this.onSetDone,
     required this.setDoneSurface,
@@ -277,6 +290,10 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.danger,
     required this.disabled,
   });
+
+  /// 橙色当文字时用它：暗色下就是品牌橙，亮色下加深到 #B34A08 才够 4.5:1。
+  /// 填充不要用它，填充用 `colorScheme.primary`。
+  final Color accentText;
 
   /// 已完成的组：勾选按钮底色。
   final Color setDone;
@@ -305,6 +322,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color disabled;
 
   static const AppColors dark = AppColors(
+    accentText: AppTheme.accent,
     setDone: Color(0xFF59D27A),
     onSetDone: Color(0xFF0C0D10),
     setDoneSurface: Color(0xFF1F2A1E),
@@ -318,6 +336,7 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   static const AppColors light = AppColors(
+    accentText: Color(0xFFB34A08),
     setDone: Color(0xFF1B7A43),
     onSetDone: Color(0xFFFFFFFF),
     setDoneSurface: Color(0xFFDDF3E4),
@@ -332,6 +351,7 @@ class AppColors extends ThemeExtension<AppColors> {
 
   @override
   AppColors copyWith({
+    Color? accentText,
     Color? setDone,
     Color? onSetDone,
     Color? setDoneSurface,
@@ -344,6 +364,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? disabled,
   }) {
     return AppColors(
+      accentText: accentText ?? this.accentText,
       setDone: setDone ?? this.setDone,
       onSetDone: onSetDone ?? this.onSetDone,
       setDoneSurface: setDoneSurface ?? this.setDoneSurface,
@@ -361,6 +382,7 @@ class AppColors extends ThemeExtension<AppColors> {
   AppColors lerp(AppColors? other, double t) {
     if (other == null) return this;
     return AppColors(
+      accentText: Color.lerp(accentText, other.accentText, t)!,
       setDone: Color.lerp(setDone, other.setDone, t)!,
       onSetDone: Color.lerp(onSetDone, other.onSetDone, t)!,
       setDoneSurface: Color.lerp(setDoneSurface, other.setDoneSurface, t)!,

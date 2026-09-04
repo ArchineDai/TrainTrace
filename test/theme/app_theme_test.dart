@@ -37,11 +37,17 @@ void main() {
             greaterThanOrEqualTo(7));
       });
 
-      test('主色能当文字，onPrimary 能压在主色上', () {
-        expect(_contrast(scheme.primary, scheme.surface),
-            greaterThanOrEqualTo(4.5));
+      test('主色是品牌橙，onPrimary 能压在主色上，accentText 能写在底色上', () {
+        expect(scheme.primary, AppTheme.accent);
         expect(_contrast(scheme.onPrimary, scheme.primary),
             greaterThanOrEqualTo(4.5));
+        expect(_contrast(colors!.accentText, scheme.surface),
+            greaterThanOrEqualTo(4.5));
+        // 暗色下橙色本身就能当文字；亮色下只有 2.4:1，所以那边不检查。
+        if (scheme.brightness == Brightness.dark) {
+          expect(_contrast(scheme.primary, scheme.surface),
+              greaterThanOrEqualTo(4.5));
+        }
       });
 
       test('语义色对底色 ≥ 4.5，勾选图标对勾选底 ≥ 4.5', () {
