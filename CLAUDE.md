@@ -69,6 +69,7 @@ Repository 查询默认过滤 `deleted_at IS NULL`。物理删除只有一处例
 | `test/state/` | ViewModel 状态流转（完成组 → 生成下一组、恢复、结束清理） |
 | `test/suggestion/` | 建议引擎用例（用 PLAN.md 1.4 的种子数据） |
 | `test/router/` | `AppRoutes` URL 契约 |
+| `test/theme/` | 亮暗两套 token 的对比度契约（语义色对底色 ≥ 4.5:1） |
 
 口令：说「别写测试」只跑门禁交付，说「带测试」就补上。默认按表走。
 

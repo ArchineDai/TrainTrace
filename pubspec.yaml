@@ -32,3 +32,24 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # 西文 / 数字走 IBM Plex Sans（OFL），汉字回落到 Noto Sans SC（OFL）。
+  # Noto 已子集化到 GB2312 + UI 符号（tool/fonts/subset_fonts.mjs），
+  # 三档合计约 6 MB。字重只带 400 / 500 / 700，视觉方向靠这三档的层级成立。
+  fonts:
+    - family: IBMPlexSans
+      fonts:
+        - asset: assets/fonts/IBMPlexSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSans-Bold.ttf
+          weight: 700
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.otf
+          weight: 400
+        - asset: assets/fonts/NotoSansSC-Medium.otf
+          weight: 500
+        - asset: assets/fonts/NotoSansSC-Bold.otf
+          weight: 700

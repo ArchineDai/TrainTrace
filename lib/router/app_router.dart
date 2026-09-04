@@ -8,6 +8,7 @@ import '../features/history/presentation/history_list_page.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
 import '../features/settings/presentation/settings_page.dart';
+import '../features/workout/presentation/widgets/workout_dark_scope.dart';
 import '../shared/widgets/app_shell.dart';
 import 'app_routes.dart';
 
@@ -70,11 +71,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 根栈（覆盖 Tab 栏的全屏页）：/workout、/routines/:id/edit、
       // /exercises/:id、/history/:id 等随各 Phase 落地时在此注册，
       // 都带 parentNavigatorKey: _rootNavigatorKey。
+      // 训练页（以及现在替它站位的验证页）包 WorkoutDarkScope，
+      // 响应设置里的"训练中始终使用深色"。
       if (kDebugMode)
         GoRoute(
           path: AppRoutes.dev,
           parentNavigatorKey: _rootNavigatorKey,
-          builder: (context, state) => const DevPlaygroundPage(),
+          builder: (context, state) =>
+              const WorkoutDarkScope(child: DevPlaygroundPage()),
         ),
     ],
   );

@@ -1,0 +1,12 @@
+{
+  "name": "traintrace-font-tools",
+  "private": true,
+  "type": "module",
+  "description": "把 Noto Sans SC 三个字重子集化到 GB2312 + UI 符号，输出到 assets/fonts/。用法见 subset_fonts.mjs 头部注释。",
+  "scripts": {
+    "subset": "node subset_fonts.mjs"
+  },
+  "dependencies": {
+    "subset-font": "^2.4.0"
+  }
+}

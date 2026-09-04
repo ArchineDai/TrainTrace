@@ -259,7 +259,7 @@ class _DevPlaygroundPageState extends ConsumerState<DevPlaygroundPage> {
                       _status,
                       style: TextStyle(
                         fontSize: AppTextSize.sm,
-                        color: AppTheme.timerActive,
+                        color: AppTheme.of(context).timerActive,
                       ),
                     ),
                   ),

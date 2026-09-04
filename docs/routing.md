@@ -16,6 +16,9 @@
 4. Tab 切换用 `navigationShell.goBranch()`，不要 `context.go('/')`。
 5. `/workout` 是单例：进入前检查是否已在栈顶，避免重复 push；
    返回键只最小化（`context.pop()` 回首页），不结束训练。
+6. `/workout` 的 builder 用 `WorkoutDarkScope` 包住页面
+   （`features/workout/presentation/widgets/workout_dark_scope.dart`），
+   响应设置里的"训练中始终使用深色"。现在 `/dev` 验证页替它站位，已经这样包了。
 
 ## 加页面步骤
 

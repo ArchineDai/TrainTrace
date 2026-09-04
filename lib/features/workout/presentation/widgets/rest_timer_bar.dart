@@ -38,10 +38,10 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
     final scheme = Theme.of(context).colorScheme;
 
     final Color accent = finished
-        ? AppTheme.timerFinished
+        ? AppTheme.of(context).timerFinished
         : paused
             ? scheme.outline
-            : AppTheme.timerActive;
+            : AppTheme.of(context).timerActive;
 
     return Material(
       color: accent.withValues(alpha: 0.12),

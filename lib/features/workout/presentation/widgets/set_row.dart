@@ -42,7 +42,7 @@ class SetRow extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: isCompleted ? AppTheme.setDoneSurface : null,
+        color: isCompleted ? AppTheme.of(context).setDoneSurface : null,
         borderRadius: BorderRadius.circular(AppTheme.radius),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -87,8 +87,8 @@ class SetRow extends StatelessWidget {
                 ? IconButton.filled(
                     onPressed: onToggleComplete,
                     style: IconButton.styleFrom(
-                      backgroundColor: AppTheme.setDone,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppTheme.of(context).setDone,
+                      foregroundColor: AppTheme.of(context).onSetDone,
                     ),
                     icon: const Icon(Icons.check),
                     tooltip: '取消完成',

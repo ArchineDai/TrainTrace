@@ -30,3 +30,6 @@ Thumbs.db
 
 # Flutter tooling
 .flutter-plugins-dependencies
+
+# 字体子集化脚本的 npm 依赖（tool/fonts/），lock 文件保留
+tool/fonts/node_modules/

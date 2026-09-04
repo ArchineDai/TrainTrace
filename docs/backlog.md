@@ -20,8 +20,17 @@
 - **D-5 通知图标**：目前用 `@mipmap/ic_launcher`，Android 官方建议 drawable 单色图标；
   发布前补 `drawable/ic_notification` 并在 R8 `keep.xml` 里保留。
 - **D-6 删除验证页**：`features/dev/` 与 `AppRoutes.dev` 在 Phase 3 真实训练页落地后删除。
+- **D-9 字体许可署名**：两套字体都是 SIL OFL 1.1，许可文本已随 `assets/fonts/*-OFL.txt`
+  打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。
 
 ## 已了结
+
+- **D-7 中文字体**（2026-09-04）：先选 MiSans，三档 24 MB 且许可禁止改编无法子集，
+  改为 Noto Sans SC 子集化（GB2312 + UI 符号，9259 字符）+ IBM Plex Sans，
+  各 400 / 500 / 700 三档，`assets/fonts/` 合计约 6.6 MB。脚本 `tool/fonts/subset_fonts.mjs`。
+- **D-8 主题设置**（2026-09-04）：设置页"跟随系统 / 浅色 / 深色"分段按钮与"训练中始终
+  使用深色"开关（默认开），存 `app_settings`，经 `themeSettingsProvider` 读写；
+  全屏训练路由包 `WorkoutDarkScope`。
 
 - **V-3 记录速度**（2026-09-04）：验证页实测。三组中改一组次数（12→10）并全部完成
   = 6 次点击（2 次 ✓ + 1 次聚焦 + 2 位数字 + 1 次完成），不改数字则 3 次。达标。
