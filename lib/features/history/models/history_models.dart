@@ -4,6 +4,7 @@ import '../../workout/models/workout_session.dart';
 class SessionSummary {
   const SessionSummary({
     required this.id,
+    this.routineId,
     this.routineName,
     this.gymName,
     required this.startedAt,
@@ -14,6 +15,9 @@ class SessionSummary {
   });
 
   final String id;
+
+  /// 首页按它算"某模板上次练是哪天"；模板删除后为 null，快照名仍在。
+  final String? routineId;
   final String? routineName;
   final String? gymName;
   final DateTime startedAt;

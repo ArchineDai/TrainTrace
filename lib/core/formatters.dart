@@ -20,6 +20,25 @@ abstract final class Formatters {
     return '$m:$r';
   }
 
+  /// 相对日期：今天 / 昨天 / N 天前（7 天内）/ 9月1日 / 2025年12月3日（跨年）。
+  static String relativeDay(DateTime date, DateTime now) {
+    final d = DateTime(date.year, date.month, date.day);
+    final n = DateTime(now.year, now.month, now.day);
+    final days = n.difference(d).inDays;
+    if (days == 0) return '今天';
+    if (days == 1) return '昨天';
+    if (days > 1 && days < 7) return '$days 天前';
+    if (date.year == now.year) return '${date.month}月${date.day}日';
+    return '${date.year}年${date.month}月${date.day}日';
+  }
+
+  /// 时长：`55 分钟` / `1 小时 05 分`。
+  static String duration(Duration d) {
+    final m = d.inMinutes;
+    if (m < 60) return '$m 分钟';
+    return '${m ~/ 60} 小时 ${(m % 60).toString().padLeft(2, '0')} 分';
+  }
+
   /// 一个动作的各组摘要：`20kg × 12 / 12 / 12`。同重量合并，不同重量逐组列出。
   static String setsSummary(List<({double? weightKg, int? reps})> sets) {
     final done = sets.where((s) => s.reps != null).toList();

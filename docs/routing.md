@@ -5,8 +5,10 @@
 - 四 Tab：`/`（训练）、`/routines`、`/history`、`/settings`，
   `StatefulShellRoute.indexedStack`，各分支保活页面栈。
 - 全屏页进根栈：`parentNavigatorKey: _rootNavigatorKey`。
-  `/workout`、`/workout/summary/:id`、`/routines/new`、`/routines/:id/edit`、
-  `/exercises/pick`、`/exercises/:id`、`/history/:id`。
+  已注册：`/routines/new`、`/routines/:id/edit`、`/exercises/pick`（模态，
+  `context.push<String>` 拿回 exerciseId）、`/dev`（debug）。
+  待注册：`/workout`、`/workout/summary/:id`（Phase 3）、`/exercises/:id`、
+  `/history/:id`（Phase 4）。
 
 ## 规则
 

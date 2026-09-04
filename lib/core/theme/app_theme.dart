@@ -231,6 +231,27 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      // ChoiceChip / FilterChip 的选中态同样走主色实心 + 墨字，不要勾号。
+      chipTheme: ChipThemeData(
+        showCheckmark: false,
+        selectedColor: scheme.primary,
+        backgroundColor: Colors.transparent,
+        side: BorderSide(color: scheme.outline),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        labelStyle: WidgetStateTextStyle.resolveWith(
+          (states) => TextStyle(
+            color: states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : scheme.onSurface,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w400,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
       ),

@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/dev/presentation/dev_playground_page.dart';
+import '../features/exercises/presentation/exercise_picker_page.dart';
 import '../features/history/presentation/history_list_page.dart';
 import '../features/home/presentation/home_page.dart';
+import '../features/routines/presentation/routine_edit_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/workout/presentation/widgets/workout_dark_scope.dart';
@@ -71,6 +73,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 根栈（覆盖 Tab 栏的全屏页）：/workout、/routines/:id/edit、
       // /exercises/:id、/history/:id 等随各 Phase 落地时在此注册，
       // 都带 parentNavigatorKey: _rootNavigatorKey。
+      // ── 根栈：模板与动作 ──────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.routineNew,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RoutineEditPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.routineEditPath,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            RoutineEditPage(routineId: state.pathParameters['id']!),
+      ),
+      // /exercises/pick 必须在 /exercises/:id 之前注册（docs/routing.md 3）。
+      GoRoute(
+        path: AppRoutes.exercisePick,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ExercisePickerPage(),
+      ),
       // 训练页（以及现在替它站位的验证页）包 WorkoutDarkScope，
       // 响应设置里的"训练中始终使用深色"。
       if (kDebugMode)

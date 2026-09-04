@@ -60,10 +60,13 @@ presentation → state → data → models
 
 落地判据：Drift 只出现在 `data/` 与 `core/db/`。详见 `data-layer.md`。
 
-**现状**（Phase 1 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
-`*Row`（`@DataClassName`），与纯 Dart model 同名冲突不存在。state 层只有
-`restTimerProvider` 与 `themeSettingsProvider`；`activeWorkoutProvider`、列表 provider
-随 Phase 2 / 3 落地。`test/data/` 81 条覆盖数据库契约、五个 repository 与种子导入。
+**现状**（Phase 2 完成）：四个 feature 的 models + data 层齐备，Drift 行类统一命名
+`*Row`（`@DataClassName`）。state 层有 `routinesProvider` / `exercisesProvider` /
+`sessionSummariesProvider`（三个 StreamProvider，Drift watch 驱动）、
+`restTimerProvider`、`themeSettingsProvider`。页面：首页（模板卡片 + 最近训练）、
+模板列表 / 编辑（拖动排序、组数 / 次数区间 / 休息 bottom sheet）、动作选择器
+（搜索 + 肌群 chip + 新建自定义）。`activeWorkoutProvider` 与训练页随 Phase 3 落地，
+首页"开始"按钮暂时只弹 toast。
 
 ## 依赖用途
 

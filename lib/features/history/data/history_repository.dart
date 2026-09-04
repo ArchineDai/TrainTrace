@@ -62,6 +62,7 @@ class HistoryRepository {
       for (final s in sessions)
         SessionSummary(
           id: s.id,
+          routineId: s.routineId,
           routineName: s.routineName,
           gymName: s.gymName,
           startedAt: DateTime.fromMillisecondsSinceEpoch(s.startedAt),

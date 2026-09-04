@@ -18,24 +18,26 @@ class ExerciseRepository {
 
   // ── 动作 ─────────────────────────────────────────────────────
 
-  /// 全部未删除动作，按肌群、再按名称排序。
+  /// 全部未删除动作，按肌群（枚举顺序：背 肩 胸 手臂 腿 核心）、再按名称排序。
+  /// 肌群存的是枚举名字符串，SQL 排出来是字母序，所以在 Dart 里排。
   Stream<List<Exercise>> watchAll() => (_db.select(_db.exercises)
-        ..where((t) => t.deletedAt.isNull())
-        ..orderBy([
-          (t) => OrderingTerm.asc(t.muscleGroup),
-          (t) => OrderingTerm.asc(t.nameZh),
-        ]))
+        ..where((t) => t.deletedAt.isNull()))
       .watch()
-      .map((rows) => rows.map(_toExercise).toList());
+      .map(_sorted);
 
   Future<List<Exercise>> getAll() => (_db.select(_db.exercises)
-        ..where((t) => t.deletedAt.isNull())
-        ..orderBy([
-          (t) => OrderingTerm.asc(t.muscleGroup),
-          (t) => OrderingTerm.asc(t.nameZh),
-        ]))
+        ..where((t) => t.deletedAt.isNull()))
       .get()
-      .then((rows) => rows.map(_toExercise).toList());
+      .then(_sorted);
+
+  static List<Exercise> _sorted(List<ExerciseRow> rows) {
+    final list = rows.map(_toExercise).toList()
+      ..sort((a, b) {
+        final g = a.muscleGroup.index.compareTo(b.muscleGroup.index);
+        return g != 0 ? g : a.nameZh.compareTo(b.nameZh);
+      });
+    return list;
+  }
 
   Future<Exercise?> getById(String id) => (_db.select(_db.exercises)
         ..where((t) => t.id.equals(id) & t.deletedAt.isNull()))

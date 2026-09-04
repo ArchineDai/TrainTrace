@@ -19,6 +19,12 @@ void main() {
   });
   tearDown(() => db.close());
 
+  test('getAll 按肌群枚举顺序再按名称排', () async {
+    final groups = (await repo.getAll()).map((e) => e.muscleGroup.index).toList();
+    expect(groups, List.of(groups)..sort(), reason: '背 肩 胸 手臂 腿 核心');
+    expect((await repo.getAll()).first.muscleGroup, MuscleGroup.back);
+  });
+
   test('getAll 排除软删除，softDelete 刷新 updated_at', () async {
     expect((await repo.getAll()).length, 16);
 
