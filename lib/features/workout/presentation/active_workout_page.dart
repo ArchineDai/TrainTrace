@@ -23,6 +23,7 @@ import 'widgets/equipment_label_sheet.dart';
 import 'widgets/numeric_keypad.dart';
 import 'widgets/rest_timer_bar.dart';
 import 'widgets/set_row.dart';
+import 'widgets/workout_target_sheet.dart';
 import 'widgets/workout_exercise_card.dart';
 
 /// 进行中的训练页。数据全部来自 [activeWorkoutProvider]；本页只持有
@@ -339,6 +340,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         await _vm.applyLastPerformance(weId);
       case ExerciseCardAction.changeLabel:
         await _changeLabel(weId, exerciseId, label);
+      case ExerciseCardAction.editTargets:
+        await WorkoutTargetSheet.show(context, weId);
       case ExerciseCardAction.viewExercise:
         await context.push(AppRoutes.exerciseDetail(exerciseId));
       case ExerciseCardAction.remove:

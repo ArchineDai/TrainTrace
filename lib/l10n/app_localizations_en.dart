@@ -354,6 +354,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customRepRangeTitle => 'Custom rep range';
 
   @override
+  String get customIncrementTitle => 'Custom weight step';
+
+  @override
+  String get fieldIncrement => 'Weight step';
+
+  @override
+  String get fieldIncrementHint =>
+      'How much one notch adds on this exercise: dumbbells usually 1–2 kg, machines 2.5–5 kg. Suggestions increase by this step';
+
+  @override
+  String get exerciseDefaultsTitle => 'Default targets';
+
+  @override
+  String get exerciseDefaultsHint =>
+      'Starting values when this exercise is added to a routine or workout. Existing routines and the current workout are not changed';
+
+  @override
   String get fieldRepRangeMin => 'Min';
 
   @override
@@ -389,11 +406,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exerciseNotFound => 'This exercise does not exist or was deleted';
 
   @override
-  String get editTargets => 'Edit targets';
-
-  @override
   String exerciseDefaultsMeta(int min, int max, int rest, String increment) {
-    return 'Target $min–$max reps · ${rest}s rest · $increment kg increment';
+    return 'Defaults $min–$max reps · ${rest}s rest · $increment kg per step';
   }
 
   @override
@@ -420,21 +434,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get equipmentNotesEmpty =>
       'The right weight for one exercise is not comparable across gyms or machines. Keep those notes here.';
-
-  @override
-  String get fieldRepMin => 'Min reps';
-
-  @override
-  String get fieldRepMax => 'Max reps';
-
-  @override
-  String get fieldRestSeconds => 'Rest (sec)';
-
-  @override
-  String get fieldMinIncrement => 'Min increment (kg)';
-
-  @override
-  String get invalidNumbersNotSaved => 'Invalid values — nothing saved';
 
   @override
   String get addNote => 'Add note';
@@ -586,6 +585,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewExerciseGuide => 'View exercise guide';
+
+  @override
+  String get editWorkoutTargets => 'Adjust targets / rest';
+
+  @override
+  String get alsoUpdateDefaults =>
+      'Also update this exercise\'s default targets';
 
   @override
   String get removeExercise => 'Remove exercise';

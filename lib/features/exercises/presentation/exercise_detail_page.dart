@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/text_fields_dialog.dart';
 import '../../history/models/history_models.dart';
 import '../../suggestion/presentation/suggestion_card.dart';
 import '../../suggestion/state/suggestion_provider.dart';
@@ -15,6 +16,7 @@ import '../state/exercise_detail_view_model.dart';
 import '../state/exercise_list_view_model.dart';
 import 'exercise_labels.dart';
 import 'widgets/equipment_note_photo.dart';
+import 'widgets/exercise_defaults_sheet.dart';
 import 'widgets/exercise_guide_section.dart';
 
 /// 动作详情：目标与增量、个人记录、最近记录、场馆 / 器械备注。
@@ -44,16 +46,9 @@ class ExerciseDetailPage extends ConsumerWidget {
     final altName = exercise.alternateName(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(exercise.displayName(context)),
-        actions: [
-          IconButton(
-            tooltip: l10n.editTargets,
-            icon: const Icon(Icons.tune),
-            onPressed: () => _editDefaults(context, ref, exercise),
-          ),
-        ],
-      ),
+      // AppBar 不放操作：详情页是"这个动作是什么 + 我练得怎样"的参考页，
+      // 右上角的编辑在别家 App 里都意味着"编辑动作本身"。默认值在下面那行就地改。
+      appBar: AppBar(title: Text(exercise.displayName(context))),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
@@ -62,17 +57,32 @@ class ExerciseDetailPage extends ConsumerWidget {
             '${altName == null ? '' : ' · $altName'}',
             style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.exerciseDefaultsMeta(
-              exercise.defaultRepMin,
-              exercise.defaultRepMax,
-              exercise.defaultRestSeconds,
-              Formatters.kg(exercise.minIncrementKg),
+          // 默认目标：数值在哪显示就在哪改（Hevy / Strong 的"点数值改数值"），
+          // 点整行进弹层。整行撑到 48dp 触控高度。
+          InkWell(
+            onTap: () => ExerciseDefaultsSheet.show(context, exerciseId),
+            borderRadius: BorderRadius.circular(AppTheme.radius),
+            child: SizedBox(
+              height: AppTheme.minTouch,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.exerciseDefaultsMeta(
+                        exercise.defaultRepMin,
+                        exercise.defaultRepMax,
+                        exercise.defaultRestSeconds,
+                        Formatters.kg(exercise.minIncrementKg),
+                      ),
+                      style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, size: 18, color: scheme.onSurfaceVariant),
+                ],
+              ),
             ),
-            style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
 
           // ── 下次怎么练：工作重量建议（按最近一次用的器械标签算）──
           _section(context, l10n.nextSuggestion),
@@ -205,131 +215,36 @@ class ExerciseDetailPage extends ConsumerWidget {
         ),
       );
 
-  /// 改目标区间 / 休息 / 最小增量。
-  Future<void> _editDefaults(BuildContext context, WidgetRef ref, Exercise e) async {
-    final l10n = AppLocalizations.of(context);
-    final min = TextEditingController(text: '${e.defaultRepMin}');
-    final max = TextEditingController(text: '${e.defaultRepMax}');
-    final rest = TextEditingController(text: '${e.defaultRestSeconds}');
-    final inc = TextEditingController(text: Formatters.kg(e.minIncrementKg));
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.editTargets),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(child: _numField(min, l10n.fieldRepMin)),
-                const SizedBox(width: 8),
-                Expanded(child: _numField(max, l10n.fieldRepMax)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: _numField(rest, l10n.fieldRestSeconds)),
-                const SizedBox(width: 8),
-                Expanded(child: _numField(inc, l10n.fieldMinIncrement, decimal: true)),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.actionSave),
-          ),
-        ],
-      ),
-    );
-    final lo = int.tryParse(min.text);
-    final hi = int.tryParse(max.text);
-    final r = int.tryParse(rest.text);
-    final i = double.tryParse(inc.text);
-    for (final c in [min, max, rest, inc]) {
-      c.dispose();
-    }
-    if (ok != true) return;
-    if (lo == null || hi == null || r == null || i == null || lo <= 0 || hi < lo || r <= 0 || i <= 0) {
-      if (context.mounted) AppTheme.showToast(context, l10n.invalidNumbersNotSaved);
-      return;
-    }
-    await ref.read(exerciseRepositoryProvider).update(e.copyWith(
-          defaultRepMin: lo,
-          defaultRepMax: hi,
-          defaultRestSeconds: r,
-          minIncrementKg: i,
-        ));
-  }
-
-  Widget _numField(TextEditingController c, String label, {bool decimal = false}) => TextField(
-        controller: c,
-        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        decoration: InputDecoration(labelText: label),
-      );
-
   Future<void> _editNote(BuildContext context, WidgetRef ref, EquipmentNote? existing) async {
     final l10n = AppLocalizations.of(context);
-    final gym = TextEditingController(text: existing?.gymName ?? '');
-    final label = TextEditingController(text: existing?.equipmentLabel ?? '');
-    final note = TextEditingController(text: existing?.note ?? '');
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(existing == null ? l10n.addNote : l10n.editNote),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: gym,
-              decoration: InputDecoration(
-                labelText: l10n.fieldGymOptional,
-                hintText: l10n.hintGym,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: label,
-              decoration: InputDecoration(
-                labelText: l10n.fieldEquipment,
-                hintText: l10n.hintEquipment,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: note,
-              decoration: InputDecoration(
-                labelText: l10n.fieldNote,
-                hintText: l10n.hintNote,
-              ),
-            ),
-          ],
+    // controller 归对话框自己持有（见 showTextFieldsDialog），这里不再手工 dispose。
+    final texts = await showTextFieldsDialog(
+      context,
+      title: existing == null ? l10n.addNote : l10n.editNote,
+      confirmLabel: l10n.actionSave,
+      fields: [
+        DialogField(
+          label: l10n.fieldGymOptional,
+          hint: l10n.hintGym,
+          initial: existing?.gymName ?? '',
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.actionSave),
-          ),
-        ],
-      ),
+        DialogField(
+          label: l10n.fieldEquipment,
+          hint: l10n.hintEquipment,
+          initial: existing?.equipmentLabel ?? '',
+        ),
+        DialogField(
+          label: l10n.fieldNote,
+          hint: l10n.hintNote,
+          initial: existing?.note ?? '',
+        ),
+      ],
     );
-    final g = gym.text.trim();
-    final l = label.text.trim();
-    final n = note.text.trim();
-    gym.dispose();
-    label.dispose();
-    note.dispose();
-    if (ok != true || l.isEmpty) return;
+    if (texts == null) return;
+    final g = texts[0].trim();
+    final l = texts[1].trim();
+    final n = texts[2].trim();
+    if (l.isEmpty) return;
     final repo = ref.read(exerciseRepositoryProvider);
     // 标签 / 场馆改了就是另一条 (exercise, gym, label)：旧的删掉，新的 upsert。
     if (existing != null && (existing.equipmentLabel != l || (existing.gymName ?? '') != g)) {

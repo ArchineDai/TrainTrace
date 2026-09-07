@@ -11,6 +11,9 @@ abstract final class AppConstants {
   /// 次数区间预设 chip。
   static const repRangePresets = [(6, 8), (8, 12), (10, 15), (12, 20)];
 
+  /// 加重步长预设 chip（kg）：哑铃 1 / 2，器械 2.5 / 5。
+  static const incrementPresets = [1.0, 2.0, 2.5, 5.0];
+
   /// 默认目标次数区间。
   static const defaultRepMin = 10;
   static const defaultRepMax = 15;

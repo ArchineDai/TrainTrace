@@ -7,6 +7,7 @@ import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
+import '../../../shared/widgets/target_fields.dart';
 import '../../exercises/models/exercise.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
@@ -193,6 +194,9 @@ class _RoutineEditPageState extends ConsumerState<RoutineEditPage> {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      // 默认弹层最高只到屏幕 9/16，五个次数 chip 换行后内容刚好超出几个像素，
+      // 「完成」按钮被裁。按内容取高，内部再可滚，小屏也不会裁。
+      isScrollControlled: true,
       builder: (_) => _ItemEditorSheet(item: item),
     );
     if (mounted) setState(() {});
@@ -282,10 +286,8 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isPreset = AppConstants.repRangePresets
-        .any((p) => p.$1 == item.targetRepMin && p.$2 == item.targetRepMax);
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -296,7 +298,7 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
               style: TextStyle(fontSize: AppTextSize.lg, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
-            _label(context, l10n.fieldSets),
+            TargetFieldLabel(l10n.fieldSets),
             Row(
               children: [
                 IconButton.outlined(
@@ -325,42 +327,21 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
               ],
             ),
             const SizedBox(height: 16),
-            _label(context, l10n.fieldTargetReps),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final p in AppConstants.repRangePresets)
-                  ChoiceChip(
-                    label: Text('${p.$1}–${p.$2}'),
-                    selected: item.targetRepMin == p.$1 && item.targetRepMax == p.$2,
-                    onSelected: (_) => setState(() {
-                      item.targetRepMin = p.$1;
-                      item.targetRepMax = p.$2;
-                    }),
-                  ),
-                ChoiceChip(
-                  label: Text(
-                    isPreset
-                        ? l10n.actionCustom
-                        : '${item.targetRepMin}–${item.targetRepMax}',
-                  ),
-                  selected: !isPreset,
-                  onSelected: (_) => _customRange(context),
-                ),
-              ],
+            // chip 与动作默认值弹层 / 训练中调整弹层共用一套，见 shared/widgets/target_fields.dart。
+            TargetFieldLabel(l10n.fieldTargetReps),
+            RepRangeChips(
+              min: item.targetRepMin,
+              max: item.targetRepMax,
+              onChanged: (lo, hi) => setState(() {
+                item.targetRepMin = lo;
+                item.targetRepMax = hi;
+              }),
             ),
             const SizedBox(height: 16),
-            _label(context, l10n.fieldRestTime),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final s in AppConstants.restPresets)
-                  ChoiceChip(
-                    label: Text('${s}s'),
-                    selected: item.restSeconds == s,
-                    onSelected: (_) => setState(() => item.restSeconds = s),
-                  ),
-              ],
+            TargetFieldLabel(l10n.fieldRestTime),
+            RestChips(
+              seconds: item.restSeconds,
+              onChanged: (s) => setState(() => item.restSeconds = s),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -374,67 +355,5 @@ class _ItemEditorSheetState extends State<_ItemEditorSheet> {
         ),
       ),
     );
-  }
-
-  Widget _label(BuildContext context, String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: AppTextSize.sm,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-
-  Future<void> _customRange(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    final minC = TextEditingController(text: '${item.targetRepMin}');
-    final maxC = TextEditingController(text: '${item.targetRepMax}');
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.customRepRangeTitle),
-        content: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: minC,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: l10n.fieldRepRangeMin),
-              ),
-            ),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('–')),
-            Expanded(
-              child: TextField(
-                controller: maxC,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: l10n.fieldRepRangeMax),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.actionConfirm),
-          ),
-        ],
-      ),
-    );
-    final lo = int.tryParse(minC.text);
-    final hi = int.tryParse(maxC.text);
-    minC.dispose();
-    maxC.dispose();
-    if (ok == true && lo != null && hi != null && lo > 0 && hi >= lo) {
-      setState(() {
-        item.targetRepMin = lo;
-        item.targetRepMax = hi;
-      });
-    }
   }
 }

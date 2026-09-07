@@ -346,6 +346,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customRepRangeTitle => '自定义次数区间';
 
   @override
+  String get customIncrementTitle => '自定义加重步长';
+
+  @override
+  String get fieldIncrement => '每次加多少';
+
+  @override
+  String get fieldIncrementHint =>
+      '这个动作一格多重：哑铃常见 1–2 kg，器械 2.5–5 kg。工作重量建议按这个步长加';
+
+  @override
+  String get exerciseDefaultsTitle => '默认目标';
+
+  @override
+  String get exerciseDefaultsHint => '加进模板或训练时的初始值，不影响已有模板和进行中的训练';
+
+  @override
   String get fieldRepRangeMin => '下限';
 
   @override
@@ -381,11 +397,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exerciseNotFound => '动作不存在或已删除';
 
   @override
-  String get editTargets => '编辑目标';
-
-  @override
   String exerciseDefaultsMeta(int min, int max, int rest, String increment) {
-    return '目标 $min–$max 次 · 休息 ${rest}s · 最小增量 $increment kg';
+    return '默认目标 $min–$max 次 · 休息 ${rest}s · 每次加 $increment kg';
   }
 
   @override
@@ -411,21 +424,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get equipmentNotesEmpty => '同一动作在不同健身房、不同机器上的合适重量不可比，记在这里。';
-
-  @override
-  String get fieldRepMin => '次数下限';
-
-  @override
-  String get fieldRepMax => '次数上限';
-
-  @override
-  String get fieldRestSeconds => '休息（秒）';
-
-  @override
-  String get fieldMinIncrement => '最小增量 kg';
-
-  @override
-  String get invalidNumbersNotSaved => '数值不合法，未保存';
 
   @override
   String get addNote => '添加备注';
@@ -575,6 +573,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get viewExerciseGuide => '查看动作要领';
+
+  @override
+  String get editWorkoutTargets => '调整目标 / 休息';
+
+  @override
+  String get alsoUpdateDefaults => '同时更新这个动作的默认目标';
 
   @override
   String get removeExercise => '删除动作';

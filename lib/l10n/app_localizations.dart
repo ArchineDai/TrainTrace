@@ -692,6 +692,36 @@ abstract class AppLocalizations {
   /// **'自定义次数区间'**
   String get customRepRangeTitle;
 
+  /// No description provided for @customIncrementTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义加重步长'**
+  String get customIncrementTitle;
+
+  /// No description provided for @fieldIncrement.
+  ///
+  /// In zh, this message translates to:
+  /// **'每次加多少'**
+  String get fieldIncrement;
+
+  /// No description provided for @fieldIncrementHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'这个动作一格多重：哑铃常见 1–2 kg，器械 2.5–5 kg。工作重量建议按这个步长加'**
+  String get fieldIncrementHint;
+
+  /// No description provided for @exerciseDefaultsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认目标'**
+  String get exerciseDefaultsTitle;
+
+  /// No description provided for @exerciseDefaultsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'加进模板或训练时的初始值，不影响已有模板和进行中的训练'**
+  String get exerciseDefaultsHint;
+
   /// No description provided for @fieldRepRangeMin.
   ///
   /// In zh, this message translates to:
@@ -758,16 +788,10 @@ abstract class AppLocalizations {
   /// **'动作不存在或已删除'**
   String get exerciseNotFound;
 
-  /// No description provided for @editTargets.
-  ///
-  /// In zh, this message translates to:
-  /// **'编辑目标'**
-  String get editTargets;
-
   /// No description provided for @exerciseDefaultsMeta.
   ///
   /// In zh, this message translates to:
-  /// **'目标 {min}–{max} 次 · 休息 {rest}s · 最小增量 {increment} kg'**
+  /// **'默认目标 {min}–{max} 次 · 休息 {rest}s · 每次加 {increment} kg'**
   String exerciseDefaultsMeta(int min, int max, int rest, String increment);
 
   /// No description provided for @nextSuggestion.
@@ -817,36 +841,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'同一动作在不同健身房、不同机器上的合适重量不可比，记在这里。'**
   String get equipmentNotesEmpty;
-
-  /// No description provided for @fieldRepMin.
-  ///
-  /// In zh, this message translates to:
-  /// **'次数下限'**
-  String get fieldRepMin;
-
-  /// No description provided for @fieldRepMax.
-  ///
-  /// In zh, this message translates to:
-  /// **'次数上限'**
-  String get fieldRepMax;
-
-  /// No description provided for @fieldRestSeconds.
-  ///
-  /// In zh, this message translates to:
-  /// **'休息（秒）'**
-  String get fieldRestSeconds;
-
-  /// No description provided for @fieldMinIncrement.
-  ///
-  /// In zh, this message translates to:
-  /// **'最小增量 kg'**
-  String get fieldMinIncrement;
-
-  /// No description provided for @invalidNumbersNotSaved.
-  ///
-  /// In zh, this message translates to:
-  /// **'数值不合法，未保存'**
-  String get invalidNumbersNotSaved;
 
   /// No description provided for @addNote.
   ///
@@ -1111,6 +1105,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'查看动作要领'**
   String get viewExerciseGuide;
+
+  /// No description provided for @editWorkoutTargets.
+  ///
+  /// In zh, this message translates to:
+  /// **'调整目标 / 休息'**
+  String get editWorkoutTargets;
+
+  /// No description provided for @alsoUpdateDefaults.
+  ///
+  /// In zh, this message translates to:
+  /// **'同时更新这个动作的默认目标'**
+  String get alsoUpdateDefaults;
 
   /// No description provided for @removeExercise.
   ///

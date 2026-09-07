@@ -13,7 +13,16 @@ import '../../models/workout_session.dart';
 import 'set_row.dart';
 
 /// 卡片菜单动作。
-enum ExerciseCardAction { toggleRir, applyLast, changeLabel, viewExercise, remove }
+enum ExerciseCardAction {
+  toggleRir,
+  applyLast,
+  changeLabel,
+
+  /// 训练中调整目标次数 / 休息（[WorkoutTargetSheet]）。
+  editTargets,
+  viewExercise,
+  remove,
+}
 
 /// 训练页里一个动作的卡片：头部（名称 / 器械标签 / 目标）、上次表现、各组、添加一组。
 ///
@@ -129,6 +138,10 @@ class WorkoutExerciseCard extends StatelessWidget {
                     PopupMenuItem(
                       value: ExerciseCardAction.changeLabel,
                       child: Text(l10n.equipmentLabelMenu),
+                    ),
+                    PopupMenuItem(
+                      value: ExerciseCardAction.editTargets,
+                      child: Text(l10n.editWorkoutTargets),
                     ),
                     PopupMenuItem(
                       value: ExerciseCardAction.viewExercise,
