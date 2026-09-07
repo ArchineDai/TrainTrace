@@ -16,7 +16,11 @@ abstract final class AppTextSize {
   /// 卡片标题、动作名。
   static const double lg = 20;
 
-  /// 页面标题。
+  /// AppBar 标题（对齐 M3 titleLarge 的 22）。比 [lg] 大一档，配 w600 压过卡片标题；
+  /// 长的模板名在详情页 AppBar 里也放得下。
+  static const double title = 22;
+
+  /// 页面内的大标题（训练总结的模板名）。
   static const double xl = 24;
 
   /// 训练页的重量 / 次数数字。

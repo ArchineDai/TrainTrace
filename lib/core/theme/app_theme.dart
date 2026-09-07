@@ -151,9 +151,15 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         // 页面标题要压过卡片标题（20 w600），默认的 22 常规字重看起来像面包屑。
-        titleTextStyle: text.titleLarge?.copyWith(
-          color: scheme.onSurface,
+        // 字号必须显式给：ThemeData 构造期的 textTheme 只有颜色没有字号（字号由
+        // Theme 按语言几何在渲染时合入），拿 titleLarge 派生会让标题回落到 14。
+        titleTextStyle: TextStyle(
+          fontSize: AppTextSize.title,
           fontWeight: FontWeight.w600,
+          color: scheme.onSurface,
+          fontFamily: latinFamily,
+          fontFamilyFallback: const [cjkFamily],
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
       ),
       dividerTheme: DividerThemeData(
