@@ -10,8 +10,8 @@ import 'exercise_figure_data.dart';
 /// 动作示意动画：火柴人在起止两帧间往返。
 ///
 /// 没有该动作的数据（自定义动作）时显示占位。点击暂停 / 继续。
-/// 颜色只用 `colorScheme.onSurface` / `outlineVariant` 与 `AppTheme.accent`，
-/// 亮暗主题都能读。
+/// 三层色：身体 `onSurface`、器械 `onSurfaceVariant`、受力点 `AppTheme.accent`，
+/// 都对底板（`surfaceContainerLow`）满足 4.5:1，亮暗主题都能读。
 class ExerciseFigure extends StatefulWidget {
   const ExerciseFigure({super.key, required this.exerciseId, this.size = 200});
 
@@ -82,9 +82,12 @@ class _ExerciseFigureState extends State<ExerciseFigure>
       child: Container(
         width: widget.size,
         height: widget.size,
+        // 底板和卡片同一套：低一档面板色 + 细描边。之前用 surfaceContainerHighest，
+        // 亮色下它和器械色 outlineVariant 是同一个值（#D5D8DE），器械等于没画。
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest,
+          color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppTheme.radius),
+          border: Border.all(color: scheme.outlineVariant),
         ),
         child: anim == null
             ? Center(
@@ -113,7 +116,7 @@ class _ExerciseFigureState extends State<ExerciseFigure>
                           animation: anim,
                           t: _t.value,
                           body: scheme.onSurface,
-                          scenery: scheme.outlineVariant,
+                          scenery: scheme.onSurfaceVariant,
                           load: AppTheme.accent,
                         ),
                       ),
@@ -164,7 +167,13 @@ class ExerciseFigurePainter extends CustomPainter {
       ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
-    final sceneryFill = Paint()..color = scenery;
+    // 坐垫 / 靠背这类面片：淡填充 + 描边。实心填充会变成人身后的一块重色。
+    final sceneryFill = Paint()..color = scenery.withValues(alpha: 0.18);
+    final sceneryEdge = Paint()
+      ..color = scenery
+      ..strokeWidth = 1.6
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
     final bodyPaint = Paint()
       ..color = body
       ..strokeWidth = 2.6
@@ -183,13 +192,12 @@ class ExerciseFigurePainter extends CustomPainter {
     for (final p in animation.props) {
       switch (p.kind) {
         case PropKind.rect:
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(
-              Rect.fromPoints(_o(p.a), _o(p.b!)),
-              const Radius.circular(1),
-            ),
-            sceneryFill,
+          final rrect = RRect.fromRectAndRadius(
+            Rect.fromPoints(_o(p.a), _o(p.b!)),
+            const Radius.circular(1),
           );
+          canvas.drawRRect(rrect, sceneryFill);
+          canvas.drawRRect(rrect, sceneryEdge);
         case PropKind.line:
           canvas.drawLine(_o(p.a), _o(p.b!), sceneryPaint..strokeWidth = 3.5);
           sceneryPaint.strokeWidth = 2.4;

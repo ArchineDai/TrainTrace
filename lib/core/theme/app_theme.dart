@@ -20,7 +20,8 @@ abstract final class AppTheme {
 
   // ── 品牌色 ───────────────────────────────────────────────────
   /// 品牌橙。亮暗共用，只用于填充：进度条、当前组标记、按钮底、标签底。
-  /// 亮色下不要拿它写字，且填充上必须带墨色文字或墨色线，不能独自承载信息。
+  /// 亮色下不要拿它写字。填充不能独自承载信息：按钮 / 指示器这类"橙块即信息"的
+  /// 场合要带墨色文字或图标；开关这类状态已由位置传达的控件不必再塞墨色元素。
   static const Color accent = Color(0xFFFF7A1A);
 
   // ── 中性色（私有，只在两套 ColorScheme 里出现）────────────────
@@ -137,8 +138,9 @@ abstract final class AppTheme {
       fontFamily: latinFamily,
       fontFamilyFallback: const [cjkFamily],
     );
+    final text = _tabular(typed);
     return base.copyWith(
-      textTheme: _tabular(typed),
+      textTheme: text,
       extensions: [colors],
       scaffoldBackgroundColor: scheme.surface,
       visualDensity: VisualDensity.standard,
@@ -148,6 +150,11 @@ abstract final class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        // 页面标题要压过卡片标题（20 w600），默认的 22 常规字重看起来像面包屑。
+        titleTextStyle: text.titleLarge?.copyWith(
+          color: scheme.onSurface,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant,
@@ -167,6 +174,43 @@ abstract final class AppTheme {
         isDense: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+      // 弹层 / 弹窗 / 菜单 / 图标按钮的圆角一律收到 [radius]：M3 默认的 28dp 大圆角
+      // 与正圆图标按钮是全 App 仅有的非方正形状，和卡片、按钮不是一套。
+      bottomSheetTheme: BottomSheetThemeData(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
+        ),
+        dragHandleColor: scheme.outline,
+        dragHandleSize: const Size(32, 4),
+      ),
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
+        ),
+      ),
+      // 开关滑块：浅色白、深色墨。开关状态由滑块位置传达，橙轨道只是加强，
+      // 滑块里不放图标（docs/ui-conventions.md 主题一节）。
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? (scheme.brightness == Brightness.light
+                  ? scheme.surfaceContainerLowest
+                  : scheme.onPrimary)
+              : null,
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -209,9 +253,14 @@ abstract final class AppTheme {
       // 选中态一律用主色实心 + onPrimary 前景，和"完成本组"按钮同一套语言。
       // M3 默认的 secondaryContainer / primaryContainer 在近黑底上只是
       // 深一点的灰或暗褐色，选中与否分不出来。
+      // 实际底栏是 AppShell 里自绘的滑动指示器版本（M3 NavigationBar 的指示器
+      // 只会淡入淡出）；这里保留同一套配色与矩形指示器，作为任何兜底 NavigationBar 的样式。
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surfaceContainerLow,
         indicatorColor: scheme.primary,
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
@@ -379,7 +428,8 @@ class AppColors extends ThemeExtension<AppColors> {
     timerActive: Color(0xFF0C0D10),
     timerFinished: Color(0xFFC62F22),
     suggestIncrease: Color(0xFF1B7A43),
-    suggestHold: Color(0xFF5F6670),
+    // 亮色下"保持"用墨色而不是灰：灰色标题读起来像禁用态，像是这条建议不可用。
+    suggestHold: Color(0xFF0C0D10),
     suggestDecrease: Color(0xFFC62F22),
     danger: Color(0xFFC62F22),
     disabled: Color(0xFFC2C6CD),

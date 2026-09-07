@@ -151,19 +151,26 @@ class _KeyButton extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final Color bg;
     final Color fg;
+    BorderSide side = BorderSide.none;
     if (primary) {
       bg = scheme.primary;
       fg = scheme.onPrimary;
     } else if (tonal) {
-      bg = scheme.secondaryContainer;
-      fg = scheme.onSecondaryContainer;
+      // 「下一项」这一档：secondaryContainer 在暗色下和键盘底色是同一个值，
+      // 真机上像一段裸文字。用最高一档面板色再加描边，和数字键、主键三档分明。
+      bg = scheme.surfaceContainerHighest;
+      fg = scheme.onSurface;
+      side = BorderSide(color: scheme.outline);
     } else {
       bg = scheme.surface;
       fg = scheme.onSurface;
     }
     return Material(
       color: onTap == null ? Colors.transparent : bg,
-      borderRadius: BorderRadius.circular(AppTheme.radius),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        side: onTap == null ? BorderSide.none : side,
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.radius),

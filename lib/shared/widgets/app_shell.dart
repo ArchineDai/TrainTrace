@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/app_text_size.dart';
+import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
 /// 四 Tab 外壳。Tab 切换用 `navigationShell.goBranch()`，不要 `context.go('/')`：
@@ -15,35 +17,190 @@ class AppShell extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: SlidingNavBar(
         selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(
+        onSelected: (index) => navigationShell.goBranch(
           index,
           // 再点当前 Tab 回到该分支根页面（Material 惯例）。
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.fitness_center_outlined),
-            selectedIcon: const Icon(Icons.fitness_center),
+        items: [
+          NavItem(
+            icon: Icons.fitness_center_outlined,
+            selectedIcon: Icons.fitness_center,
             label: l10n.tabWorkout,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.list_alt_outlined),
-            selectedIcon: const Icon(Icons.list_alt),
+          NavItem(
+            icon: Icons.list_alt_outlined,
+            selectedIcon: Icons.list_alt,
             label: l10n.tabRoutines,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.history_outlined),
-            selectedIcon: const Icon(Icons.history),
+          NavItem(
+            icon: Icons.history_outlined,
+            selectedIcon: Icons.history,
             label: l10n.tabHistory,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
+          NavItem(
+            icon: Icons.settings_outlined,
+            selectedIcon: Icons.settings,
             label: l10n.tabSettings,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 底栏的一个目的地。
+class NavItem {
+  const NavItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+}
+
+/// 自绘的底部导航栏：一块橙色矩形指示器在 Tab 之间**平移**，图标与文字颜色同步插值。
+///
+/// 不用 M3 `NavigationBar` 的原因只有一个：它给每个目的地各自一个指示器，切换时
+/// 旧的淡出、新的淡入，没有平移选项。尺寸对齐 M3：总高 80 + 底部安全区，
+/// 指示器 64×32，图标 24，标签 12；圆角走 [AppTheme.radius]，和卡片、按钮同一套方正。
+class SlidingNavBar extends StatelessWidget {
+  const SlidingNavBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.items,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<NavItem> items;
+
+  static const double _height = 80;
+  static const double _indicatorWidth = 64;
+  static const double _indicatorHeight = 32;
+  static const double _indicatorTop = 12;
+  static const Duration _duration = Duration(milliseconds: 250);
+  static const Curve _curve = Curves.easeOutCubic;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerLow,
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: _height,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final slot = constraints.maxWidth / items.length;
+              return Stack(
+                children: [
+                  AnimatedPositioned(
+                    duration: _duration,
+                    curve: _curve,
+                    left: slot * selectedIndex + (slot - _indicatorWidth) / 2,
+                    top: _indicatorTop,
+                    width: _indicatorWidth,
+                    height: _indicatorHeight,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: scheme.primary,
+                        borderRadius: BorderRadius.circular(AppTheme.radius),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      for (var i = 0; i < items.length; i++)
+                        Expanded(
+                          child: _Destination(
+                            item: items[i],
+                            selected: i == selectedIndex,
+                            onTap: () => onSelected(i),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Destination extends StatelessWidget {
+  const _Destination({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final NavItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final iconColor = selected ? scheme.onPrimary : scheme.onSurfaceVariant;
+    final labelColor = selected ? scheme.onSurface : scheme.onSurfaceVariant;
+    // 语义只报一次：Text 自己会报标签，Semantics 这里不再重复 label，
+    // Tooltip 也不进语义树。切 Tab 的反馈是指示器平移本身，不要水波纹和按压底色。
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Tooltip(
+        message: item.label,
+        excludeFromSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          child: Column(
+            children: [
+              const SizedBox(height: SlidingNavBar._indicatorTop),
+              SizedBox(
+                height: SlidingNavBar._indicatorHeight,
+                child: Center(
+                  // 图标颜色跟着指示器一起插值，避免指示器还在路上、图标已经变色。
+                  child: TweenAnimationBuilder<Color?>(
+                    tween: ColorTween(end: iconColor),
+                    duration: SlidingNavBar._duration,
+                    curve: SlidingNavBar._curve,
+                    builder: (_, color, _) => Icon(
+                      selected ? item.selectedIcon : item.icon,
+                      size: 24,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              AnimatedDefaultTextStyle(
+                duration: SlidingNavBar._duration,
+                curve: SlidingNavBar._curve,
+                style: TextStyle(
+                  fontSize: AppTextSize.xs,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: labelColor,
+                  fontFamily: AppTheme.latinFamily,
+                  fontFamilyFallback: const [AppTheme.cjkFamily],
+                ),
+                child: Text(item.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
