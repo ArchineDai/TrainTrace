@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
-import '../../../services/local_notification_rest_notifier.dart';
 import '../../../services/rest_notifier.dart';
 import '../../settings/state/app_localizations_provider.dart';
 import '../../workout/models/numeric_input.dart';
@@ -240,13 +239,10 @@ class _DevPlaygroundPageState extends ConsumerState<DevPlaygroundPage> {
                   children: [
                     OutlinedButton(
                       onPressed: () async {
-                        final n = ref.read(restNotifierProvider);
-                        if (n is LocalNotificationRestNotifier) {
-                          final ok = await n.requestExactAlarms();
-                          setState(() => _status = '精确闹钟：${ok ? '已授予' : '未授予'}');
-                        } else {
-                          setState(() => _status = '当前平台无通知实现');
-                        }
+                        final ok = await ref
+                            .read(restNotifierProvider)
+                            .requestExactAlarmPermission();
+                        setState(() => _status = '精确闹钟：${ok ? '已授予' : '未授予'}');
                       },
                       child: const Text('申请精确闹钟'),
                     ),

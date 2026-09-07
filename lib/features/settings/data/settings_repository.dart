@@ -16,6 +16,7 @@ class SettingsRepository {
   static const _kThemeMode = 'themeMode';
   static const _kWorkoutAlwaysDark = 'workoutAlwaysDark';
   static const _kLocale = 'locale';
+  static const _kRestReminderPrompted = 'restReminderPrompted';
 
   Future<ThemeSettings> readThemeSettings() async {
     final rows = await (_db.select(_db.appSettings)
@@ -50,6 +51,17 @@ class SettingsRepository {
   Future<void> writeLocale(String? code) => code == null
       ? (_db.delete(_db.appSettings)..where((t) => t.key.equals(_kLocale))).go()
       : _put(_kLocale, code);
+
+  /// 是否已经给用户看过"开启休息结束提醒"的引导。只看不看过，不存用户选了什么
+  /// —— 权限状态以系统为准，每次问 [RestNotifier]，这里存了会过期。
+  Future<bool> readRestReminderPrompted() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_kRestReminderPrompted)))
+        .getSingleOrNull();
+    return _parseBool(row?.value) ?? false;
+  }
+
+  Future<void> writeRestReminderPrompted() => _put(_kRestReminderPrompted, 'true');
 
   Future<void> _put(String key, String value) => _db
       .into(_db.appSettings)

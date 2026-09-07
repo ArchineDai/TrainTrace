@@ -15,6 +15,8 @@ import '../../exercises/data/exercise_repository.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
+import '../../settings/presentation/widgets/rest_reminder_guide_sheet.dart';
+import '../../settings/state/rest_reminder_view_model.dart';
 import '../models/numeric_input.dart';
 import '../state/active_workout_view_model.dart';
 import 'widgets/equipment_label_sheet.dart';
@@ -48,6 +50,20 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   void initState() {
     super.initState();
     unawaited(WakelockPlus.enable().catchError((Object e) => swallow(e, 'wakelock')));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowRestReminderGuide());
+  }
+
+  /// 首次进训练页：解释为什么要通知 / 精确闹钟权限，用户点"开启"才去申请。
+  /// 之前是启动就弹系统权限框，新手不知道为什么要给，多半直接拒。
+  Future<void> _maybeShowRestReminderGuide() async {
+    try {
+      final s = await ref.read(restReminderProvider.future);
+      if (!mounted || s.prompted) return;
+      if (ref.read(activeWorkoutProvider).value == null) return;
+      await RestReminderGuideSheet.show(context);
+    } catch (e, st) {
+      swallow(e, 'rest reminder guide', st);
+    }
   }
 
   @override

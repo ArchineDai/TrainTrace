@@ -43,6 +43,16 @@ void main() {
     expect(await repo.readThemeSettings(), const ThemeSettings());
   });
 
+  group('restReminderPrompted', () {
+    test('默认 false；写过一次后为 true，重复写不多插行', () async {
+      expect(await repo.readRestReminderPrompted(), isFalse);
+      await repo.writeRestReminderPrompted();
+      await repo.writeRestReminderPrompted();
+      expect(await repo.readRestReminderPrompted(), isTrue);
+      expect((await db.select(db.appSettings).get()).length, 1);
+    });
+  });
+
   group('locale', () {
     test('没选过 → null，不是空串或哨兵值', () async {
       expect(await repo.readLocale(), isNull);

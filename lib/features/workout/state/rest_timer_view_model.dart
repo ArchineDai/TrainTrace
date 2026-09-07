@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/log.dart';
@@ -12,11 +14,22 @@ import '../models/rest_timer_state.dart';
 /// [restTimerRemainingProvider]。这样 `state` 只在用户操作时变化，
 /// 不会每秒 notify 整棵树。
 ///
+/// 提醒走两条腿：
+/// - 系统闹钟（[RestNotifier.scheduleRestEnd]）：进程被冻结 / 杀掉也能响；
+/// - 进程内 [Timer]（[_armForegroundAlert]）：到点时进程还活着就立刻弹，
+///   不等闹钟 —— 精确闹钟权限没给时闹钟会被系统攒批晚几分钟，前台亮屏
+///   用着 App 却等不到提醒是最刺眼的失败。两边同一个通知 id，只响一次。
+///
 /// 持久化：终点写进 `workout_sessions.rest_ends_at` 由 ActiveWorkoutViewModel
-/// 负责（Phase 3），本类不碰 DB。
+/// 负责，本类不碰 DB。
 class RestTimerViewModel extends Notifier<RestTimerState> {
+  Timer? _foreground;
+
   @override
-  RestTimerState build() => const RestTimerState.idle();
+  RestTimerState build() {
+    ref.onDispose(() => _foreground?.cancel());
+    return const RestTimerState.idle();
+  }
 
   Clock get _clock => ref.read(clockProvider);
   RestNotifier get _notifier => ref.read(restNotifierProvider);
@@ -52,9 +65,12 @@ class RestTimerViewModel extends Notifier<RestTimerState> {
 
   Future<void> _set(RestTimerState next) async {
     state = next;
+    final now = _clock.now();
+    final end = next.endsAt;
+    final running = end != null && next.isRunning(now);
+    _armForegroundAlert(running ? end : null, now);
     try {
-      final end = next.endsAt;
-      if (end != null && next.isRunning(_clock.now())) {
+      if (running) {
         await _notifier.scheduleRestEnd(end, text: _notificationText);
       } else {
         await _notifier.cancelRestEnd();
@@ -63,6 +79,23 @@ class RestTimerViewModel extends Notifier<RestTimerState> {
       // 通知只是锦上添花，预约失败不能影响计时本身。
       swallow(e, 'rest notifier', s);
     }
+  }
+
+  /// 在 [end] 到点时从进程内弹提醒；[end] 为 null 只取消。
+  ///
+  /// 触发时再核对一次终点没变 —— 用户中途 ±15s / 暂停会走新的 `_set`，
+  /// 旧 Timer 已被取消，这里的核对只是双保险。
+  void _armForegroundAlert(DateTime? end, DateTime now) {
+    _foreground?.cancel();
+    _foreground = null;
+    if (end == null) return;
+    _foreground = Timer(end.difference(now), () {
+      _foreground = null;
+      if (state.endsAt != end || state.isPaused) return;
+      unawaited(_notifier
+          .showRestEndNow(text: _notificationText)
+          .catchError((Object e, StackTrace s) => swallow(e, 'rest alert', s)));
+    });
   }
 }
 

@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../services/rest_notifier.dart';
 import '../models/theme_settings.dart';
 import '../state/locale_settings_view_model.dart';
+import '../state/rest_reminder_view_model.dart';
 import '../state/theme_settings_view_model.dart';
+import 'widgets/rest_reminder_guide_sheet.dart';
 
 /// 设置页。V0.1 先落外观与语言；单位 / 默认休息 / 场馆 / 数据在 Phase 6 补齐。
 ///
@@ -26,6 +29,7 @@ class SettingsPage extends ConsumerWidget {
     final selectedLocale = ref.watch(
       localeSettingsProvider.select((s) => s.value?.selected),
     );
+    final reminder = ref.watch(restReminderProvider).value?.permission;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
@@ -67,6 +71,20 @@ class SettingsPage extends ConsumerWidget {
                 ? null
                 : vm.setWorkoutAlwaysDark,
           ),
+          _SectionHeader(l10n.settingsTraining),
+          ListTile(
+            minTileHeight: AppTheme.minTouch,
+            leading: const Icon(Icons.notifications_active_outlined),
+            title: Text(l10n.restReminderSetting),
+            // 状态未加载完先不写副标题，别闪一下"已开启"再变。
+            subtitle: reminder == null ? null : Text(_reminderLabel(l10n, reminder)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              await RestReminderGuideSheet.show(context);
+              // 从系统设置页回来的结果弹层里已刷过；这里兜底再问一次。
+              await ref.read(restReminderProvider.notifier).refresh();
+            },
+          ),
           _SectionHeader(l10n.settingsGeneral),
           ListTile(
             minTileHeight: AppTheme.minTouch,
@@ -80,6 +98,12 @@ class SettingsPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  static String _reminderLabel(AppLocalizations l10n, RestReminderPermission p) {
+    if (!p.notifications) return l10n.restReminderStatusNoNotifications;
+    if (!p.exactAlarm) return l10n.restReminderStatusInexact;
+    return l10n.restReminderStatusOn;
   }
 
   /// `selected` 为 null 显示"跟随系统"；库里的码不在列表里（理论上被 ViewModel
