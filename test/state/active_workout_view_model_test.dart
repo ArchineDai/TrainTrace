@@ -83,7 +83,7 @@ void main() {
     expect(incline.sets.map((s) => s.reps), [9, 9, 9]);
   });
 
-  test('完成最后一组：自动补一组并继承、开始休息计时、rest_ends_at 落库', () async {
+  test('完成最后一组：不补组、开始休息计时、rest_ends_at 落库', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
@@ -95,11 +95,9 @@ void main() {
 
     st = container.read(activeWorkoutProvider).value!;
     final after = st.session.exercises[0];
-    expect(after.sets.length, 4);
+    expect(after.sets.length, 3, reason: '完成最后一组不自动补第 4 组');
     expect(after.sets[2].isCompleted, isTrue);
     expect(after.sets[2].completedAt, clock.now());
-    expect(after.sets[3].weightKg, 18.16);
-    expect(after.sets[3].reps, 10, reason: '继承刚完成那组的次数');
 
     final timer = container.read(restTimerProvider);
     expect(timer.remainingSeconds(clock.now()), 90);
@@ -109,6 +107,23 @@ void main() {
     final persisted = await container.read(workoutRepositoryProvider).getSession(st.session.id);
     expect(persisted!.restEndsAt, clock.now().add(const Duration(seconds: 90)));
     expect(persisted.exercises[0].sets[2].reps, 10, reason: '完成前 flush 了 debounce');
+  });
+
+  test('addSet 手动加组：继承最后一组的重量次数', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final lat = container.read(activeWorkoutProvider).value!.session.exercises[0];
+
+    vm.editSet(lat.sets[2].id, reps: 10);
+    await vm.toggleComplete(lat.sets[2].id);
+    await vm.addSet(lat.id);
+
+    final after = container.read(activeWorkoutProvider).value!.session.exercises[0];
+    expect(after.sets.length, 4);
+    expect(after.sets[3].weightKg, 18.16);
+    expect(after.sets[3].reps, 10, reason: '继承刚完成那组的次数');
+    expect(after.sets[3].isCompleted, isFalse);
   });
 
   test('完成中间一组不补组；取消完成不动计时', () async {

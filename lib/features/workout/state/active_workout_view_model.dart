@@ -183,7 +183,10 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
         ));
   }
 
-  /// 完成 / 取消完成。完成时：最后一组则自动补一组，并开始休息计时。
+  /// 完成 / 取消完成。完成时开始休息计时。
+  ///
+  /// **不自动补组**：第 4 组只在用户点「添加一组」时出现。自动补组会让 3 组的
+  /// 计划永远拖着一条空行，用户还得回头删。
   Future<void> toggleComplete(String setId) async {
     final s = state.value;
     if (s == null) return;
@@ -203,7 +206,6 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
         ));
     await _persist(() => _repo.setCompleted(setId, completing), 'complete set');
     if (!completing) return;
-    if (ex.sets.last.id == setId) await addSet(ex.id);
     await _timer.start(ex.restSeconds ?? AppConstants.defaultRestSeconds);
   }
 
