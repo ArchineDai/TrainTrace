@@ -47,6 +47,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keeps contrast high in dim gyms; other pages follow the choice above';
 
   @override
+  String get workoutAlwaysDarkDisabledHint =>
+      'Already dark everywhere, nothing to set here';
+
+  @override
   String get settingsGeneral => 'General';
 
   @override
@@ -517,10 +521,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discardWorkout => 'Discard workout';
 
   @override
-  String get workoutEmptyHint => 'Tap + in the top right to add an exercise';
+  String get workoutEmptyHint => 'Tap “Add exercise” below to start';
 
   @override
   String get finishWorkout => 'Finish workout';
+
+  @override
+  String get finishShort => 'Finish';
 
   @override
   String get pickEquipmentLabelFirst => 'Pick an equipment label first';
@@ -719,11 +726,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Exercise history and personal records will change accordingly.';
 
   @override
-  String setLine(String weight, String reps) {
-    return '$weight kg  ×  $reps reps';
-  }
-
-  @override
   String get suggestInsufficientTitle => 'Not enough records yet';
 
   @override
@@ -754,7 +756,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String suggestNextWeightReps(String weight, String range) {
-    return '${weight}kg × $range reps';
+    return '$weight kg × $range reps';
   }
 
   @override
@@ -782,7 +784,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String suggestNextIncrease(String weight, String range, int min) {
-    return '${weight}kg × $range reps (dropping back near $min reps is normal)';
+    return '$weight kg × $range reps (dropping back near $min reps is normal)';
   }
 
   @override
@@ -805,7 +807,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String suggestNextHold(String weight, int sets, int max) {
-    return 'Hold ${weight}kg; add weight once all $sets sets reach $max reps';
+    return 'Hold $weight kg; add weight once all $sets sets reach $max reps';
   }
 
   @override
@@ -819,7 +821,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String suggestNextFadeOut(String weight, int min) {
-    return 'Hold ${weight}kg, rest a bit longer, and get the later sets up to $min reps';
+    return 'Hold $weight kg, rest a bit longer, and get the later sets up to $min reps';
   }
 
   @override
@@ -829,7 +831,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String suggestNextGeneric(String weight) {
-    return 'Hold ${weight}kg and add weight once you are steady in range';
+    return 'Hold $weight kg and add weight once you are steady in range';
   }
 
   @override

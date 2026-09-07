@@ -84,31 +84,34 @@ class ExerciseDetailPage extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // ── 怎么做：示意动画、要领、常见错误、找哪台机器 ─────────
-          ExerciseGuideSection(exercise: exercise),
-
-          // ── 个人记录 ────────────────────────────────────────
-          _section(context, l10n.personalRecords),
-          if (pr.isEmpty)
-            _muted(context, l10n.emptyNoRecords)
-          else
-            Row(
-              children: [
-                _Stat(
-                  label: l10n.prMaxWeight,
-                  value: '${Formatters.kg(pr.maxWeightKg!)} kg × ${pr.maxWeightReps}',
+          // ── 怎么做：示意动画、要领、常见错误，个人记录插在找哪台机器之前 ──
+          ExerciseGuideSection(
+            exercise: exercise,
+            beforeMachines: [
+              _section(context, l10n.personalRecords),
+              if (pr.isEmpty)
+                _muted(context, l10n.emptyNoRecords)
+              else
+                Row(
+                  children: [
+                    _Stat(
+                      label: l10n.prMaxWeight,
+                      value: '${Formatters.kg(pr.maxWeightKg!)} kg × ${pr.maxWeightReps}',
+                    ),
+                    _Stat(
+                      label: l10n.prMaxSetVolume,
+                      value: '${Formatters.kg(pr.maxSetVolumeKg!)} kg',
+                    ),
+                    _Stat(
+                      label: l10n.prEstimatedOneRm,
+                      // 估算值，两位小数是假精度。
+                      value: '${Formatters.kg(pr.estimatedOneRmKg!, decimals: 1)} kg',
+                    ),
+                  ],
                 ),
-                _Stat(
-                  label: l10n.prMaxSetVolume,
-                  value: '${Formatters.kg(pr.maxSetVolumeKg!)} kg',
-                ),
-                _Stat(
-                  label: l10n.prEstimatedOneRm,
-                  value: '${Formatters.kg(pr.estimatedOneRmKg!)} kg',
-                ),
-              ],
-            ),
-          const SizedBox(height: 20),
+              const SizedBox(height: 20),
+            ],
+          ),
 
           // ── 最近记录 ────────────────────────────────────────
           _section(context, l10n.recentRecords),

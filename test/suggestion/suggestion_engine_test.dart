@@ -56,7 +56,7 @@ void main() {
     ]);
     expect(s.kind, SuggestionKind.hold);
     expect(s.suggestedWeightKg, 20);
-    expect(s.nextTarget, contains('维持 20kg'));
+    expect(s.nextTarget, contains('维持 20 kg'));
     expect(s.nextTarget, contains('15 次后加重'));
   });
 
@@ -120,7 +120,7 @@ void main() {
     expect(s.kind, SuggestionKind.increase);
     expect(s.suggestedWeightKg, 22.5);
     expect(s.reason, '3 组均达到 15 次');
-    expect(s.nextTarget, contains('22.5kg × 10–15'));
+    expect(s.nextTarget, contains('22.5 kg × 10–15'));
   });
 
   test('全部达到上限、min RIR ≥ 1 → 加重，理由带 RIR；连续两次带次数', () {

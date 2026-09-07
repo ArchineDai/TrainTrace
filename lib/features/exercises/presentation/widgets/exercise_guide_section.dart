@@ -9,11 +9,19 @@ import 'exercise_figure_data.dart';
 
 /// 动作详情页的"怎么做"区块：示意动画、动作要领、常见错误、找哪台机器。
 ///
-/// 自定义动作三项都空且没有动画时整块不渲染。
+/// 自定义动作三项都空且没有动画时只渲染 [beforeMachines]。
 class ExerciseGuideSection extends StatelessWidget {
-  const ExerciseGuideSection({super.key, required this.exercise});
+  const ExerciseGuideSection({
+    super.key,
+    required this.exercise,
+    this.beforeMachines = const [],
+  });
 
   final Exercise exercise;
+
+  /// 插在「常见错误」之后、「找哪台机器」之前的内容（详情页把个人记录放这里：
+  /// 数字比器械说明更常看，不该排在要翻一屏的位置）。
+  final List<Widget> beforeMachines;
 
   bool get _hasAnything =>
       exercise.cues.isNotEmpty ||
@@ -23,7 +31,12 @@ class ExerciseGuideSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!_hasAnything) return const SizedBox.shrink();
+    if (!_hasAnything) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: beforeMachines,
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final colors = AppTheme.of(context);
     final l10n = AppLocalizations.of(context);
@@ -49,6 +62,7 @@ class ExerciseGuideSection extends StatelessWidget {
             _Bullet(marker: '×', markerColor: colors.danger, text: m),
           const SizedBox(height: 16),
         ],
+        ...beforeMachines,
         if (exercise.equipmentVariants.isNotEmpty) ...[
           _Title(text: l10n.guideWhichMachine),
           Text(

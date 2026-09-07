@@ -46,6 +46,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workoutAlwaysDarkHint => '健身房光线差时保持高对比，其余页面跟随上面的选择';
 
   @override
+  String get workoutAlwaysDarkDisabledHint => '当前已是深色，无需单独设置';
+
+  @override
   String get settingsGeneral => '通用';
 
   @override
@@ -508,10 +511,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get discardWorkout => '放弃训练';
 
   @override
-  String get workoutEmptyHint => '点右上角 + 添加动作';
+  String get workoutEmptyHint => '点下方「添加动作」开始';
 
   @override
   String get finishWorkout => '结束训练';
+
+  @override
+  String get finishShort => '结束';
 
   @override
   String get pickEquipmentLabelFirst => '先选一个器械标签';
@@ -703,11 +709,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get deleteSessionBody => '动作的历史表现与个人记录会随之变化。';
 
   @override
-  String setLine(String weight, String reps) {
-    return '$weight kg  ×  $reps 次';
-  }
-
-  @override
   String get suggestInsufficientTitle => '还没有足够记录';
 
   @override
@@ -734,7 +735,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String suggestNextWeightReps(String weight, String range) {
-    return '${weight}kg × $range 次';
+    return '$weight kg × $range 次';
   }
 
   @override
@@ -762,7 +763,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String suggestNextIncrease(String weight, String range, int min) {
-    return '${weight}kg × $range 次（次数回落到 $min 附近是正常的）';
+    return '$weight kg × $range 次（次数回落到 $min 附近是正常的）';
   }
 
   @override
@@ -784,7 +785,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String suggestNextHold(String weight, int sets, int max) {
-    return '维持 ${weight}kg；$sets 组都做到 $max 次后加重';
+    return '维持 $weight kg；$sets 组都做到 $max 次后加重';
   }
 
   @override
@@ -797,7 +798,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String suggestNextFadeOut(String weight, int min) {
-    return '维持 ${weight}kg，休息足一点，先把后几组补到 $min 次';
+    return '维持 $weight kg，休息足一点，先把后几组补到 $min 次';
   }
 
   @override
@@ -807,7 +808,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String suggestNextGeneric(String weight) {
-    return '维持 ${weight}kg，稳定在区间内再加';
+    return '维持 $weight kg，稳定在区间内再加';
   }
 
   @override

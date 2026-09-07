@@ -85,7 +85,7 @@ class _SessionTile extends StatelessWidget {
           '${Formatters.dateTime(summary.startedAt, now, l10n)}'
           '${d == null ? '' : ' · ${Formatters.duration(d, l10n)}'}'
           '\n${l10n.sessionMetaExercisesSets(summary.exerciseCount, summary.setCount)}'
-          ' · ${Formatters.kg(summary.totalVolumeKg)} kg'
+          ' · ${Formatters.volumeKg(summary.totalVolumeKg)} kg'
           '${summary.gymName == null ? '' : ' · ${summary.gymName}'}',
           style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
         ),

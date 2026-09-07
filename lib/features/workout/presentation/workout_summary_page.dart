@@ -50,7 +50,7 @@ class WorkoutSummaryPage extends ConsumerWidget {
                     _Stat(label: l10n.statSets, value: '${session.completedSetCount}'),
                     _Stat(
                       label: l10n.statVolume,
-                      value: '${Formatters.kg(session.totalVolumeKg)} kg',
+                      value: '${Formatters.volumeKg(session.totalVolumeKg)} kg',
                     ),
                   ],
                 ),

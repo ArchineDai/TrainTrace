@@ -276,10 +276,10 @@ class _RecentTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(summary.routineName ?? l10n.emptyWorkoutName),
       subtitle: Text(
+        // 首页只留三项：日期、时长、容量；动作数 / 组数留给历史页，五段一行英文下会换行。
         '${Formatters.relativeDay(summary.startedAt, now, l10n)}'
         '${d == null ? '' : ' · ${Formatters.duration(d, l10n)}'}'
-        ' · ${l10n.sessionMetaExercisesSets(summary.exerciseCount, summary.setCount)}'
-        ' · ${Formatters.kg(summary.totalVolumeKg)} kg',
+        ' · ${Formatters.volumeKg(summary.totalVolumeKg)} kg',
         style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
       ),
       onTap: () => context.push(AppRoutes.sessionDetail(summary.id)),

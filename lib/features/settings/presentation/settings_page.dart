@@ -64,7 +64,12 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 8),
           SwitchListTile(
             title: Text(l10n.workoutAlwaysDark),
-            subtitle: Text(l10n.workoutAlwaysDarkHint),
+            // 禁用时说明为什么灰了，否则用户以为坏了。
+            subtitle: Text(
+              settings.themeMode == AppThemeMode.dark
+                  ? l10n.workoutAlwaysDarkDisabledHint
+                  : l10n.workoutAlwaysDarkHint,
+            ),
             value: settings.workoutAlwaysDark,
             // 已经全局深色时这个开关没有意义，禁用但保留当前值。
             onChanged: settings.themeMode == AppThemeMode.dark
@@ -184,8 +189,8 @@ class SettingsPage extends ConsumerWidget {
   }
 }
 
-/// 设置页分组标题。用 accentText 而不是 onSurfaceVariant —— 后者和下面
-/// ListTile 的 subtitle 同色，扫一眼分不出哪行是标题。
+/// 设置页分组标题。和首页区块标题同一套（14 w600 onSurfaceVariant），靠字重和
+/// 20dp 上间距与下面 ListTile 的 subtitle 区分，不再用橙色文字抢注意力。
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader(this.label);
 
@@ -198,7 +203,7 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppTheme.of(context).accentText,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
       ),

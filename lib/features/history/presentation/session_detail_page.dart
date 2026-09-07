@@ -64,7 +64,7 @@ class SessionDetailPage extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${l10n.sessionMetaExercisesSets(session.exercises.length, session.completedSetCount)}'
-                  ' · ${Formatters.kg(session.totalVolumeKg)} kg',
+                  ' · ${Formatters.volumeKg(session.totalVolumeKg)} kg',
                   style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
                 ),
                 if (session.note != null && session.note!.isNotEmpty) ...[
@@ -179,37 +179,72 @@ class _ExerciseBlock extends StatelessWidget {
               for (var i = 0; i < sets.length; i++)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 28,
-                        child: Text(
-                          '${i + 1}',
-                          style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
-                        ),
-                      ),
-                      Text(
-                        l10n.setLine(
-                          sets[i].weightKg == null
-                              ? '—'
-                              : Formatters.kg(sets[i].weightKg!),
-                          '${sets[i].reps ?? '—'}',
-                        ),
-                        style: TextStyle(fontSize: AppTextSize.md),
-                      ),
-                      if (sets[i].rir != null) ...[
-                        const SizedBox(width: 12),
-                        Text(
-                          'RIR ${sets[i].rir}',
-                          style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ],
-                  ),
+                  child: _SetLine(index: i + 1, set: sets[i]),
                 ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 一组一行，四列定宽：序号 · 重量（右对齐）· × · 次数（左对齐）。
+///
+/// 等宽数字只能对齐同位数，「2.5 kg」和「12 kg」的 × 会左右漂；列宽固定之后
+/// 才能竖着扫。单位降为小号灰字：数字是信息，单位是标注。
+class _SetLine extends StatelessWidget {
+  const _SetLine({required this.index, required this.set});
+
+  final int index;
+  final WorkoutSet set;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final muted = TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        SizedBox(width: 28, child: Text('$index', style: muted)),
+        SizedBox(
+          width: 76,
+          child: _value(
+            context,
+            set.weightKg == null ? '—' : Formatters.kg(set.weightKg!),
+            'kg',
+            TextAlign.right,
+          ),
+        ),
+        SizedBox(width: 24, child: Text('×', textAlign: TextAlign.center, style: muted)),
+        SizedBox(
+          width: 72,
+          child: _value(context, '${set.reps ?? '—'}', l10n.unitReps, TextAlign.left),
+        ),
+        if (set.rir != null)
+          Text(
+            'RIR ${set.rir}',
+            style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
+          ),
+      ],
+    );
+  }
+
+  Widget _value(BuildContext context, String number, String unit, TextAlign align) {
+    final scheme = Theme.of(context).colorScheme;
+    return Text.rich(
+      TextSpan(
+        text: number,
+        style: TextStyle(fontSize: AppTextSize.md, color: scheme.onSurface),
+        children: [
+          TextSpan(
+            text: ' $unit',
+            style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+      textAlign: align,
     );
   }
 }

@@ -8,15 +8,21 @@ import '../l10n/app_localizations.dart';
 abstract final class Formatters {
   Formatters._();
 
-  /// 重量：`20` / `22.5` / `12.25`，去掉多余的 0。
-  static String kg(double value) {
-    if (value == value.roundToDouble()) return value.toStringAsFixed(0);
-    var s = value.toStringAsFixed(2);
+  /// 重量：`20` / `22.5` / `12.25`，去掉多余的 0。[decimals] 是最多保留几位小数。
+  static String kg(double value, {int decimals = 2}) {
+    if (decimals <= 0 || value == value.roundToDouble()) {
+      return value.toStringAsFixed(0);
+    }
+    var s = value.toStringAsFixed(decimals);
     while (s.endsWith('0')) {
       s = s.substring(0, s.length - 1);
     }
+    if (s.endsWith('.')) s = s.substring(0, s.length - 1);
     return s;
   }
+
+  /// 总容量：整数。一次训练几千公斤，小数是噪音。
+  static String volumeKg(double value) => value.round().toString();
 
   /// 倒计时 `mm:ss`。
   static String clock(int seconds) {
@@ -58,16 +64,17 @@ abstract final class Formatters {
     return l10n.durationHoursMinutes(m ~/ 60, (m % 60).toString().padLeft(2, '0'));
   }
 
-  /// 一个动作的各组摘要：`20kg × 12 / 12 / 12`。同重量合并，不同重量逐组列出。
+  /// 一个动作的各组摘要：`20 kg × 12 / 12 / 12`。同重量合并，不同重量逐组列出
+  /// （`20 kg × 12 / 22.5 kg × 8`）。数字和 kg 之间一律有空格，和组行、个人记录一致。
   static String setsSummary(List<({double? weightKg, int? reps})> sets) {
     final done = sets.where((s) => s.reps != null).toList();
     if (done.isEmpty) return '—';
     final weights = done.map((s) => s.weightKg).toSet();
     if (weights.length == 1 && weights.first != null) {
-      return '${kg(weights.first!)}kg × ${done.map((s) => s.reps).join(' / ')}';
+      return '${kg(weights.first!)} kg × ${done.map((s) => s.reps).join(' / ')}';
     }
     return done
-        .map((s) => '${s.weightKg == null ? '?' : kg(s.weightKg!)}×${s.reps}')
+        .map((s) => '${s.weightKg == null ? '?' : kg(s.weightKg!)} kg × ${s.reps}')
         .join(' / ');
   }
 }

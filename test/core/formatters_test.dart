@@ -22,6 +22,13 @@ void main() {
     expect(Formatters.kg(20), '20');
     expect(Formatters.kg(22.5), '22.5');
     expect(Formatters.kg(12.25), '12.25');
+    expect(Formatters.kg(3.58, decimals: 1), '3.6');
+    expect(Formatters.kg(3.96, decimals: 1), '4');
+  });
+
+  test('volumeKg 取整', () {
+    expect(Formatters.volumeKg(2220.24), '2220');
+    expect(Formatters.volumeKg(1314.5), '1315');
   });
 
   test('clock mm:ss', () {
@@ -88,14 +95,14 @@ void main() {
         (weightKg: 20.0, reps: 12),
         (weightKg: 20.0, reps: 10),
       ]),
-      '20kg × 12 / 12 / 10',
+      '20 kg × 12 / 12 / 10',
     );
     expect(
       Formatters.setsSummary([
         (weightKg: 20.0, reps: 12),
         (weightKg: 22.5, reps: 8),
       ]),
-      '20×12 / 22.5×8',
+      '20 kg × 12 / 22.5 kg × 8',
     );
     expect(Formatters.setsSummary([(weightKg: 20.0, reps: null)]), '—');
   });

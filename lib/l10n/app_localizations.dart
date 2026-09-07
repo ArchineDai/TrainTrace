@@ -170,6 +170,12 @@ abstract class AppLocalizations {
   /// **'健身房光线差时保持高对比，其余页面跟随上面的选择'**
   String get workoutAlwaysDarkHint;
 
+  /// No description provided for @workoutAlwaysDarkDisabledHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前已是深色，无需单独设置'**
+  String get workoutAlwaysDarkDisabledHint;
+
   /// No description provided for @settingsGeneral.
   ///
   /// In zh, this message translates to:
@@ -1001,7 +1007,7 @@ abstract class AppLocalizations {
   /// No description provided for @workoutEmptyHint.
   ///
   /// In zh, this message translates to:
-  /// **'点右上角 + 添加动作'**
+  /// **'点下方「添加动作」开始'**
   String get workoutEmptyHint;
 
   /// No description provided for @finishWorkout.
@@ -1009,6 +1015,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'结束训练'**
   String get finishWorkout;
+
+  /// No description provided for @finishShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'结束'**
+  String get finishShort;
 
   /// No description provided for @pickEquipmentLabelFirst.
   ///
@@ -1358,12 +1370,6 @@ abstract class AppLocalizations {
   /// **'动作的历史表现与个人记录会随之变化。'**
   String get deleteSessionBody;
 
-  /// 历史详情里的一组，weight / reps 可能是 '—'
-  ///
-  /// In zh, this message translates to:
-  /// **'{weight} kg  ×  {reps} 次'**
-  String setLine(String weight, String reps);
-
   /// No description provided for @suggestInsufficientTitle.
   ///
   /// In zh, this message translates to:
@@ -1409,7 +1415,7 @@ abstract class AppLocalizations {
   /// No description provided for @suggestNextWeightReps.
   ///
   /// In zh, this message translates to:
-  /// **'{weight}kg × {range} 次'**
+  /// **'{weight} kg × {range} 次'**
   String suggestNextWeightReps(String weight, String range);
 
   /// No description provided for @suggestIncreaseTitle.
@@ -1445,7 +1451,7 @@ abstract class AppLocalizations {
   /// No description provided for @suggestNextIncrease.
   ///
   /// In zh, this message translates to:
-  /// **'{weight}kg × {range} 次（次数回落到 {min} 附近是正常的）'**
+  /// **'{weight} kg × {range} 次（次数回落到 {min} 附近是正常的）'**
   String suggestNextIncrease(String weight, String range, int min);
 
   /// No description provided for @suggestHoldTitle.
@@ -1481,7 +1487,7 @@ abstract class AppLocalizations {
   /// No description provided for @suggestNextHold.
   ///
   /// In zh, this message translates to:
-  /// **'维持 {weight}kg；{sets} 组都做到 {max} 次后加重'**
+  /// **'维持 {weight} kg；{sets} 组都做到 {max} 次后加重'**
   String suggestNextHold(String weight, int sets, int max);
 
   /// No description provided for @suggestReasonFadeOut.
@@ -1499,7 +1505,7 @@ abstract class AppLocalizations {
   /// No description provided for @suggestNextFadeOut.
   ///
   /// In zh, this message translates to:
-  /// **'维持 {weight}kg，休息足一点，先把后几组补到 {min} 次'**
+  /// **'维持 {weight} kg，休息足一点，先把后几组补到 {min} 次'**
   String suggestNextFadeOut(String weight, int min);
 
   /// No description provided for @suggestReasonGeneric.
@@ -1511,7 +1517,7 @@ abstract class AppLocalizations {
   /// No description provided for @suggestNextGeneric.
   ///
   /// In zh, this message translates to:
-  /// **'维持 {weight}kg，稳定在区间内再加'**
+  /// **'维持 {weight} kg，稳定在区间内再加'**
   String suggestNextGeneric(String weight);
 
   /// No description provided for @suggestCompactLine.

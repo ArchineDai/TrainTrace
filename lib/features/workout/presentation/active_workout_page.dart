@@ -110,10 +110,19 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: l10n.addExercise,
-            icon: const Icon(Icons.add),
-            onPressed: _addExercise,
+          // 结束是一次性收尾动作，不占底部拇指区；AppBar 里只有它一个实心按钮
+          // （docs/ui-conventions.md 操作语法）。视觉 40dp，触控区由 padded 补到 48。
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 40),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                tapTargetSize: MaterialTapTargetSize.padded,
+              ),
+              onPressed: _finishing ? null : _finish,
+              child: Text(l10n.finishShort),
+            ),
           ),
           PopupMenuButton<String>(
             onSelected: (v) {
@@ -134,43 +143,52 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       body: Column(
         children: [
           Expanded(
-            child: session.exercises.isEmpty
-                ? Center(
-                    child: Text(
-                      l10n.workoutEmptyHint,
-                      style: TextStyle(fontSize: AppTextSize.md, color: scheme.onSurfaceVariant),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+              children: [
+                if (session.exercises.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Center(
+                      child: Text(
+                        l10n.workoutEmptyHint,
+                        style: TextStyle(fontSize: AppTextSize.md, color: scheme.onSurfaceVariant),
+                      ),
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-                    itemCount: session.exercises.length,
-                    itemBuilder: (context, i) {
-                      final ex = session.exercises[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: WorkoutExerciseCard(
-                          key: ValueKey('ex-${ex.id}'),
-                          exercise: ex,
-                          last: st.lastByExercise[ex.id],
-                          focusedSetId: _focusSetId,
-                          focusedField: _focusField,
-                          editingText: _editing,
-                          rirExpanded: _rirExpanded.contains(ex.id),
-                          onTapField: _focus,
-                          onToggleComplete: _toggleComplete,
-                          onAddSet: () => _vm.addSet(ex.id),
-                          onDeleteSet: (id) {
-                            if (_focusSetId == id) _unfocus();
-                            _vm.deleteSet(id);
-                          },
-                          onSetRir: (id, v) => _vm.editSet(id, rir: v, clearRir: v == null),
-                          onTapLabel: () => _changeLabel(ex.id, ex.exerciseId, ex.equipmentLabel),
-                          onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
-                          onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
-                        ),
-                      );
-                    },
                   ),
+                for (final ex in session.exercises)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: WorkoutExerciseCard(
+                      key: ValueKey('ex-${ex.id}'),
+                      exercise: ex,
+                      last: st.lastByExercise[ex.id],
+                      focusedSetId: _focusSetId,
+                      focusedField: _focusField,
+                      editingText: _editing,
+                      rirExpanded: _rirExpanded.contains(ex.id),
+                      onTapField: _focus,
+                      onToggleComplete: _toggleComplete,
+                      onAddSet: () => _vm.addSet(ex.id),
+                      onDeleteSet: (id) {
+                        if (_focusSetId == id) _unfocus();
+                        _vm.deleteSet(id);
+                      },
+                      onSetRir: (id, v) => _vm.editSet(id, rir: v, clearRir: v == null),
+                      onTapLabel: () => _changeLabel(ex.id, ex.exerciseId, ex.equipmentLabel),
+                      onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
+                      onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
+                    ),
+                  ),
+                // 追加动作放列表末尾，和编辑模板页同一条规则：练完最后一个动作时
+                // 用户正停在这里，空白训练时它就是页面上的第一个东西。
+                OutlinedButton.icon(
+                  onPressed: _addExercise,
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.addExercise),
+                ),
+              ],
+            ),
           ),
           const RestTimerBar(),
           if (_focusSetId != null)
@@ -181,19 +199,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
               onAction: _onKeypadAction,
             )
           else
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _finishing ? null : _finish,
-                    child: Text(l10n.finishWorkout),
-                  ),
-                ),
-              ),
-            ),
+            // 底部没有常驻按钮了，只给手势条留出安全区。
+            SizedBox(height: MediaQuery.paddingOf(context).bottom),
         ],
       ),
     );

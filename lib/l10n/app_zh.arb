@@ -15,6 +15,7 @@
   "themeDark": "深色",
   "workoutAlwaysDark": "训练中始终使用深色",
   "workoutAlwaysDarkHint": "健身房光线差时保持高对比，其余页面跟随上面的选择",
+  "workoutAlwaysDarkDisabledHint": "当前已是深色，无需单独设置",
   "settingsGeneral": "通用",
   "language": "语言",
   "followSystemLanguage": "跟随系统",
@@ -281,8 +282,9 @@
   "noActiveWorkoutBack": "没有进行中的训练，返回",
   "addExercise": "添加动作",
   "discardWorkout": "放弃训练",
-  "workoutEmptyHint": "点右上角 + 添加动作",
+  "workoutEmptyHint": "点下方「添加动作」开始",
   "finishWorkout": "结束训练",
+  "finishShort": "结束",
   "pickEquipmentLabelFirst": "先选一个器械标签",
   "labelHasNoPhoto": "「{label}」还没有照片，在动作详情页可以拍一张",
   "@labelHasNoPhoto": {
@@ -382,14 +384,6 @@
   "deleteSession": "删除记录",
   "deleteSessionTitle": "删除这次训练记录？",
   "deleteSessionBody": "动作的历史表现与个人记录会随之变化。",
-  "setLine": "{weight} kg  ×  {reps} 次",
-  "@setLine": {
-    "description": "历史详情里的一组，weight / reps 可能是 '—'",
-    "placeholders": {
-      "weight": { "type": "String" },
-      "reps": { "type": "String" }
-    }
-  },
 
   "suggestInsufficientTitle": "还没有足够记录",
   "suggestInsufficientReason": "完成一次训练后就会给出建议",
@@ -409,7 +403,7 @@
       "min": { "type": "int" }
     }
   },
-  "suggestNextWeightReps": "{weight}kg × {range} 次",
+  "suggestNextWeightReps": "{weight} kg × {range} 次",
   "@suggestNextWeightReps": {
     "placeholders": {
       "weight": { "type": "String" },
@@ -442,7 +436,7 @@
       "min": { "type": "int" }
     }
   },
-  "suggestNextIncrease": "{weight}kg × {range} 次（次数回落到 {min} 附近是正常的）",
+  "suggestNextIncrease": "{weight} kg × {range} 次（次数回落到 {min} 附近是正常的）",
   "@suggestNextIncrease": {
     "placeholders": {
       "weight": { "type": "String" },
@@ -462,7 +456,7 @@
   },
   "suggestReasonOneRirZero": "，但有一组 RIR 为 0",
   "suggestNextHoldUnknown": "维持当前重量",
-  "suggestNextHold": "维持 {weight}kg；{sets} 组都做到 {max} 次后加重",
+  "suggestNextHold": "维持 {weight} kg；{sets} 组都做到 {max} 次后加重",
   "@suggestNextHold": {
     "placeholders": {
       "weight": { "type": "String" },
@@ -478,7 +472,7 @@
     }
   },
   "suggestNextFadeOutUnknown": "保持重量，先把后几组补齐",
-  "suggestNextFadeOut": "维持 {weight}kg，休息足一点，先把后几组补到 {min} 次",
+  "suggestNextFadeOut": "维持 {weight} kg，休息足一点，先把后几组补到 {min} 次",
   "@suggestNextFadeOut": {
     "placeholders": {
       "weight": { "type": "String" },
@@ -492,7 +486,7 @@
       "range": { "type": "String" }
     }
   },
-  "suggestNextGeneric": "维持 {weight}kg，稳定在区间内再加",
+  "suggestNextGeneric": "维持 {weight} kg，稳定在区间内再加",
   "@suggestNextGeneric": {
     "placeholders": {
       "weight": { "type": "String" }
