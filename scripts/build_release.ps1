@@ -32,9 +32,16 @@
 .PARAMETER Clean
   构建前先 flutter clean。对外发的包建议带上，排除增量构建的脏产物。
 
+.PARAMETER Bump
+  构建前递增 pubspec.yaml 的版本号：build 只 +1 构建号（0.1.0+1 → 0.1.0+2），
+  patch / minor / major 改对应位并归零低位，构建号同样 +1（versionCode 必须单调递增）。
+  改动直接写进 pubspec.yaml，构建失败会还原；构建成功后记得把 pubspec 一并提交。
+  不填就用 pubspec 里现有的版本。
+
 .EXAMPLE
   powershell -File scripts/build_release.ps1
   powershell -File scripts/build_release.ps1 -Clean -Obfuscate
+  powershell -File scripts/build_release.ps1 -Install -Force -Bump build
 
 .NOTES
   怎么配签名（只做一次）：
@@ -52,7 +59,8 @@ param(
     [string]$Device,
     [switch]$Obfuscate,
     [switch]$Force,
-    [switch]$Clean
+    [switch]$Clean,
+    [ValidateSet('build', 'patch', 'minor', 'major')][string]$Bump
 )
 
 $ErrorActionPreference = 'Stop'
@@ -92,6 +100,14 @@ try {
         Write-Host "设备：$deviceId" -ForegroundColor Cyan
     }
 
+    # 版本号放在签名确认与设备检查之后：用户取消、设备不在场都不该留下一个改过的 pubspec。
+    $bumpedFrom = $null
+    if ($Bump) {
+        $bumpedFrom = $version
+        $version = Step-PubspecVersion $repoRoot $Bump
+        Write-Host "版本：$bumpedFrom → $version（已写入 pubspec.yaml）" -ForegroundColor Cyan
+    }
+
     if ($Clean) {
         Write-Host '== flutter clean ==' -ForegroundColor Cyan
         flutter clean
@@ -110,12 +126,19 @@ try {
     & flutter @buildArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Host "FAIL: 构建失败（退出码 $LASTEXITCODE）" -ForegroundColor Red
+        if ($bumpedFrom) {
+            Set-PubspecVersion $repoRoot $bumpedFrom
+            Write-Host "pubspec.yaml 版本已还原为 $bumpedFrom" -ForegroundColor Yellow
+        }
         exit $LASTEXITCODE
     }
 
     $apk = Get-BuiltApk $repoRoot 'release' $buildStart
     $archived = Save-ApkArchive $repoRoot $apk 'release' $version
     Write-ApkSummary $archived
+    if ($bumpedFrom) {
+        Write-Host "  版本号 $bumpedFrom → $version 已写入 pubspec.yaml，记得一并提交。" -ForegroundColor Yellow
+    }
 
     Write-Host ''
     if ($signed) {

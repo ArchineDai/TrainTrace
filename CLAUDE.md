@@ -119,6 +119,8 @@ powershell -File scripts/build_release.ps1 -Install -Force
 约 66 MB，`adb install -r` 覆盖安装保留数据。装前确认手机已解锁，锁屏时 vivo 会拒绝安装。
 `-Force` 是跳过"没有 `android/key.properties`、回退 debug 签名"的交互确认 —— 非交互 shell 里
 `Read-Host` 拿不到输入会直接退出；本机自测用 debug 签名没问题，对外分发前再配正式签名。
+加 `-Bump build|patch|minor|major` 在构建前递增 pubspec 版本号（任何一档都 +1 构建号，
+构建失败自动还原），成功后 pubspec.yaml 随本次改动一起提交。
 要看日志用 `adb logcat`，不要为此切回 `flutter run`。`scripts/build_dev.ps1` 只在需要
 热重载 / 断点时由用户自己决定用。
 

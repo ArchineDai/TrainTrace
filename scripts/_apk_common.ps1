@@ -69,6 +69,45 @@ function Get-PubspecVersion([string]$repoRoot) {
     return 'unknown'
 }
 
+# 把 pubspec.yaml 的 version 行改成 $newVersion，其余字节原样保留（编码、BOM、换行都不动，
+# 免得一次 -Bump 让 pubspec 的 diff 变成整文件）。
+function Set-PubspecVersion([string]$repoRoot, [string]$newVersion) {
+    $path = Join-Path $repoRoot 'pubspec.yaml'
+    $bytes = [IO.File]::ReadAllBytes($path)
+    $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+    $raw = [IO.File]::ReadAllText($path)
+    $m = [regex]::Match($raw, '(?m)^version:[ \t]*\S+')
+    if (-not $m.Success) { throw 'pubspec.yaml 里没有 version 行。' }
+    $updated = $raw.Substring(0, $m.Index) + "version: $newVersion" + $raw.Substring($m.Index + $m.Length)
+    [IO.File]::WriteAllText($path, $updated, (New-Object Text.UTF8Encoding($hasBom)))
+}
+
+# 按 $part（build / patch / minor / major）递增 pubspec.yaml 的版本号并写回，返回新版本串。
+#
+# 任何一档都顺带 +1 构建号：Android 的 versionCode 就是 + 后面的构建号，覆盖安装与
+# 上架都要求它单调递增 —— 只改 x.y.z 不动构建号，手机会把新包当成同一版，商店直接拒收。
+# 改 x.y.z 时低位归零：patch 0.1.0 → 0.1.1，minor → 0.2.0，major → 1.0.0。
+function Step-PubspecVersion([string]$repoRoot, [string]$part) {
+    $current = Get-PubspecVersion $repoRoot
+    if ($current -notmatch '^(\d+)\.(\d+)\.(\d+)\+(\d+)$') {
+        throw "pubspec.yaml 的版本是 '$current'，不是 x.y.z+n 形式，-Bump 不知道怎么改；手改 pubspec 再构建。"
+    }
+    $major = [int]$Matches[1]
+    $minor = [int]$Matches[2]
+    $patch = [int]$Matches[3]
+    $build = [int]$Matches[4] + 1
+    switch ($part) {
+        'build' { }
+        'patch' { $patch++ }
+        'minor' { $minor++; $patch = 0 }
+        'major' { $major++; $minor = 0; $patch = 0 }
+        default { throw "未知的 -Bump 值：$part（可选 build / patch / minor / major）" }
+    }
+    $new = "$major.$minor.$patch+$build"
+    Set-PubspecVersion $repoRoot $new
+    return $new
+}
+
 # 找 flutter 刚产出的 APK。$flutterType 是 debug / profile / release。
 #
 # 要求文件是 $since 之后写的：flutter 不清理 flutter-apk 目录，构建万一没真正产出
