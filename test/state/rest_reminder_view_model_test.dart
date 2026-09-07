@@ -104,6 +104,28 @@ void main() {
     expect(n.calls, ['exact']);
   });
 
+  test('shouldPrompt：权限没齐且没弹过才弹', () async {
+    final c = container(_FakeNotifier(notifications: false, exactAlarm: false));
+    expect((await c.read(restReminderProvider.future)).shouldPrompt, isTrue);
+  });
+
+  test('shouldPrompt：两项权限都有就不弹，哪怕从没引导过', () async {
+    final c = container(_FakeNotifier(notifications: true, exactAlarm: true));
+    expect((await c.read(restReminderProvider.future)).shouldPrompt, isFalse);
+  });
+
+  test('shouldPrompt：只差精确闹钟也算没齐，要弹', () async {
+    final c = container(_FakeNotifier(notifications: true, exactAlarm: false));
+    expect((await c.read(restReminderProvider.future)).shouldPrompt, isTrue);
+  });
+
+  test('shouldPrompt：弹过一次就不再弹，权限没齐也一样', () async {
+    final c = container(_FakeNotifier(notifications: false, exactAlarm: false));
+    await c.read(restReminderProvider.future);
+    await c.read(restReminderProvider.notifier).markPrompted();
+    expect(c.read(restReminderProvider).value?.shouldPrompt, isFalse);
+  });
+
   test('markPrompted 落库：新容器读回 true', () async {
     final c = container(_FakeNotifier(notifications: true, exactAlarm: true));
     await c.read(restReminderProvider.future);

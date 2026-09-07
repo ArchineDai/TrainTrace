@@ -9,7 +9,7 @@ import '../../state/rest_reminder_view_model.dart';
 
 /// "开启休息结束提醒"引导弹层。
 ///
-/// 首次进训练页自动弹一次；之后从设置页的「休息结束提醒」行可再进。
+/// 进训练页时权限没齐且没弹过就自动弹一次；之后从设置页的「休息结束提醒」行可再进。
 /// 说明为什么要两项权限，用户点"开启"才真正去申请（通知 → 精确闹钟）。
 /// 关闭时无论选了什么都记 prompted，不再自动弹。
 class RestReminderGuideSheet extends ConsumerStatefulWidget {
@@ -43,10 +43,21 @@ class RestReminderGuideSheet extends ConsumerStatefulWidget {
 class _RestReminderGuideSheetState extends ConsumerState<RestReminderGuideSheet> {
   bool _busy = false;
 
+  /// dispose 里不能再碰 ref（Riverpod 3 在 widget 卸载过程中用 ref 直接抛
+  /// StateError，markPrompted 根本没跑到，引导每次进训练页都弹），所以在
+  /// initState 先把 notifier 存下来。
+  late final RestReminderViewModel _reminder;
+
+  @override
+  void initState() {
+    super.initState();
+    _reminder = ref.read(restReminderProvider.notifier);
+  }
+
   @override
   void dispose() {
     // 关掉就算看过。不能 await，也不需要：写库失败 ViewModel 自己 swallow。
-    ref.read(restReminderProvider.notifier).markPrompted();
+    _reminder.markPrompted();
     super.dispose();
   }
 
