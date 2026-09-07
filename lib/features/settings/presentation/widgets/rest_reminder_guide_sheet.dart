@@ -11,18 +11,25 @@ import '../../state/rest_reminder_view_model.dart';
 ///
 /// 进训练页时权限没齐且没弹过就自动弹一次；之后从设置页的「休息结束提醒」行可再进。
 /// 说明为什么要两项权限，用户点"开启"才真正去申请（通知 → 精确闹钟）。
-/// 关闭时无论选了什么都记 prompted，不再自动弹。
+/// 关闭时无论选了什么都记 prompted，不再自动弹 —— 记在 [show] 里弹层返回之后，
+/// 不放 dispose：dispose 跑在 finalizeTree 阶段，那时改 provider 会触发 Riverpod
+/// 的"building 中修改 provider"断言。
 class RestReminderGuideSheet extends ConsumerStatefulWidget {
   const RestReminderGuideSheet({super.key});
 
   /// 弹出引导；用户点了"开启"则在 [context] 所在页面上 toast 申请结果。
   static Future<void> show(BuildContext context) async {
+    // 先拿 notifier 再 await：await 之后 context 可能已经失效。
+    final reminder =
+        ProviderScope.containerOf(context).read(restReminderProvider.notifier);
     final result = await showModalBottomSheet<RestReminderPermission>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
       builder: (_) => const RestReminderGuideSheet(),
     );
+    // 不管怎么关的（开启 / 暂不 / 遮罩 / 返回键）都算看过。写库失败 ViewModel 自己 swallow。
+    await reminder.markPrompted();
     if (result == null || !context.mounted) return;
     final l10n = AppLocalizations.of(context);
     AppTheme.showToast(
@@ -42,24 +49,6 @@ class RestReminderGuideSheet extends ConsumerStatefulWidget {
 
 class _RestReminderGuideSheetState extends ConsumerState<RestReminderGuideSheet> {
   bool _busy = false;
-
-  /// dispose 里不能再碰 ref（Riverpod 3 在 widget 卸载过程中用 ref 直接抛
-  /// StateError，markPrompted 根本没跑到，引导每次进训练页都弹），所以在
-  /// initState 先把 notifier 存下来。
-  late final RestReminderViewModel _reminder;
-
-  @override
-  void initState() {
-    super.initState();
-    _reminder = ref.read(restReminderProvider.notifier);
-  }
-
-  @override
-  void dispose() {
-    // 关掉就算看过。不能 await，也不需要：写库失败 ViewModel 自己 swallow。
-    _reminder.markPrompted();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
