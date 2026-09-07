@@ -29,10 +29,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.home,
     debugLogDiagnostics: false,
     routes: [
-      // 四 Tab 用 StatefulShellRoute.indexedStack，各分支保活自己的页面栈与
+      // 四 Tab 用 StatefulShellRoute + IndexedStack 容器，各分支保活自己的页面栈与
       // 局部 UI 态（滚动位置、筛选）。普通 ShellRoute 切 Tab 会销毁上一个 Tab。
-      StatefulShellRoute.indexedStack(
+      // 不用现成的 `.indexedStack`：它会给隐藏分支关 TickerMode，切主题后再切 Tab
+      // 卡片边框会闪，见 TabBranchStack。
+      StatefulShellRoute(
         parentNavigatorKey: _rootNavigatorKey,
+        navigatorContainerBuilder: (context, shell, children) =>
+            TabBranchStack(currentIndex: shell.currentIndex, children: children),
         builder: (context, state, navigationShell) =>
             AppShell(navigationShell: navigationShell),
         branches: [

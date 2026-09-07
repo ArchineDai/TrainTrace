@@ -3,7 +3,7 @@
 ## 结构
 
 - 四 Tab：`/`（训练）、`/routines`、`/history`、`/settings`，
-  `StatefulShellRoute.indexedStack`，各分支保活页面栈。
+  `StatefulShellRoute` + 自定义 `TabBranchStack` 容器（IndexedStack，隐藏分支不关 TickerMode），各分支保活页面栈。
 - 全屏页进根栈：`parentNavigatorKey: _rootNavigatorKey`。
   已注册：`/routines/new`、`/routines/:id/edit`、`/exercises/pick`（模态，
   `context.push<String>` 拿回 exerciseId）、`/workout`、`/workout/summary/:id`

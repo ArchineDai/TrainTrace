@@ -50,7 +50,7 @@ Repository 查询默认过滤 `deleted_at IS NULL`。物理删除只有一处例
    `AsyncNotifier`（含 `.family`）；没有（键盘展开、RIR 折叠、Tab 选中）→ `setState`。
    不引入 `riverpod_generator` / `freezed`，项目只吸收 `drift_dev` 一套 codegen。
 3. **路由参数走 URL，不用 `GoRouter.extra`**。地址经 `AppRoutes` 构造，数据由页面
-   watch provider 自己取。四 Tab 是 `StatefulShellRoute.indexedStack`，全屏页进根栈带
+   watch provider 自己取。四 Tab 是 `StatefulShellRoute`（容器 `TabBranchStack`），全屏页进根栈带
    `parentNavigatorKey`。`/exercises/pick` 必须注册在 `/exercises/:id` 之前。
 4. **时间经 `clockProvider` 取**，不直接 `DateTime.now()`。测试用 `FixedClock`。
 5. **静默降级用 `swallow(e, label)`**（`core/log.dart`），不写空 `catch`。日志走 `AppLog`。
