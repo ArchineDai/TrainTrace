@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../services/rest_notifier.dart';
+import '../models/rest_reminder_state.dart';
 import '../models/theme_settings.dart';
 import '../state/locale_settings_view_model.dart';
 import '../state/rest_reminder_view_model.dart';
@@ -29,7 +29,7 @@ class SettingsPage extends ConsumerWidget {
     final selectedLocale = ref.watch(
       localeSettingsProvider.select((s) => s.value?.selected),
     );
-    final reminder = ref.watch(restReminderProvider).value?.permission;
+    final reminder = ref.watch(restReminderProvider).value;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
@@ -72,19 +72,25 @@ class SettingsPage extends ConsumerWidget {
                 : vm.setWorkoutAlwaysDark,
           ),
           _SectionHeader(l10n.settingsTraining),
-          ListTile(
-            minTileHeight: AppTheme.minTouch,
-            leading: const Icon(Icons.notifications_active_outlined),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_active_outlined),
             title: Text(l10n.restReminderSetting),
             // 状态未加载完先不写副标题，别闪一下"已开启"再变。
             subtitle: reminder == null ? null : Text(_reminderLabel(l10n, reminder)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              await RestReminderGuideSheet.show(context);
-              // 从系统设置页回来的结果弹层里已刷过；这里兜底再问一次。
-              await ref.read(restReminderProvider.notifier).refresh();
-            },
+            value: reminder?.enabled ?? true,
+            onChanged: reminder == null
+                ? null
+                : (value) => _toggleReminder(context, ref, value),
           ),
+          // 开着但系统权限没齐：单独一行去补，不和开关抢点击。
+          if (reminder != null && reminder.enabled && !reminder.permission.complete)
+            ListTile(
+              minTileHeight: AppTheme.minTouch,
+              leading: const SizedBox(width: 24),
+              title: Text(l10n.restReminderGrantPermissions),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openReminderGuide(context, ref),
+            ),
           _SectionHeader(l10n.settingsGeneral),
           ListTile(
             minTileHeight: AppTheme.minTouch,
@@ -100,10 +106,31 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  static String _reminderLabel(AppLocalizations l10n, RestReminderPermission p) {
-    if (!p.notifications) return l10n.restReminderStatusNoNotifications;
-    if (!p.exactAlarm) return l10n.restReminderStatusInexact;
+  static String _reminderLabel(AppLocalizations l10n, RestReminderState s) {
+    if (!s.enabled) return l10n.restReminderStatusOff;
+    if (!s.permission.notifications) return l10n.restReminderStatusNoNotifications;
+    if (!s.permission.exactAlarm) return l10n.restReminderStatusInexact;
     return l10n.restReminderStatusOn;
+  }
+
+  /// 开关只管"想不想"。打开时若系统权限没齐，顺手进引导去申请。
+  static Future<void> _toggleReminder(
+    BuildContext context,
+    WidgetRef ref,
+    bool value,
+  ) async {
+    await ref.read(restReminderProvider.notifier).setEnabled(value);
+    final complete =
+        ref.read(restReminderProvider).value?.permission.complete ?? true;
+    if (value && !complete && context.mounted) {
+      await _openReminderGuide(context, ref);
+    }
+  }
+
+  static Future<void> _openReminderGuide(BuildContext context, WidgetRef ref) async {
+    await RestReminderGuideSheet.show(context);
+    // 从系统设置页回来的结果弹层里已刷过；这里兜底再问一次。
+    await ref.read(restReminderProvider.notifier).refresh();
   }
 
   /// `selected` 为 null 显示"跟随系统"；库里的码不在列表里（理论上被 ViewModel

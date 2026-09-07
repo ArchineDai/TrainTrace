@@ -53,6 +53,18 @@ void main() {
     });
   });
 
+  group('restReminderEnabled', () {
+    test('默认开；写 false 读回 false，重复写是覆盖', () async {
+      expect(await repo.readRestReminderEnabled(), isTrue);
+      await repo.writeRestReminderEnabled(false);
+      await repo.writeRestReminderEnabled(false);
+      expect(await repo.readRestReminderEnabled(), isFalse);
+      await repo.writeRestReminderEnabled(true);
+      expect(await repo.readRestReminderEnabled(), isTrue);
+      expect((await db.select(db.appSettings).get()).length, 1);
+    });
+  });
+
   group('locale', () {
     test('没选过 → null，不是空串或哨兵值', () async {
       expect(await repo.readLocale(), isNull);

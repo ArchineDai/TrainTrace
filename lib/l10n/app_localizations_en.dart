@@ -73,6 +73,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Exact alarms off — reminders may be late when the screen is locked';
 
   @override
+  String get restReminderStatusOff => 'Off';
+
+  @override
+  String get restReminderGrantPermissions => 'Grant permissions';
+
+  @override
   String get devPlayground => 'Phase 0 tech playground';
 
   @override

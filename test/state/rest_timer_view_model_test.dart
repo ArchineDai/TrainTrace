@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 import 'package:traintrace/core/db/database_provider.dart';
 import 'package:traintrace/core/time/clock.dart';
+import 'package:traintrace/features/settings/state/rest_reminder_view_model.dart';
 import 'package:traintrace/features/workout/state/rest_timer_view_model.dart';
 import 'package:traintrace/services/rest_notifier.dart';
 
@@ -62,6 +63,20 @@ void main() {
 
     await vm.skip();
     expect(notifier.cancelled, 1);
+  });
+
+  test('设置里关掉提醒：start 不预约闹钟，到点前台也不弹', () async {
+    await c.read(restReminderProvider.future);
+    await c.read(restReminderProvider.notifier).setEnabled(false);
+    final cancelledBefore = notifier.cancelled;
+
+    final vm = c.read(restTimerProvider.notifier);
+    await vm.start(1);
+    expect(notifier.scheduled, isEmpty);
+    expect(notifier.cancelled, cancelledBefore + 1, reason: '关着时 _set 走取消分支');
+
+    await Future<void>.delayed(const Duration(milliseconds: 1300));
+    expect(notifier.shownNow, 0);
   });
 
   test('到点时进程还活着：Dart 侧立即弹一次，不等闹钟', () async {

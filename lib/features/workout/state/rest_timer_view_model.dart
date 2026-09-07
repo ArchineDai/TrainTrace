@@ -6,6 +6,7 @@ import '../../../core/log.dart';
 import '../../../core/time/clock.dart';
 import '../../../services/rest_notifier.dart';
 import '../../settings/state/app_localizations_provider.dart';
+import '../../settings/state/rest_reminder_view_model.dart';
 import '../models/rest_timer_state.dart';
 
 /// 休息倒计时。全局单例：训练页与首页横幅都要读它。
@@ -19,6 +20,8 @@ import '../models/rest_timer_state.dart';
 /// - 进程内 [Timer]（[_armForegroundAlert]）：到点时进程还活着就立刻弹，
 ///   不等闹钟 —— 精确闹钟权限没给时闹钟会被系统攒批晚几分钟，前台亮屏
 ///   用着 App 却等不到提醒是最刺眼的失败。两边同一个通知 id，只响一次。
+/// 两条腿都先看设置里的开关（[RestReminderState.enabled]）：关了就只走倒计时，
+/// 不预约、不弹。
 ///
 /// 持久化：终点写进 `workout_sessions.rest_ends_at` 由 ActiveWorkoutViewModel
 /// 负责，本类不碰 DB。
@@ -70,7 +73,7 @@ class RestTimerViewModel extends Notifier<RestTimerState> {
     final running = end != null && next.isRunning(now);
     _armForegroundAlert(running ? end : null, now);
     try {
-      if (running) {
+      if (running && await _reminderEnabled()) {
         await _notifier.scheduleRestEnd(end, text: _notificationText);
       } else {
         await _notifier.cancelRestEnd();
@@ -89,13 +92,24 @@ class RestTimerViewModel extends Notifier<RestTimerState> {
     _foreground?.cancel();
     _foreground = null;
     if (end == null) return;
-    _foreground = Timer(end.difference(now), () {
+    _foreground = Timer(end.difference(now), () async {
       _foreground = null;
       if (state.endsAt != end || state.isPaused) return;
+      if (!await _reminderEnabled()) return;
       unawaited(_notifier
           .showRestEndNow(text: _notificationText)
           .catchError((Object e, StackTrace s) => swallow(e, 'rest alert', s)));
     });
+  }
+
+  /// 设置里的开关。读不到（库坏了）按开处理：少响一次比该响不响好判断。
+  Future<bool> _reminderEnabled() async {
+    try {
+      return (await ref.read(restReminderProvider.future)).enabled;
+    } catch (e, s) {
+      swallow(e, 'rest reminder enabled', s);
+      return true;
+    }
   }
 }
 

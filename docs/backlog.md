@@ -8,7 +8,7 @@
   （2026-09-04，`dumpsys notification` 可见 id=1001）。**vivo 真机未验证**：
   USB 安装需在手机上手动确认，且 OriginOS 可能要求关闭省电 / 允许后台弹出。
   精确闹钟（targetSdk 36 下 Android 14+ 默认不授予）已改为进训练页时权限没齐弹引导申请（只弹一次）
-  （`RestReminderGuideSheet`，设置页「休息结束提醒」可再进），未授予仍退化为
+  （`RestReminderGuideSheet`，设置页「休息结束提醒」有开关，权限没齐时可再进引导），未授予仍退化为
   `inexactAllowWhileIdle`；另加了前台 Dart Timer 到点立即弹（`RestTimerViewModel`），
   进程活着时不再依赖系统闹钟。2026-09-07 前用户反馈"时而有时而没有"即此因。
 - **V-2 进程被杀恢复**：模拟器上 `am force-stop` 后重启，首页横幅显示已完成组数，

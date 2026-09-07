@@ -23,6 +23,8 @@
   "restReminderStatusOn": "已开启",
   "restReminderStatusNoNotifications": "未允许通知，休息结束不会提醒",
   "restReminderStatusInexact": "未授予精确闹钟，锁屏后提醒可能延迟",
+  "restReminderStatusOff": "已关闭",
+  "restReminderGrantPermissions": "去开启权限",
   "devPlayground": "Phase 0 技术验证",
   "devPlaygroundHint": "键盘 / 计时 / 后台提醒",
 

@@ -17,6 +17,7 @@ class SettingsRepository {
   static const _kWorkoutAlwaysDark = 'workoutAlwaysDark';
   static const _kLocale = 'locale';
   static const _kRestReminderPrompted = 'restReminderPrompted';
+  static const _kRestReminderEnabled = 'restReminderEnabled';
 
   Future<ThemeSettings> readThemeSettings() async {
     final rows = await (_db.select(_db.appSettings)
@@ -62,6 +63,18 @@ class SettingsRepository {
   }
 
   Future<void> writeRestReminderPrompted() => _put(_kRestReminderPrompted, 'true');
+
+  /// 用户要不要休息结束提醒。这是"想不想"，与系统"允不允许"是两层：
+  /// 关了就不预约闹钟、不弹，权限留着无所谓；默认开。
+  Future<bool> readRestReminderEnabled() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_kRestReminderEnabled)))
+        .getSingleOrNull();
+    return _parseBool(row?.value) ?? true;
+  }
+
+  Future<void> writeRestReminderEnabled(bool value) =>
+      _put(_kRestReminderEnabled, value.toString());
 
   Future<void> _put(String key, String value) => _db
       .into(_db.appSettings)

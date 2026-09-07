@@ -70,6 +70,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get restReminderStatusInexact => '未授予精确闹钟，锁屏后提醒可能延迟';
 
   @override
+  String get restReminderStatusOff => '已关闭';
+
+  @override
+  String get restReminderGrantPermissions => '去开启权限';
+
+  @override
   String get devPlayground => 'Phase 0 技术验证';
 
   @override

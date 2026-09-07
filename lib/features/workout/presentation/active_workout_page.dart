@@ -53,7 +53,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowRestReminderGuide());
   }
 
-  /// 进训练页时两项权限没齐、且没弹过：解释为什么要通知 / 精确闹钟权限，
+  /// 进训练页时提醒开着、两项权限没齐、且没弹过：解释为什么要通知 / 精确闹钟权限，
   /// 用户点"开启"才去申请。权限齐了就什么都不弹。
   /// 之前是启动就弹系统权限框，新手不知道为什么要给，多半直接拒。
   Future<void> _maybeShowRestReminderGuide() async {

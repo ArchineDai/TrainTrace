@@ -21,6 +21,8 @@
   "restReminderStatusOn": "On",
   "restReminderStatusNoNotifications": "Notifications off — you won't be reminded",
   "restReminderStatusInexact": "Exact alarms off — reminders may be late when the screen is locked",
+  "restReminderStatusOff": "Off",
+  "restReminderGrantPermissions": "Grant permissions",
   "language": "Language",
   "followSystemLanguage": "System default",
   "devPlayground": "Phase 0 tech playground",

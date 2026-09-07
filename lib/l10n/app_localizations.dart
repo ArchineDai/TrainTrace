@@ -218,6 +218,18 @@ abstract class AppLocalizations {
   /// **'未授予精确闹钟，锁屏后提醒可能延迟'**
   String get restReminderStatusInexact;
 
+  /// No description provided for @restReminderStatusOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'已关闭'**
+  String get restReminderStatusOff;
+
+  /// No description provided for @restReminderGrantPermissions.
+  ///
+  /// In zh, this message translates to:
+  /// **'去开启权限'**
+  String get restReminderGrantPermissions;
+
   /// No description provided for @devPlayground.
   ///
   /// In zh, this message translates to:

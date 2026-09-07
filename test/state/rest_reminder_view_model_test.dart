@@ -18,6 +18,7 @@ class _FakeNotifier implements RestNotifier {
   bool exactAlarm;
   final bool grantOnRequest;
   final calls = <String>[];
+  int cancelled = 0;
 
   @override
   Future<RestReminderPermission> permissionStatus() async =>
@@ -44,7 +45,7 @@ class _FakeNotifier implements RestNotifier {
   Future<void> showRestEndNow({required RestNotificationText text}) async {}
 
   @override
-  Future<void> cancelRestEnd() async {}
+  Future<void> cancelRestEnd() async => cancelled++;
 }
 
 void main() {
@@ -124,6 +125,35 @@ void main() {
     await c.read(restReminderProvider.future);
     await c.read(restReminderProvider.notifier).markPrompted();
     expect(c.read(restReminderProvider).value?.shouldPrompt, isFalse);
+  });
+
+  test('setEnabled(false)：不再弹引导、取消已预约的闹钟、落库', () async {
+    final n = _FakeNotifier(notifications: false, exactAlarm: false);
+    final c = container(n);
+    await c.read(restReminderProvider.future);
+
+    await c.read(restReminderProvider.notifier).setEnabled(false);
+
+    final s = c.read(restReminderProvider).value!;
+    expect(s.enabled, isFalse);
+    expect(s.shouldPrompt, isFalse, reason: '用户主动关的，权限没齐也不引导');
+    expect(n.cancelled, 1, reason: '可能正有一段休息在倒计时');
+
+    final c2 = container(_FakeNotifier(notifications: false, exactAlarm: false));
+    expect((await c2.read(restReminderProvider.future)).enabled, isFalse);
+  });
+
+  test('关过之后点"开启"：开关一并打开', () async {
+    final n = _FakeNotifier(notifications: false, exactAlarm: false);
+    final c = container(n);
+    await c.read(restReminderProvider.future);
+    await c.read(restReminderProvider.notifier).setEnabled(false);
+
+    await c.read(restReminderProvider.notifier).enable();
+
+    final s = c.read(restReminderProvider).value!;
+    expect(s.enabled, isTrue);
+    expect(s.effective, isTrue);
   });
 
   test('markPrompted 落库：新容器读回 true', () async {
