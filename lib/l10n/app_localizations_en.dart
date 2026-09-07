@@ -323,7 +323,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get routineNameLabel => 'Routine name';
 
   @override
-  String get routineNameHint => 'e.g. A — Back + Shoulders';
+  String get routineNameHint => 'e.g. A Pull Day';
 
   @override
   String get routineEmptyItems => 'No exercises yet — add one below';

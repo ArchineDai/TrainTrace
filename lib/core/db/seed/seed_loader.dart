@@ -13,7 +13,7 @@ import '../database_provider.dart';
 /// 读一个种子 JSON 文本。生产用 `rootBundle.loadString`，测试用 `File.readAsString`。
 typedef AssetReader = Future<String> Function(String assetPath);
 
-/// 首次启动导入内置动作、三套模板与用户已有的训练记录。
+/// 首次启动导入内置动作、四套模板与用户已有的训练记录。
 ///
 /// 靠 `app_settings.seededVersion` 判断是否已导入；导入过就什么都不做。
 /// 以后种子有增补时 `seedVersion` +1，并在 [_migrateSeed] 里只补差量，
@@ -28,8 +28,16 @@ class SeedLoader {
 
   /// v1 首版；v2 给 16 个内置动作补要领 / 常见错误 / 常见机器；
   /// v3 更正内置的三次历史记录（日期 / 动作 / 组数与实际不符）；
-  /// v4 动作库从 16 个补到 48 个，同时下线自定义动作入口。
-  static const seedVersion = 4;
+  /// v4 动作库从 16 个补到 48 个，同时下线自定义动作入口；
+  /// v5 模板从"部位三分"改为"拉 / 推 / 腿腹 / 肩背强化"四套。
+  static const seedVersion = 5;
+
+  /// v4 及之前的三套内置模板 id，v5 迁移时软删。
+  static const _v4RoutineIds = [
+    'rt_a_back_shoulder',
+    'rt_b_chest_arm',
+    'rt_c_leg_core',
+  ];
   static const _kSeededVersion = 'seededVersion';
 
   /// `SessionStatus.inProgress.name`。core 不 import features，所以写字面量。
@@ -79,41 +87,46 @@ class SeedLoader {
             );
       }
 
-      for (final r in routines) {
-        await _db.into(_db.routines).insert(
-              RoutinesCompanion.insert(
-                id: r['id'] as String,
-                name: r['name'] as String,
-                color: Value(r['color'] as String?),
-                sortOrder: Value(_int(r['sortOrder']) ?? 0),
-                createdAt: now,
-                updatedAt: now,
-              ),
-              mode: InsertMode.insertOrIgnore,
-            );
-        final items = _list(r['exercises']);
-        for (var i = 0; i < items.length; i++) {
-          final it = items[i];
-          await _db.into(_db.routineExercises).insert(
-                RoutineExercisesCompanion.insert(
-                  id: newId(),
-                  routineId: r['id'] as String,
-                  exerciseId: it['exerciseId'] as String,
-                  sortOrder: i,
-                  targetSets: Value(_int(it['targetSets']) ?? 3),
-                  targetRepMin: _int(it['targetRepMin']) ?? 10,
-                  targetRepMax: _int(it['targetRepMax']) ?? 15,
-                  restSeconds: _int(it['restSeconds']) ?? 90,
-                  updatedAt: now,
-                ),
-              );
-        }
-      }
+      await _insertRoutines(routines, now);
 
       for (final s in history) {
         await _insertHistorySession(s, now);
       }
     });
+  }
+
+  /// 按种子 JSON 插入模板及其动作。模板行 insertOrIgnore，已存在的不动。
+  Future<void> _insertRoutines(List<Map<String, dynamic>> routines, int now) async {
+    for (final r in routines) {
+      await _db.into(_db.routines).insert(
+            RoutinesCompanion.insert(
+              id: r['id'] as String,
+              name: r['name'] as String,
+              color: Value(r['color'] as String?),
+              sortOrder: Value(_int(r['sortOrder']) ?? 0),
+              createdAt: now,
+              updatedAt: now,
+            ),
+            mode: InsertMode.insertOrIgnore,
+          );
+      final items = _list(r['exercises']);
+      for (var i = 0; i < items.length; i++) {
+        final it = items[i];
+        await _db.into(_db.routineExercises).insert(
+              RoutineExercisesCompanion.insert(
+                id: newId(),
+                routineId: r['id'] as String,
+                exerciseId: it['exerciseId'] as String,
+                sortOrder: i,
+                targetSets: Value(_int(it['targetSets']) ?? 3),
+                targetRepMin: _int(it['targetRepMin']) ?? 10,
+                targetRepMax: _int(it['targetRepMax']) ?? 15,
+                restSeconds: _int(it['restSeconds']) ?? 90,
+                updatedAt: now,
+              ),
+            );
+      }
+    }
   }
 
   Future<void> _insertHistorySession(Map<String, dynamic> s, int now) async {
@@ -191,6 +204,35 @@ class SeedLoader {
     if (from < 2) await _fillExerciseGuides();
     if (from < 3) await _reseedHistory();
     if (from < 4) await _expandExercisesAndRetireCustom();
+    if (from < 5) await _reseedRoutines();
+  }
+
+  /// v4 → v5：模板按"拉 / 推 / 腿腹 / 肩背强化"重排成四套。
+  ///
+  /// 旧的 A 背+肩 / B 胸+手臂 / C 腿+核心 连同动作行一起软删；用户自建的模板不碰。
+  /// 历史训练里的 `routine_id` 仍指向旧模板，靠 `routine_name` 快照照常显示。
+  /// 新模板按 id 只插库里没有的，迁移重跑不会插两遍。
+  Future<void> _reseedRoutines() async {
+    final routines = _list(await _read(routinesAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      await (_db.update(_db.routines)
+            ..where((t) => t.id.isIn(_v4RoutineIds) & t.deletedAt.isNull()))
+          .write(RoutinesCompanion(deletedAt: Value(now), updatedAt: Value(now)));
+      await (_db.update(_db.routineExercises)
+            ..where((t) => t.routineId.isIn(_v4RoutineIds) & t.deletedAt.isNull()))
+          .write(RoutineExercisesCompanion(
+        deletedAt: Value(now),
+        updatedAt: Value(now),
+      ));
+
+      final existing =
+          (await _db.select(_db.routines).get()).map((r) => r.id).toSet();
+      await _insertRoutines(
+        routines.where((r) => !existing.contains(r['id'])).toList(),
+        now,
+      );
+    });
   }
 
   /// v3 → v4：动作库补到 48 个，只插库里没有的 id，已有行（含用户改过目标的）不碰。

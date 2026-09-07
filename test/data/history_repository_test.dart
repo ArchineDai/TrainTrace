@@ -28,7 +28,7 @@ void main() {
     await workouts.startSession(); // inProgress，不应出现
     final list = await history.getSummaries();
     expect(list.length, 3);
-    expect(list.map((s) => s.routineName), ['A 背 + 肩', 'B 胸 + 手臂', 'A 背 + 肩']);
+    expect(list.map((s) => s.routineName), ['D 肩背强化', 'B 推日', 'D 肩背强化']);
 
     final first = list[2]; // 8/30
     expect(first.exerciseCount, 5);

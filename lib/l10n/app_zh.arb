@@ -179,7 +179,7 @@
   "routinesEditRoutine": "编辑模板",
   "routinesEmpty": "还没有模板，点右上角 + 新建",
   "routineNameLabel": "模板名称",
-  "routineNameHint": "如：A 背 + 肩",
+  "routineNameHint": "如：A 拉日",
   "routineEmptyItems": "还没有动作，点下方添加",
   "routineDeleteTitle": "删除「{name}」？",
   "@routineDeleteTitle": {

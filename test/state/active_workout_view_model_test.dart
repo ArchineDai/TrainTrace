@@ -37,7 +37,7 @@ void main() {
   });
 
   Future<void> startA() async {
-    final routine = await container.read(routineRepositoryProvider).getById('rt_a_back_shoulder');
+    final routine = await container.read(routineRepositoryProvider).getById('rt_a_pull');
     await container.read(activeWorkoutProvider.notifier).start(routine: routine);
   }
 
@@ -50,7 +50,7 @@ void main() {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final st = container.read(activeWorkoutProvider).value!;
-    expect(st.session.exercises.length, 5);
+    expect(st.session.exercises.length, 6);
 
     final lat = st.session.exercises[0];
     expect(lat.exerciseName, '高位下拉');
@@ -59,9 +59,9 @@ void main() {
     expect(lat.sets.every((s) => !s.isCompleted), isTrue);
     expect(st.lastByExercise[lat.id]!.sets.length, 3);
 
-    final press = st.session.exercises[2]; // 器械肩推 上次 12kg × 12/12/9
-    expect(press.sets.map((s) => s.weightKg), [12, 12, 12]);
-    expect(press.sets.map((s) => s.reps), [12, 12, 9]);
+    final rear = st.session.exercises[3]; // 反向蝴蝶机 上次 12kg × 12/6/6
+    expect(rear.sets.map((s) => s.weightKg), [12, 12, 12]);
+    expect(rear.sets.map((s) => s.reps), [12, 6, 6]);
 
     expect(
       () => container.read(activeWorkoutProvider.notifier).start(),
@@ -72,7 +72,7 @@ void main() {
   test('模板组数多于上次组数时，多出的组继承上次最后一组', () async {
     await container.read(activeWorkoutProvider.future);
     final vm = container.read(activeWorkoutProvider.notifier);
-    final routine = await container.read(routineRepositoryProvider).getById('rt_b_chest_arm');
+    final routine = await container.read(routineRepositoryProvider).getById('rt_b_push');
     await vm.start(routine: routine);
 
     final st = container.read(activeWorkoutProvider).value!;
@@ -187,7 +187,7 @@ void main() {
     await vm.start();
     final lat = (await container
         .read(routineRepositoryProvider)
-        .getById('rt_c_leg_core'))!; // 借模板拿 exercise 对象不方便，直接查动作
+        .getById('rt_c_legs_core'))!; // 借模板拿 exercise 对象不方便，直接查动作
     expect(lat, isNotNull);
     final legPress = (await container.read(workoutRepositoryProvider).getSession(
           container.read(activeWorkoutProvider).value!.session.id,
@@ -235,7 +235,7 @@ void main() {
   test('applyLastPerformance 填未完成的组并补足组数', () async {
     await container.read(activeWorkoutProvider.future);
     final vm = container.read(activeWorkoutProvider.notifier);
-    final routine = await container.read(routineRepositoryProvider).getById('rt_a_back_shoulder');
+    final routine = await container.read(routineRepositoryProvider).getById('rt_a_pull');
     await vm.start(routine: routine);
     var st = container.read(activeWorkoutProvider).value!;
     final lat = st.session.exercises[0];
@@ -255,7 +255,7 @@ void main() {
   test('applyLastPerformance：已完成的组占位，剩下的组不错位、不多补', () async {
     await container.read(activeWorkoutProvider.future);
     final vm = container.read(activeWorkoutProvider.notifier);
-    final routine = await container.read(routineRepositoryProvider).getById('rt_a_back_shoulder');
+    final routine = await container.read(routineRepositoryProvider).getById('rt_a_pull');
     await vm.start(routine: routine);
     var st = container.read(activeWorkoutProvider).value!;
     final lat = st.session.exercises[0];
@@ -276,7 +276,7 @@ void main() {
   test('applyLastPerformance：上次无配重时清掉预填的重量', () async {
     await container.read(activeWorkoutProvider.future);
     final vm = container.read(activeWorkoutProvider.notifier);
-    final routine = await container.read(routineRepositoryProvider).getById('rt_b_chest_arm');
+    final routine = await container.read(routineRepositoryProvider).getById('rt_b_push');
     await vm.start(routine: routine);
     var st = container.read(activeWorkoutProvider).value!;
     // 蝴蝶机夹胸上次是无配重 × 8（history_demo 里 weightKg 缺省）。
@@ -303,7 +303,7 @@ void main() {
 
     final st = container.read(activeWorkoutProvider).value!;
     expect(st.session.routineId, isNull);
-    expect(st.session.routineName, 'B 胸 + 手臂');
+    expect(st.session.routineName, 'B 推日');
     expect(st.session.exercises.map((e) => e.exerciseName),
         ['蝴蝶机夹胸', '水平胸推', '上斜胸推', '二头弯举机', '哑铃弯举']);
     expect(st.session.exercises.map((e) => e.sets.length), [3, 2, 2, 1, 1],

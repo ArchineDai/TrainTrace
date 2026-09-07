@@ -26,14 +26,14 @@ void main() {
   tearDown(() => db.close());
 
   Future<WorkoutSession> startA() async =>
-      repo.startSession(routine: await routines.getById('rt_a_back_shoulder'));
+      repo.startSession(routine: await routines.getById('rt_a_pull'));
 
   test('从模板开始：inProgress、动作与目标快照、预生成空组', () async {
     final s = await startA();
     expect(s.status, SessionStatus.inProgress);
-    expect(s.routineName, 'A 背 + 肩');
+    expect(s.routineName, 'A 拉日');
     expect(s.startedAt, clock.now());
-    expect(s.exercises.length, 5);
+    expect(s.exercises.length, 6);
     final first = s.exercises.first;
     expect(first.exerciseName, '高位下拉');
     expect(first.targetRepMin, 10);
@@ -151,7 +151,7 @@ void main() {
     await repo.reorderExercises(ids);
 
     final after = (await repo.getSession(s.id))!;
-    expect(after.exercises.length, 4);
+    expect(after.exercises.length, 5);
     expect(after.exercises.map((e) => e.id), ids);
   });
 

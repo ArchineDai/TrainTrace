@@ -10,21 +10,92 @@ void main() {
   setUp(() => db = memoryDb());
   tearDown(() => db.close());
 
-  test('首次导入 48 动作 / 3 模板 / 3 次历史，第二次不再导入', () async {
+  test('首次导入 48 动作 / 4 模板 / 3 次历史，第二次不再导入', () async {
     final loader = seedLoader(db, fixedClock());
 
     expect(await loader.seedIfNeeded(), isTrue);
     expect(await loader.seedIfNeeded(), isFalse);
 
     expect((await db.select(db.exercises).get()).length, 48);
-    expect((await db.select(db.routines).get()).length, 3);
-    expect((await db.select(db.routineExercises).get()).length, 5 + 5 + 6);
+    expect((await db.select(db.routines).get()).length, 4);
+    expect((await db.select(db.routineExercises).get()).length, 6 + 6 + 7 + 6);
     expect((await db.select(db.workoutSessions).get()).length, 3);
 
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '4');
+    expect(version.value, '5');
+  });
+
+  test('种子 v4 → v5：旧三套模板软删、四套新模板插入、自建模板不动、历史不受影响', () async {
+    final loader = seedLoader(db, fixedClock());
+    await loader.seedIfNeeded();
+    // 模拟一台 v4 用户机：只有旧的 A/B/C 三套 + 一套自己建的，历史挂在旧模板上。
+    for (final e in {
+      'rt_a_back_shoulder': 'A 背 + 肩',
+      'rt_b_chest_arm': 'B 胸 + 手臂',
+      'rt_c_leg_core': 'C 腿 + 核心',
+      'mine': '我自己的',
+    }.entries) {
+      await db.into(db.routines).insert(RoutinesCompanion.insert(
+            id: e.key, name: e.value, createdAt: 1, updatedAt: 1,
+          ));
+      await db.into(db.routineExercises).insert(RoutineExercisesCompanion.insert(
+            id: 're_${e.key}',
+            routineId: e.key,
+            exerciseId: 'ex_lat_pulldown',
+            sortOrder: 0,
+            targetRepMin: 10,
+            targetRepMax: 15,
+            restSeconds: 90,
+            updatedAt: 1,
+          ));
+    }
+    await db.update(db.workoutSessions).write(
+        const WorkoutSessionsCompanion(routineId: Value('rt_a_back_shoulder')));
+    // 新四套此时还不该存在：硬删（其 routine_exercises 随外键级联）。
+    await (db.delete(db.routines)
+          ..where((t) => t.id.isIn(
+              ['rt_a_pull', 'rt_b_push', 'rt_c_legs_core', 'rt_d_shoulder_back'])))
+        .go();
+    await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
+        .write(const AppSettingsCompanion(value: Value('4')));
+
+    expect(await loader.seedIfNeeded(), isTrue);
+
+    final rows = await db.select(db.routines).get();
+    final alive = rows.where((r) => r.deletedAt == null).map((r) => r.id).toList()..sort();
+    expect(alive, ['mine', 'rt_a_pull', 'rt_b_push', 'rt_c_legs_core', 'rt_d_shoulder_back']);
+    expect(rows.where((r) => r.deletedAt != null).map((r) => r.id).toList()..sort(),
+        ['rt_a_back_shoulder', 'rt_b_chest_arm', 'rt_c_leg_core']);
+    final reOld = await (db.select(db.routineExercises)
+          ..where((t) => t.routineId.equals('rt_a_back_shoulder')))
+        .getSingle();
+    expect(reOld.deletedAt, isNotNull, reason: '旧模板的动作行一起软删');
+    final reMine = await (db.select(db.routineExercises)
+          ..where((t) => t.routineId.equals('mine')))
+        .getSingle();
+    expect(reMine.deletedAt, isNull);
+    final sessions = await db.select(db.workoutSessions).get();
+    expect(sessions.where((s) => s.routineId == 'rt_a_back_shoulder').length, 3,
+        reason: '历史仍挂在旧模板 id 上（已软删），靠 routineName 快照显示');
+    final version = await (db.select(db.appSettings)
+          ..where((t) => t.key.equals('seededVersion')))
+        .getSingle();
+    expect(version.value, '5');
+  });
+
+  test('v5 的迁移重跑不会把模板插两遍', () async {
+    final loader = seedLoader(db, fixedClock());
+    await loader.seedIfNeeded();
+    final before = (await db.select(db.routineExercises).get()).length;
+    await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
+        .write(const AppSettingsCompanion(value: Value('4')));
+
+    expect(await loader.seedIfNeeded(), isTrue);
+
+    expect((await db.select(db.routines).get()).length, 4);
+    expect((await db.select(db.routineExercises).get()).length, before);
   });
 
   test('历史记录的组全部标记完成，且完成时间落在训练时长内', () async {
@@ -87,7 +158,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '4');
+    expect(version.value, '5');
   });
 
   test('种子 v3 → v4：补 32 个新动作，没被引用的自定义动作软删、引用过的留着', () async {
@@ -100,6 +171,7 @@ void main() {
       'ex_dumbbell_curl', 'ex_machine_curl', 'ex_leg_press', 'ex_leg_extension',
       'ex_leg_curl', 'ex_calf_raise', 'ex_crunch', 'ex_plank',
     ];
+    await db.delete(db.routineExercises).go();
     await (db.delete(db.exercises)..where((t) => t.id.isNotIn(v3Ids))).go();
     for (final id in ['custom_unused', 'custom_used']) {
       await db.into(db.exercises).insert(ExercisesCompanion.insert(
@@ -132,7 +204,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '4');
+    expect(version.value, '5');
   });
 
   test('种子 v2 → v3：v2 之前的记录整表作废，只剩种子的三次和进行中的那次', () async {

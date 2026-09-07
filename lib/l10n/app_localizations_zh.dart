@@ -315,7 +315,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get routineNameLabel => '模板名称';
 
   @override
-  String get routineNameHint => '如：A 背 + 肩';
+  String get routineNameHint => '如：A 拉日';
 
   @override
   String get routineEmptyItems => '还没有动作，点下方添加';

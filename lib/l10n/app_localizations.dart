@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @routineNameHint.
   ///
   /// In zh, this message translates to:
-  /// **'如：A 背 + 肩'**
+  /// **'如：A 拉日'**
   String get routineNameHint;
 
   /// No description provided for @routineEmptyItems.

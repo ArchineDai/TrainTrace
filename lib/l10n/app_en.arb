@@ -102,7 +102,7 @@
   "routinesEditRoutine": "Edit routine",
   "routinesEmpty": "No routines yet — tap + in the top right",
   "routineNameLabel": "Routine name",
-  "routineNameHint": "e.g. A — Back + Shoulders",
+  "routineNameHint": "e.g. A Pull Day",
   "routineEmptyItems": "No exercises yet — add one below",
   "routineDeleteTitle": "Delete “{name}”?",
   "routineDeleteBody": "Workout history is not affected.",

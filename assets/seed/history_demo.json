@@ -1,8 +1,8 @@
 [
   {
     "id": "seed_session_1_20260830",
-    "routineId": "rt_a_back_shoulder",
-    "routineName": "A 背 + 肩",
+    "routineId": "rt_d_shoulder_back",
+    "routineName": "D 肩背强化",
     "startedAt": "2026-08-30T18:30:00+08:00",
     "exercises": [
       {"exerciseId": "ex_lat_pulldown", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "重量合适",
@@ -19,8 +19,8 @@
   },
   {
     "id": "seed_session_2_20260901",
-    "routineId": "rt_b_chest_arm",
-    "routineName": "B 胸 + 手臂",
+    "routineId": "rt_b_push",
+    "routineName": "B 推日",
     "startedAt": "2026-09-01T18:30:00+08:00",
     "exercises": [
       {"exerciseId": "ex_pec_deck", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "重量偏重，后续更适合 10～15 次",
@@ -37,8 +37,8 @@
   },
   {
     "id": "seed_session_3_20260903",
-    "routineId": "rt_a_back_shoulder",
-    "routineName": "A 背 + 肩",
+    "routineId": "rt_d_shoulder_back",
+    "routineName": "D 肩背强化",
     "startedAt": "2026-09-03T18:30:00+08:00",
     "exercises": [
       {"exerciseId": "ex_incline_chest_press", "targetRepMin": 10, "targetRepMax": 15, "restSeconds": 90, "note": "当时认错机器，算额外刺激",

@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 import 'exercises.dart';
 import 'sync_columns.dart';
 
-/// 训练模板（A 背+肩 / B 胸+手臂 / C 腿+核心）。
+/// 训练模板（A 拉日 / B 推日 / C 腿日 / D 肩背强化）。
 @DataClassName('RoutineRow')
 class Routines extends Table with UuidPrimaryKey, SyncColumns {
   TextColumn get name => text()();

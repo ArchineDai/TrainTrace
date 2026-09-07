@@ -302,7 +302,7 @@ exercises 1───* exercise_equipment_notes
 ### 2.5 种子数据
 
 - `assets/seed/exercises.json`：48 个内置动作（种子 v4；首版 16 个），含中英文名、肌群、器械类型、默认次数区间、休息时间、最小增量。
-- `assets/seed/routines.json`：A 背+肩 / B 胸+手臂 / C 腿+核心 三套模板。
+- `assets/seed/routines.json`：A 拉日 / B 推日 / C 腿日 / D 肩背强化 四套模板（种子 v5；首版为"部位三分"的三套）。动作以健身房固定器械为主，只有侧平举 / 哑铃弯举无器械对应时用哑铃。一周排法：周一 A、周二 B、周四 C、周六 D，其余休息。
 - `assets/seed/history_demo.json`：需求中的真实记录，作为已完成 session 导入，让"上次表现"和"建议"首启即有内容。
 - 仅在 app_settings.seededVersion 缺失时导入一次；设置页提供"重置种子数据"。
 
