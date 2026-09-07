@@ -3,7 +3,8 @@ import 'package:drift/drift.dart';
 import 'string_list_converter.dart';
 import 'sync_columns.dart';
 
-/// 动作库。内置 16 个 + 用户自定义。
+/// 动作库。内置 48 个（种子 v4）；`isCustom` 行是早期版本用户自建的遗留，
+/// 入口已下线，没被引用的已在种子 v4 迁移里软删。
 ///
 /// `muscleGroup` / `equipmentType` 存枚举名字符串，不用 `textEnum`：
 /// 枚举定义在 feature 的 models 层，core/db 不反向依赖 features。

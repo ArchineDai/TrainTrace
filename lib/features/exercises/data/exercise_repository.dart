@@ -56,7 +56,8 @@ class ExerciseRepository {
     }).toList();
   }
 
-  /// 新建自定义动作。
+  /// 新建自定义动作。UI 已没有入口（动作库只由种子决定，接后端后在后台配），
+  /// 留着给测试与将来的服务端下发用。
   Future<Exercise> create({
     required String nameZh,
     String? nameEn,

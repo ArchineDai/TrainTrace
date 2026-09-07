@@ -27,8 +27,9 @@ class SeedLoader {
   final AssetReader _read;
 
   /// v1 首版；v2 给 16 个内置动作补要领 / 常见错误 / 常见机器；
-  /// v3 更正内置的三次历史记录（日期 / 动作 / 组数与实际不符）。
-  static const seedVersion = 3;
+  /// v3 更正内置的三次历史记录（日期 / 动作 / 组数与实际不符）；
+  /// v4 动作库从 16 个补到 48 个，同时下线自定义动作入口。
+  static const seedVersion = 4;
   static const _kSeededVersion = 'seededVersion';
 
   /// `SessionStatus.inProgress.name`。core 不 import features，所以写字面量。
@@ -73,22 +74,7 @@ class SeedLoader {
     await _db.transaction(() async {
       for (final e in exercises) {
         await _db.into(_db.exercises).insert(
-              ExercisesCompanion.insert(
-                id: e['id'] as String,
-                nameZh: e['nameZh'] as String,
-                nameEn: Value(e['nameEn'] as String?),
-                muscleGroup: e['muscleGroup'] as String,
-                equipmentType: e['equipmentType'] as String,
-                defaultRepMin: Value(_int(e['defaultRepMin']) ?? 10),
-                defaultRepMax: Value(_int(e['defaultRepMax']) ?? 15),
-                defaultRestSeconds: Value(_int(e['defaultRestSeconds']) ?? 90),
-                minIncrementKg: Value(_double(e['minIncrementKg']) ?? 2.5),
-                cues: Value(_strings(e['cues'])),
-                commonMistakes: Value(_strings(e['commonMistakes'])),
-                equipmentVariants: Value(_strings(e['equipmentVariants'])),
-                createdAt: now,
-                updatedAt: now,
-              ),
+              _exerciseCompanion(e, now),
               mode: InsertMode.insertOrIgnore,
             );
       }
@@ -204,7 +190,63 @@ class SeedLoader {
   Future<void> _migrateSeed(int from) async {
     if (from < 2) await _fillExerciseGuides();
     if (from < 3) await _reseedHistory();
+    if (from < 4) await _expandExercisesAndRetireCustom();
   }
+
+  /// v3 → v4：动作库补到 48 个，只插库里没有的 id，已有行（含用户改过目标的）不碰。
+  ///
+  /// 同时下线"自定义动作"：选择器的新建入口已移除，库里遗留的自定义行若没被任何
+  /// 训练或模板引用就软删（都是开发期随手建的测试动作）；引用过的留着，历史照常能看。
+  Future<void> _expandExercisesAndRetireCustom() async {
+    final exercises = _list(await _read(exercisesAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      for (final e in exercises) {
+        await _db.into(_db.exercises).insert(
+              _exerciseCompanion(e, now),
+              mode: InsertMode.insertOrIgnore,
+            );
+      }
+
+      final custom = await (_db.select(_db.exercises)
+            ..where((t) => t.isCustom.equals(true) & t.deletedAt.isNull()))
+          .get();
+      for (final row in custom) {
+        final inWorkout = await (_db.select(_db.workoutExercises)
+              ..where((t) => t.exerciseId.equals(row.id))
+              ..limit(1))
+            .getSingleOrNull();
+        final inRoutine = await (_db.select(_db.routineExercises)
+              ..where((t) => t.exerciseId.equals(row.id))
+              ..limit(1))
+            .getSingleOrNull();
+        if (inWorkout != null || inRoutine != null) continue;
+        await (_db.update(_db.exercises)..where((t) => t.id.equals(row.id)))
+            .write(ExercisesCompanion(
+          deletedAt: Value(now),
+          updatedAt: Value(now),
+        ));
+      }
+    });
+  }
+
+  static ExercisesCompanion _exerciseCompanion(Map<String, dynamic> e, int now) =>
+      ExercisesCompanion.insert(
+        id: e['id'] as String,
+        nameZh: e['nameZh'] as String,
+        nameEn: Value(e['nameEn'] as String?),
+        muscleGroup: e['muscleGroup'] as String,
+        equipmentType: e['equipmentType'] as String,
+        defaultRepMin: Value(_int(e['defaultRepMin']) ?? 10),
+        defaultRepMax: Value(_int(e['defaultRepMax']) ?? 15),
+        defaultRestSeconds: Value(_int(e['defaultRestSeconds']) ?? 90),
+        minIncrementKg: Value(_double(e['minIncrementKg']) ?? 2.5),
+        cues: Value(_strings(e['cues'])),
+        commonMistakes: Value(_strings(e['commonMistakes'])),
+        equipmentVariants: Value(_strings(e['equipmentVariants'])),
+        createdAt: now,
+        updatedAt: now,
+      );
 
   /// v2 → v3：`history_demo.json` 是训练记录的唯一准确来源，v2 之前库里的
   /// 记录（日期错位的示例 + 开发期试出来的训练）一律作废，**整表替换**。

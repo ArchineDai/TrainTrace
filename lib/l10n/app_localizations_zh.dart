@@ -55,6 +55,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get followSystemLanguage => '跟随系统';
 
   @override
+  String get settingsTraining => '训练';
+
+  @override
+  String get restReminderSetting => '休息结束提醒';
+
+  @override
+  String get restReminderStatusOn => '已开启';
+
+  @override
+  String get restReminderStatusNoNotifications => '未允许通知，休息结束不会提醒';
+
+  @override
+  String get restReminderStatusInexact => '未授予精确闹钟，锁屏后提醒可能延迟';
+
+  @override
   String get devPlayground => 'Phase 0 技术验证';
 
   @override
@@ -85,9 +100,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionRemove => '移除';
-
-  @override
-  String get actionCreate => '创建';
 
   @override
   String get actionDiscard => '放弃';
@@ -334,9 +346,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pickExerciseTitle => '选择动作';
 
   @override
-  String get newExercise => '新建动作';
-
-  @override
   String get searchExercise => '搜索动作';
 
   @override
@@ -350,12 +359,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exerciseGuide => '动作要领';
-
-  @override
-  String get fieldName => '名称';
-
-  @override
-  String get fieldMuscleGroup => '肌群';
 
   @override
   String get fieldEquipment => '器械';
@@ -616,6 +619,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get restNotificationBody => '开始下一组';
+
+  @override
+  String get restReminderTitle => '开启休息结束提醒';
+
+  @override
+  String get restReminderBody =>
+      '组间休息倒计时结束时提醒你开始下一组，锁屏或切到别的 App 也不会错过。需要下面两项权限：';
+
+  @override
+  String get restReminderStepNotifications => '允许通知';
+
+  @override
+  String get restReminderStepNotificationsHint => '系统会弹窗询问';
+
+  @override
+  String get restReminderStepExactAlarm => '允许精确闹钟';
+
+  @override
+  String get restReminderStepExactAlarmHint => '保证准点。Android 会跳到系统设置页，打开后返回即可';
+
+  @override
+  String get restReminderEnable => '开启提醒';
+
+  @override
+  String get restReminderLater => '暂不';
+
+  @override
+  String get restReminderEnabledToast => '休息提醒已开启';
+
+  @override
+  String get restReminderDeniedToast => '未获得通知权限，可稍后在「设置」里重新开启';
+
+  @override
+  String get restReminderInexactToast => '提醒已开启，但未授予精确闹钟，锁屏后可能延迟';
 
   @override
   String get undoComplete => '取消完成';

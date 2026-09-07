@@ -7,7 +7,10 @@
 - **V-1 后台提醒**：模拟器（Android 17）上 `zonedSchedule` 15 秒预约按时送达
   （2026-09-04，`dumpsys notification` 可见 id=1001）。**vivo 真机未验证**：
   USB 安装需在手机上手动确认，且 OriginOS 可能要求关闭省电 / 允许后台弹出。
-  精确闹钟默认未授予，当前退化为 `inexactAllowWhileIdle`；Phase 6 设置页加引导。
+  精确闹钟（targetSdk 36 下 Android 14+ 默认不授予）已改为首次进训练页弹引导申请
+  （`RestReminderGuideSheet`，设置页「休息结束提醒」可再进），未授予仍退化为
+  `inexactAllowWhileIdle`；另加了前台 Dart Timer 到点立即弹（`RestTimerViewModel`），
+  进程活着时不再依赖系统闹钟。2026-09-07 前用户反馈"时而有时而没有"即此因。
 - **V-2 进程被杀恢复**：模拟器上 `am force-stop` 后重启，首页横幅显示已完成组数，
   进入训练页后用时从原始开始时间累计、计时按 `rest_ends_at` 重算（2026-09-04 通过）。
   **vivo 真机未验证**，且真机上还要试"训练中接电话 / 切微信被系统回收"这种非主动杀。
@@ -21,8 +24,8 @@
   提示）。这是刻意的：新手后几组掉次数很常见，按"任一组 RIR 0 就降重"会一直劝退。
   V0.5 加多次训练趋势规则时再评估。
 - **D-12 动作示意换真人素材**：现在是 `exercise_figure_data.dart` 里手写关键帧的火柴人
-  （16 个内置动作，起止两帧插值）。姿态是手调的，不保证解剖学精确；V0.5 若接真人
-  动图 / 视频，这份数据留作离线回退。自定义动作没有示意图。
+  （48 个内置动作，起止两帧插值）。姿态是手调的，不保证解剖学精确；V0.5 若接真人
+  动图 / 视频，这份数据留作离线回退。遗留的自定义动作（入口已下线）没有示意图，显示占位。
 - **D-13 器械照片不随导出走**：`exercise_equipment_notes.photo_path` 只是相对路径，
   CSV 导出（D-2）与未来同步（D-4）都要单独处理文件；相机权限 iOS 字符串已在 Info.plist。
 - **D-1 iOS 构建**：无 Mac，未验证。避免 Android-only 插件。
@@ -40,9 +43,12 @@
   打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。
 - **D-16 动作要领只有中文**：`assets/seed/exercises.json` 的 `cues` /
   `commonMistakes` / `equipmentVariants` 三段是中文教练话术，没有英文版，英文界面上
-  这三块仍显示中文（`name` / `nameEn` 已双语，标题不受影响）。要补就是给 16 个内置
+  这三块仍显示中文（`name` / `nameEn` 已双语，标题不受影响）。要补就是给 48 个内置
   动作各写三段英文，属内容工作不是代码工作：加 `cuesEn` 等字段，`Exercise` 上按语言
   选字段（同 `exerciseDisplayName` 的做法）。自定义动作这三段本来就空。
+- **D-17 动作库改后端配置**：自定义动作入口已在种子 v4 下线（建了删不掉的半吊子逻辑，
+  且新手不该自己维护动作库）。动作库现在只由 `assets/seed/exercises.json` 决定，接服务器后
+  改为后台配置下发；`ExerciseRepository.create` 留作那时的写入口。
 
 ## 已了结
 

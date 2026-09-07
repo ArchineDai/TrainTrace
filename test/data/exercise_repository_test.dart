@@ -26,12 +26,12 @@ void main() {
   });
 
   test('getAll 排除软删除，softDelete 刷新 updated_at', () async {
-    expect((await repo.getAll()).length, 16);
+    expect((await repo.getAll()).length, 48);
 
     clock.advance(const Duration(minutes: 5));
     await repo.softDelete('ex_plank');
 
-    expect((await repo.getAll()).length, 15);
+    expect((await repo.getAll()).length, 47);
     expect(await repo.getById('ex_plank'), isNull);
     final row = await (db.select(db.exercises)
           ..where((t) => t.id.equals('ex_plank')))
@@ -73,9 +73,10 @@ void main() {
   test('search 按中英文名与肌群过滤', () async {
     expect((await repo.search('胸推')).map((e) => e.nameZh),
         containsAll(['水平胸推', '上斜胸推']));
-    // Dumbbell Curl / Machine Bicep Curl / Leg Curl
-    expect((await repo.search('curl')).length, 3);
-    expect((await repo.search('', muscleGroup: MuscleGroup.leg)).length, 4);
+    // Dumbbell Curl / Machine Bicep Curl / Leg Curl / Barbell Curl / Hammer Curl
+    expect((await repo.search('curl')).length, 5);
+    // 腿举 腿屈伸 腿弯举 提踵 + v4：杠铃深蹲 高脚杯深蹲 史密斯深蹲 罗马尼亚硬拉 箭步蹲 臀推 髋外展
+    expect((await repo.search('', muscleGroup: MuscleGroup.leg)).length, 11);
   });
 
   test('库里的未知枚举字符串回落而不抛错', () async {

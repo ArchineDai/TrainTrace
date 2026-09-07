@@ -301,5 +301,605 @@
       "膝盖着地版更简单",
       "脚放凳子上或背上加片更难"
     ]
+  },
+  {
+    "id": "ex_pullup", "nameZh": "引体向上", "nameEn": "Pull-up", "muscleGroup": "back", "equipmentType": "bodyweight",
+    "defaultRepMin": 5, "defaultRepMax": 10, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "双手比肩略宽正握单杠，身体悬垂，肩胛先下沉别耸起",
+      "挺胸，肘部向下向后拉，把下巴拉过杠",
+      "顶端停 1 秒，感受背阔肌收紧",
+      "缓慢放下到手臂伸直，别甩着往下掉"
+    ],
+    "commonMistakes": [
+      "蹬腿、摆腰借力，用惯性荡上去",
+      "只做半程，下巴没过杠或底部没伸直"
+    ],
+    "equipmentVariants": [
+      "单杠 / 龙门架顶部的引体把手",
+      "做不了整颗的先用辅助引体向上机或弹力带",
+      "反握（掌心朝自己）更省力，二头参与多"
+    ]
+  },
+  {
+    "id": "ex_assisted_pullup", "nameZh": "辅助引体向上", "nameEn": "Assisted Pull-up", "muscleGroup": "back", "equipmentType": "machine",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "膝盖或双脚踩在辅助踏板上，双手正握上方把手",
+      "肩胛下沉，肘部向下拉，把下巴拉到把手高度",
+      "顶端停 1 秒，缓慢放回到手臂伸直",
+      "注意：这台机器配重越大越轻松，进步是慢慢减配重"
+    ],
+    "commonMistakes": [
+      "整个人靠在踏板上，把动作做成了腿部发力",
+      "配重挑太轻，动作变成用手臂硬拽"
+    ],
+    "equipmentVariants": [
+      "辅助引体向上机：有可折叠的膝盖踏板，配重片在正前方",
+      "龙门架 + 弹力带挂在脚下也能替代"
+    ]
+  },
+  {
+    "id": "ex_barbell_row", "nameZh": "杠铃划船", "nameEn": "Barbell Row", "muscleGroup": "back", "equipmentType": "barbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "双脚与肩同宽，屈髋前倾，上身大约与地面成 45°，腰背绷直",
+      "双手比肩略宽握杠，手臂自然下垂",
+      "肘部贴着身体向后上方拉，把杠拉到肚脐附近",
+      "顶端肩胛夹紧停 1 秒，缓慢放回，腰不动"
+    ],
+    "commonMistakes": [
+      "腰背弓起或每次拉都起身，用腰借力",
+      "只用手臂拉，肩膀耸起，肘外展"
+    ],
+    "equipmentVariants": [
+      "自由杠铃（奥杆 20kg 或小杠 10–15kg）",
+      "史密斯机也能做，轨迹固定更适合新手",
+      "T 杠划船架替代"
+    ]
+  },
+  {
+    "id": "ex_dumbbell_row", "nameZh": "单臂哑铃划船", "nameEn": "One-arm Dumbbell Row", "muscleGroup": "back", "equipmentType": "dumbbell",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 1.0,
+    "cues": [
+      "一手扶凳子，同侧膝盖跪在凳上或双脚站稳，上身与地面近乎平行",
+      "另一手垂直握哑铃，肩胛先收，再用肘部带着往髋部方向拉",
+      "顶端肘超过身体，停 1 秒",
+      "缓慢放回到手臂伸直，肩膀跟着往前伸"
+    ],
+    "commonMistakes": [
+      "上身转动借力，用腰把哑铃甩上来",
+      "肘外展往肩膀方向拉，变成了练后肩"
+    ],
+    "equipmentVariants": [
+      "哑铃 + 平凳",
+      "上斜凳把额头靠着做更稳"
+    ]
+  },
+  {
+    "id": "ex_deadlift", "nameZh": "硬拉", "nameEn": "Deadlift", "muscleGroup": "back", "equipmentType": "barbell",
+    "defaultRepMin": 5, "defaultRepMax": 8, "defaultRestSeconds": 150, "minIncrementKg": 2.5,
+    "cues": [
+      "双脚与髋同宽，杠贴着小腿，屈髋屈膝，双手肩宽握杠",
+      "挺胸、腰背绷直、肩膀在杠的正上方，先把手臂拉紧",
+      "脚跟发力蹬地，髋和肩同步上升，杠沿小腿贴着往上",
+      "站直时收臀，别后仰；下放同样屈髋屈膝，杠贴腿回地面"
+    ],
+    "commonMistakes": [
+      "起杠时腰弓成圆背",
+      "屁股先起、上身没跟上，变成先直腿再抬腰",
+      "杠离身体太远"
+    ],
+    "equipmentVariants": [
+      "自由杠铃 + 大孔径杠铃片（片子小于 20kg 时请垫高到标准高度）",
+      "六角杠（Trap Bar）对腰更友好",
+      "史密斯机或用哑铃替代"
+    ]
+  },
+  {
+    "id": "ex_back_extension", "nameZh": "山羊挺身", "nameEn": "Back Extension", "muscleGroup": "back", "equipmentType": "bodyweight",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "调整垫子高度到髋骨顶部，脚跟卡稳后方挡板",
+      "双手交叉抱胸，从髋部往下折叠，腰背保持一条直线",
+      "臀部和下背发力把上身抬回到与腿成一条直线",
+      "顶端别过度后仰，缓慢下放"
+    ],
+    "commonMistakes": [
+      "顶端猛甩过度后仰",
+      "腰弯成圆背往下折，而不是从髋部折叠"
+    ],
+    "equipmentVariants": [
+      "罗马椅 / 45° 山羊挺身架",
+      "背伸展机（坐姿，靠背向后推）",
+      "进阶可抱一片杠铃片"
+    ]
+  },
+  {
+    "id": "ex_shrug", "nameZh": "哑铃耸肩", "nameEn": "Dumbbell Shrug", "muscleGroup": "back", "equipmentType": "dumbbell",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0,
+    "cues": [
+      "站直，双手各握一个哑铃自然垂在体侧",
+      "肩膀直直向上耸，想着用肩膀去碰耳朵",
+      "顶端停 1 秒，缓慢放下到肩膀完全下沉",
+      "手臂全程伸直，只有肩膀在动"
+    ],
+    "commonMistakes": [
+      "肩膀往后画圈，长期容易磨肩",
+      "屈肘、用手臂把哑铃提起来"
+    ],
+    "equipmentVariants": [
+      "哑铃",
+      "杠铃 / 史密斯机也可做",
+      "六角杠耸肩更顺手"
+    ]
+  },
+  {
+    "id": "ex_dumbbell_shoulder_press", "nameZh": "哑铃肩推", "nameEn": "Dumbbell Shoulder Press", "muscleGroup": "shoulder", "equipmentType": "dumbbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 1.0,
+    "cues": [
+      "坐在有靠背的凳上，哑铃举到耳朵两侧，掌心朝前",
+      "核心收紧，背贴靠背，把哑铃向上推到头顶",
+      "顶端手臂接近伸直，哑铃轻碰一下",
+      "缓慢放回到耳侧，肘别掉到低于肩膀太多"
+    ],
+    "commonMistakes": [
+      "腰离开靠背、大幅后仰把重量推起",
+      "肘部张太开、两侧不平"
+    ],
+    "equipmentVariants": [
+      "哑铃 + 可调节靠背凳（靠背立到接近 90°）",
+      "站姿版需要更多核心稳定",
+      "肩推机替代"
+    ]
+  },
+  {
+    "id": "ex_overhead_press", "nameZh": "杠铃站姿推举", "nameEn": "Barbell Overhead Press", "muscleGroup": "shoulder", "equipmentType": "barbell",
+    "defaultRepMin": 6, "defaultRepMax": 10, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "杠架在锁骨前方，双手比肩略宽握杠，肘部在杠的下方稍前",
+      "双脚与髋同宽站稳，收紧臀部和腹部",
+      "头微微后仰让杠过脸，然后把杠直直推到头顶",
+      "顶端杠在头顶正上方、手臂伸直，缓慢放回锁骨"
+    ],
+    "commonMistakes": [
+      "腰过度后仰，把重量顶起来",
+      "杠的轨迹绕着脸走一个大圈"
+    ],
+    "equipmentVariants": [
+      "自由杠铃 + 深蹲架（杠放到锁骨高度）",
+      "史密斯机站姿推举更稳",
+      "杠太重时可换哑铃"
+    ]
+  },
+  {
+    "id": "ex_front_raise", "nameZh": "哑铃前平举", "nameEn": "Dumbbell Front Raise", "muscleGroup": "shoulder", "equipmentType": "dumbbell",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0,
+    "cues": [
+      "站直，哑铃握在大腿前方，掌心朝身体",
+      "手臂几乎伸直，向前抬到与肩同高",
+      "顶端停 1 秒，感受前肩收紧",
+      "缓慢放下，别在底部撞到腿借力"
+    ],
+    "commonMistakes": [
+      "抬过肩膀高度，斜方肌接手",
+      "身体后仰、用腰甩起来"
+    ],
+    "equipmentVariants": [
+      "哑铃（双手同时或交替）",
+      "一片杠铃片双手抱着也行",
+      "龙门架低位滑轮 + 直杆"
+    ]
+  },
+  {
+    "id": "ex_face_pull", "nameZh": "绳索面拉", "nameEn": "Cable Face Pull", "muscleGroup": "shoulder", "equipmentType": "cable",
+    "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "滑轮调到额头高度，装绳索把手，双手掌心相对握住",
+      "退一步让绳子绷紧，站稳微微前倾",
+      "肘部向外向后拉，把绳子拉向脸，双手分开到耳朵两侧",
+      "末端肩胛夹紧、手肘与肩同高，缓慢放回"
+    ],
+    "commonMistakes": [
+      "肘掉到肩膀以下，变成划船",
+      "配重太大，整个身体后仰借力"
+    ],
+    "equipmentVariants": [
+      "龙门架 / 单立柱滑轮 + 绳索把手",
+      "弹力带绕在柱子上替代"
+    ]
+  },
+  {
+    "id": "ex_barbell_bench_press", "nameZh": "杠铃卧推", "nameEn": "Barbell Bench Press", "muscleGroup": "chest", "equipmentType": "barbell",
+    "defaultRepMin": 6, "defaultRepMax": 10, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "仰卧凳上，眼睛在杠的正下方，双脚踩稳地面",
+      "肩胛后收下沉，双手比肩略宽握杠，手腕别向后折",
+      "把杠推出架子，下放到胸部中下段，肘约 45° 外张",
+      "胸部发力把杠推回起点，顶端别锁死过度"
+    ],
+    "commonMistakes": [
+      "肩膀耸起、没收肩胛，重量压在肩上",
+      "杠往脖子方向放，肘外张成 90°",
+      "屁股离凳借力"
+    ],
+    "equipmentVariants": [
+      "卧推架 + 奥杆（20kg）",
+      "史密斯机卧推轨迹固定，更适合独自训练",
+      "杠太重时先练哑铃卧推或器械胸推"
+    ]
+  },
+  {
+    "id": "ex_dumbbell_bench_press", "nameZh": "哑铃卧推", "nameEn": "Dumbbell Bench Press", "muscleGroup": "chest", "equipmentType": "dumbbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 1.0,
+    "cues": [
+      "坐在凳边把哑铃放在大腿上，后仰的同时用膝盖把哑铃带到胸上方",
+      "肩胛后收贴住凳子，双脚踩稳",
+      "哑铃下放到胸部两侧，肘略低于凳面",
+      "胸部发力向上推，顶端哑铃靠拢但别碰撞"
+    ],
+    "commonMistakes": [
+      "下放太深，肩前侧被拉得发疼",
+      "两只手臂不同步、哑铃晃"
+    ],
+    "equipmentVariants": [
+      "哑铃 + 平凳",
+      "上斜凳做则重点转到上胸"
+    ]
+  },
+  {
+    "id": "ex_incline_dumbbell_press", "nameZh": "上斜哑铃卧推", "nameEn": "Incline Dumbbell Press", "muscleGroup": "chest", "equipmentType": "dumbbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 1.0,
+    "cues": [
+      "靠背调到 30–45°，坐好后把哑铃带到上胸上方",
+      "肩胛后收下沉，背贴靠背",
+      "哑铃下放到上胸两侧，肘在手腕正下方",
+      "向上推到手臂接近伸直，哑铃靠拢"
+    ],
+    "commonMistakes": [
+      "靠背太竖（超过 45°），变成了肩推",
+      "哑铃往脸方向推，肩膀发力"
+    ],
+    "equipmentVariants": [
+      "可调节凳 + 哑铃",
+      "上斜卧推架 + 杠铃",
+      "上斜胸推机"
+    ]
+  },
+  {
+    "id": "ex_cable_fly", "nameZh": "绳索夹胸", "nameEn": "Cable Fly", "muscleGroup": "chest", "equipmentType": "cable",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "两侧滑轮调到胸口偏上，双手各握一个把手站到中间",
+      "一脚在前站稳，身体微微前倾，肘微屈",
+      "像抱一棵树那样，用胸把双手在身前合拢",
+      "合拢时停 1 秒，再缓慢打开到胸部有拉伸感即可"
+    ],
+    "commonMistakes": [
+      "手臂完全伸直用肩膀去甩",
+      "打开太深，肩前侧受力"
+    ],
+    "equipmentVariants": [
+      "龙门架双滑轮 + 单把手",
+      "滑轮调低做由下往上的夹胸，练上胸",
+      "没有龙门架就用蝴蝶机夹胸"
+    ]
+  },
+  {
+    "id": "ex_pushup", "nameZh": "俯卧撑", "nameEn": "Push-up", "muscleGroup": "chest", "equipmentType": "bodyweight",
+    "defaultRepMin": 8, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "双手比肩略宽撑地，手在胸部两侧下方，身体一条直线",
+      "收紧腹部臀部，屈肘让胸部靠近地面，肘约 45° 外张",
+      "胸推地把身体撑起，顶端手臂伸直",
+      "全程腰不塌、屁股不翘"
+    ],
+    "commonMistakes": [
+      "腰塌下去或屁股翘起",
+      "只做半程，胸没下去"
+    ],
+    "equipmentVariants": [
+      "地面（自重）",
+      "手撑凳子上更简单，脚放凳子上更难",
+      "做不了就先做跪姿俯卧撑"
+    ]
+  },
+  {
+    "id": "ex_dip", "nameZh": "双杠臂屈伸", "nameEn": "Dip", "muscleGroup": "chest", "equipmentType": "bodyweight",
+    "defaultRepMin": 6, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
+    "cues": [
+      "双手撑在双杠上，手臂伸直，肩膀下沉别耸",
+      "身体微微前倾，屈肘下放到上臂与地面平行",
+      "胸和三头发力把身体撑起",
+      "全程可控，别在底部弹起来"
+    ],
+    "commonMistakes": [
+      "下放太深，肩前侧被拉伤",
+      "肩膀耸起，脖子往前伸"
+    ],
+    "equipmentVariants": [
+      "双杠 / 引体向上架下方的双杠",
+      "辅助引体向上机通常也带双杠把手（有配重更轻松）",
+      "身体越直立三头参与越多"
+    ]
+  },
+  {
+    "id": "ex_barbell_curl", "nameZh": "杠铃弯举", "nameEn": "Barbell Curl", "muscleGroup": "arm", "equipmentType": "barbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "站直，双手肩宽反握杠铃，掌心朝前",
+      "上臂贴着身体，肘固定在体侧",
+      "前臂弯起，把杠举到肩前，顶端停 1 秒",
+      "缓慢放下到手臂几乎伸直"
+    ],
+    "commonMistakes": [
+      "肘往前抬、用肩膀带杠",
+      "身体后仰、用腰甩起来"
+    ],
+    "equipmentVariants": [
+      "直杆 / 曲杆（EZ 杆）—— 曲杆对手腕更友好",
+      "小杠铃（10–15kg）适合入门",
+      "牧师凳版能锁住肘"
+    ]
+  },
+  {
+    "id": "ex_hammer_curl", "nameZh": "锤式弯举", "nameEn": "Hammer Curl", "muscleGroup": "arm", "equipmentType": "dumbbell",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0,
+    "cues": [
+      "站直，双手握哑铃自然垂在体侧，掌心朝向身体（像握锤子）",
+      "肘固定，前臂弯起，哑铃举到肩前",
+      "全程掌心保持朝内不旋转",
+      "缓慢放下到手臂伸直"
+    ],
+    "commonMistakes": [
+      "肘离开身体往前抬",
+      "两手同时做时身体左右晃"
+    ],
+    "equipmentVariants": [
+      "哑铃（双手交替或同时）",
+      "龙门架 + 绳索把手也能做"
+    ]
+  },
+  {
+    "id": "ex_triceps_pushdown", "nameZh": "绳索下压", "nameEn": "Cable Triceps Pushdown", "muscleGroup": "arm", "equipmentType": "cable",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "滑轮调到最高，装绳索或直杆，双手握住，肘贴在体侧",
+      "上身微微前倾，肘固定不动",
+      "前臂向下压到手臂伸直，用绳索时末端双手向外分开",
+      "缓慢回到前臂与地面平行，肘别跟着抬起来"
+    ],
+    "commonMistakes": [
+      "肘往前后晃，用肩膀往下压",
+      "身体整个压下去用体重借力"
+    ],
+    "equipmentVariants": [
+      "龙门架 / 单立柱高位滑轮 + 绳索把手",
+      "直杆或 V 杆替代绳索",
+      "三头下压机"
+    ]
+  },
+  {
+    "id": "ex_overhead_triceps_extension", "nameZh": "哑铃过顶臂屈伸", "nameEn": "Overhead Triceps Extension", "muscleGroup": "arm", "equipmentType": "dumbbell",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 1.0,
+    "cues": [
+      "坐姿或站姿，双手托住一个哑铃的一端举到头顶",
+      "上臂贴近耳朵，肘朝前不外张",
+      "屈肘把哑铃放到脑后，直到前臂碰到二头",
+      "三头发力把哑铃举回头顶"
+    ],
+    "commonMistakes": [
+      "肘往两边张开",
+      "腰过度后仰"
+    ],
+    "equipmentVariants": [
+      "单个哑铃（双手托底）",
+      "龙门架低位滑轮 + 绳索，背对滑轮过顶",
+      "曲杆仰卧臂屈伸替代"
+    ]
+  },
+  {
+    "id": "ex_barbell_squat", "nameZh": "杠铃深蹲", "nameEn": "Barbell Back Squat", "muscleGroup": "leg", "equipmentType": "barbell",
+    "defaultRepMin": 6, "defaultRepMax": 10, "defaultRestSeconds": 150, "minIncrementKg": 2.5,
+    "cues": [
+      "杠架在上背 / 斜方肌上，双手握杠肘部下压，挺胸把杠背稳",
+      "退两步站定，双脚略宽于肩，脚尖微微外展",
+      "屈髋屈膝一起下蹲，膝盖顺着脚尖方向，蹲到大腿至少与地面平行",
+      "脚跟发力站起，全程腰背绷直、视线看前方"
+    ],
+    "commonMistakes": [
+      "膝盖内扣",
+      "脚跟离地、重心跑到脚尖",
+      "蹲得太浅或腰塌下去"
+    ],
+    "equipmentVariants": [
+      "深蹲架 + 奥杆（新手可先空杆练动作）",
+      "史密斯机深蹲更稳，轨迹固定",
+      "空杆也重时先做高脚杯深蹲"
+    ]
+  },
+  {
+    "id": "ex_goblet_squat", "nameZh": "高脚杯深蹲", "nameEn": "Goblet Squat", "muscleGroup": "leg", "equipmentType": "dumbbell",
+    "defaultRepMin": 10, "defaultRepMax": 15, "defaultRestSeconds": 90, "minIncrementKg": 1.0,
+    "cues": [
+      "双手托住哑铃一端抱在胸前，肘朝下",
+      "双脚略宽于肩，脚尖微微外展",
+      "挺胸下蹲，肘往两膝之间放，蹲到大腿与地面平行或更低",
+      "脚跟发力站直，全程哑铃贴着胸"
+    ],
+    "commonMistakes": [
+      "上身前倾太多、哑铃离开胸",
+      "膝盖内扣"
+    ],
+    "equipmentVariants": [
+      "单个哑铃或壶铃",
+      "新手学深蹲动作的首选，稳了再上杠铃"
+    ]
+  },
+  {
+    "id": "ex_smith_squat", "nameZh": "史密斯深蹲", "nameEn": "Smith Machine Squat", "muscleGroup": "leg", "equipmentType": "machine",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "杠架在上背，双脚站到杠的稍前方，转杠解锁",
+      "双脚略宽于肩，脚尖微微外展",
+      "屈髋屈膝下蹲到大腿与地面平行，膝盖顺脚尖方向",
+      "脚跟发力站起，做完转杠挂回挂钩"
+    ],
+    "commonMistakes": [
+      "脚站在杠正下方，膝盖被迫前顶",
+      "只靠杠的轨迹把人架着，腰背没绷紧"
+    ],
+    "equipmentVariants": [
+      "史密斯机（杠固定在轨道上，旋转即可挂钩）",
+      "两侧一般有安全挡，先调好再蹲"
+    ]
+  },
+  {
+    "id": "ex_romanian_deadlift", "nameZh": "罗马尼亚硬拉", "nameEn": "Romanian Deadlift", "muscleGroup": "leg", "equipmentType": "barbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "站直握杠贴在大腿前，双脚与髋同宽，膝盖微屈",
+      "屁股往后推、上身前倾，杠沿着大腿往下滑",
+      "下放到膝盖下方、腘绳肌有明显拉伸感，腰背保持直",
+      "臀部发力把髋推回来站直"
+    ],
+    "commonMistakes": [
+      "膝盖弯太多，做成了普通硬拉",
+      "腰弓成圆背，杠离身体太远"
+    ],
+    "equipmentVariants": [
+      "自由杠铃",
+      "哑铃版更容易控制",
+      "史密斯机也可做"
+    ]
+  },
+  {
+    "id": "ex_lunge", "nameZh": "哑铃箭步蹲", "nameEn": "Dumbbell Lunge", "muscleGroup": "leg", "equipmentType": "dumbbell",
+    "defaultRepMin": 10, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 1.0,
+    "cues": [
+      "双手握哑铃垂在体侧，站直",
+      "一脚向前迈一大步，双腿一起屈到前腿大腿平行地面、后膝接近地面",
+      "上身直立，前脚膝盖对着脚尖",
+      "前脚发力把身体推回起点，换腿；两边各做一次算 1 次"
+    ],
+    "commonMistakes": [
+      "步子太小，前膝超过脚尖太多",
+      "上身前倾、重心不稳"
+    ],
+    "equipmentVariants": [
+      "哑铃（不拿也行，先练稳）",
+      "原地弓步 / 行走弓步 / 后退弓步都算"
+    ]
+  },
+  {
+    "id": "ex_hip_thrust", "nameZh": "杠铃臀推", "nameEn": "Barbell Hip Thrust", "muscleGroup": "leg", "equipmentType": "barbell",
+    "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
+    "cues": [
+      "上背靠在凳子边缘，杠（垫上护套）放在髋部上方",
+      "双脚踩稳，顶端时膝盖弯 90°，脚跟离屁股约一步",
+      "臀部发力把髋顶起到身体从肩到膝一条直线，下巴微收",
+      "顶端收臀停 1 秒，缓慢放下"
+    ],
+    "commonMistakes": [
+      "顶端腰过度反弓，用腰而不是臀",
+      "脚太远或太近，顶端膝盖不在 90°"
+    ],
+    "equipmentVariants": [
+      "平凳 + 杠铃 + 杠铃护垫",
+      "臀推机（有靠背和脚踏板）",
+      "没杠就用哑铃放在髋上"
+    ]
+  },
+  {
+    "id": "ex_hip_abduction", "nameZh": "髋外展机", "nameEn": "Hip Abduction Machine", "muscleGroup": "leg", "equipmentType": "machine",
+    "defaultRepMin": 12, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "坐好，双腿并拢，膝盖外侧贴住挡板",
+      "背贴靠背，双手扶把手",
+      "用臀部外侧把双腿向外打开到最大",
+      "停 1 秒，缓慢合回"
+    ],
+    "commonMistakes": [
+      "靠身体后仰或抓把手借力",
+      "打开时太快、回来时直接放松砸回去"
+    ],
+    "equipmentVariants": [
+      "髋外展 / 内收机（同一台机器调挡板方向可做两种）",
+      "弹力带绕膝做侧向行走替代"
+    ]
+  },
+  {
+    "id": "ex_hanging_leg_raise", "nameZh": "悬垂举腿", "nameEn": "Hanging Leg Raise", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "defaultRepMin": 8, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "双手悬垂在单杠或用肘撑在举腿架上，肩膀下沉",
+      "腹部收紧，把双腿抬起到大腿与地面平行（屈膝更简单）",
+      "顶端骨盆微微卷起，停 1 秒",
+      "缓慢放下，别荡起来借力"
+    ],
+    "commonMistakes": [
+      "身体前后摆荡",
+      "只抬腿不卷骨盆，全靠髋屈肌"
+    ],
+    "equipmentVariants": [
+      "举腿架（有肘垫和靠背）",
+      "单杠 / 龙门架顶部悬垂",
+      "屈膝举腿是入门版"
+    ]
+  },
+  {
+    "id": "ex_cable_crunch", "nameZh": "跪姿绳索卷腹", "nameEn": "Cable Crunch", "muscleGroup": "core", "equipmentType": "cable",
+    "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
+    "cues": [
+      "高位滑轮装绳索，面朝机器跪下，把绳子握在头两侧",
+      "髋保持不动，只用腹部把上身向下卷，肘朝膝盖靠",
+      "底部停 1 秒，感受腹肌收紧",
+      "缓慢回到起点，腹部拉开但别过度后仰"
+    ],
+    "commonMistakes": [
+      "髋前后移动，变成用体重往下压",
+      "用手臂往下拉绳子"
+    ],
+    "equipmentVariants": [
+      "龙门架 / 单立柱高位滑轮 + 绳索把手",
+      "跪的地方垫块垫子"
+    ]
+  },
+  {
+    "id": "ex_russian_twist", "nameZh": "俄罗斯转体", "nameEn": "Russian Twist", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "defaultRepMin": 20, "defaultRepMax": 30, "defaultRestSeconds": 45, "minIncrementKg": 2.5,
+    "cues": [
+      "坐在垫子上，膝盖微屈，上身后仰约 45°，脚可着地或抬起",
+      "双手合拢在胸前（或抱一个哑铃 / 药球）",
+      "用腹部带动上身向一侧转，双手跟着到体侧",
+      "回到中间再转另一侧，左右各一次算 2 次"
+    ],
+    "commonMistakes": [
+      "只有手臂在左右甩，躯干没转",
+      "腰弓成圆背"
+    ],
+    "equipmentVariants": [
+      "垫子（自重）",
+      "抱哑铃 / 药球 / 杠铃片增加难度"
+    ]
+  },
+  {
+    "id": "ex_side_plank", "nameZh": "侧平板支撑", "nameEn": "Side Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "defaultRepMin": 20, "defaultRepMax": 45, "defaultRestSeconds": 45, "minIncrementKg": 2.5,
+    "cues": [
+      "侧躺，肘撑在肩膀正下方，双脚叠放或前后错开",
+      "把髋抬离地面，身体从头到脚一条直线",
+      "收紧侧腹，另一只手放在髋上或指向天",
+      "撑到时间后换另一侧"
+    ],
+    "commonMistakes": [
+      "髋往下掉或往后翘",
+      "肩膀塌下去、耸肩"
+    ],
+    "equipmentVariants": [
+      "垫子（自重）",
+      "膝盖着地版更简单",
+      "上侧腿抬起更难"
+    ]
   }
 ]

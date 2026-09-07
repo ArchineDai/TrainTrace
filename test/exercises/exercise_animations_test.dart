@@ -17,11 +17,12 @@ void main() {
         .toList();
   });
 
-  test('16 个内置动作都有动画', () {
-    expect(seedIds.length, 16);
+  test('48 个内置动作都有动画，动画表里也没有种子之外的 id', () {
+    expect(seedIds.length, 48);
     for (final id in seedIds) {
       expect(exerciseAnimations.containsKey(id), isTrue, reason: '缺 $id');
     }
+    expect(exerciseAnimations.keys.toSet(), seedIds.toSet());
   });
 
   test('起止两帧肢体数一致，脚尖要么都有要么都没有', () {

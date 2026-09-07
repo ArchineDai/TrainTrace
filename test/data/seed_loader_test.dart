@@ -10,13 +10,13 @@ void main() {
   setUp(() => db = memoryDb());
   tearDown(() => db.close());
 
-  test('首次导入 16 动作 / 3 模板 / 3 次历史，第二次不再导入', () async {
+  test('首次导入 48 动作 / 3 模板 / 3 次历史，第二次不再导入', () async {
     final loader = seedLoader(db, fixedClock());
 
     expect(await loader.seedIfNeeded(), isTrue);
     expect(await loader.seedIfNeeded(), isFalse);
 
-    expect((await db.select(db.exercises).get()).length, 16);
+    expect((await db.select(db.exercises).get()).length, 48);
     expect((await db.select(db.routines).get()).length, 3);
     expect((await db.select(db.routineExercises).get()).length, 5 + 5 + 6);
     expect((await db.select(db.workoutSessions).get()).length, 3);
@@ -24,7 +24,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '3');
+    expect(version.value, '4');
   });
 
   test('历史记录的组全部标记完成，且完成时间落在训练时长内', () async {
@@ -79,7 +79,7 @@ void main() {
     expect(await loader.seedIfNeeded(), isTrue);
 
     final rows = await db.select(db.exercises).get();
-    expect(rows.length, 16, reason: '只更新，不新增');
+    expect(rows.length, 48, reason: '只更新已有行；v4 的补量在这台机上已存在，不重复插');
     final legPress = rows.singleWhere((r) => r.id == 'ex_leg_press');
     expect(legPress.cues.length, 4);
     expect(legPress.defaultRepMin, 6, reason: '用户改过的目标保留');
@@ -87,7 +87,52 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '3');
+    expect(version.value, '4');
+  });
+
+  test('种子 v3 → v4：补 32 个新动作，没被引用的自定义动作软删、引用过的留着', () async {
+    final loader = seedLoader(db, fixedClock());
+    await loader.seedIfNeeded();
+    // 模拟一台 v3 用户机：只有首批 16 个动作 + 两个自己建的，其中一个练过。
+    const v3Ids = [
+      'ex_lat_pulldown', 'ex_seated_row', 'ex_shoulder_press', 'ex_lateral_raise',
+      'ex_reverse_pec_deck', 'ex_pec_deck', 'ex_chest_press', 'ex_incline_chest_press',
+      'ex_dumbbell_curl', 'ex_machine_curl', 'ex_leg_press', 'ex_leg_extension',
+      'ex_leg_curl', 'ex_calf_raise', 'ex_crunch', 'ex_plank',
+    ];
+    await (db.delete(db.exercises)..where((t) => t.id.isNotIn(v3Ids))).go();
+    for (final id in ['custom_unused', 'custom_used']) {
+      await db.into(db.exercises).insert(ExercisesCompanion.insert(
+            id: id,
+            nameZh: id,
+            muscleGroup: 'other',
+            equipmentType: 'machine',
+            isCustom: const Value(true),
+            createdAt: 1,
+            updatedAt: 1,
+          ));
+    }
+    await db.into(db.workoutSessions).insert(WorkoutSessionsCompanion.insert(
+          id: 'old', startedAt: 1, status: 'completed', updatedAt: 1,
+        ));
+    await db.into(db.workoutExercises).insert(WorkoutExercisesCompanion.insert(
+          id: 'old_we', sessionId: 'old', exerciseId: 'custom_used', sortOrder: 0, updatedAt: 1,
+        ));
+    await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
+        .write(const AppSettingsCompanion(value: Value('3')));
+
+    expect(await loader.seedIfNeeded(), isTrue);
+
+    final rows = await db.select(db.exercises).get();
+    expect(rows.where((r) => !r.isCustom).length, 48);
+    expect(rows.singleWhere((r) => r.id == 'custom_unused').deletedAt, isNotNull,
+        reason: '没练过的自定义动作随入口一起下线');
+    expect(rows.singleWhere((r) => r.id == 'custom_used').deletedAt, isNull,
+        reason: '练过的留着，历史里还要 join 它');
+    final version = await (db.select(db.appSettings)
+          ..where((t) => t.key.equals('seededVersion')))
+        .getSingle();
+    expect(version.value, '4');
   });
 
   test('种子 v2 → v3：v2 之前的记录整表作废，只剩种子的三次和进行中的那次', () async {

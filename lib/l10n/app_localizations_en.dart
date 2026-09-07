@@ -56,6 +56,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get followSystemLanguage => 'System default';
 
   @override
+  String get settingsTraining => 'Training';
+
+  @override
+  String get restReminderSetting => 'Rest reminder';
+
+  @override
+  String get restReminderStatusOn => 'On';
+
+  @override
+  String get restReminderStatusNoNotifications =>
+      'Notifications off — you won\'t be reminded';
+
+  @override
+  String get restReminderStatusInexact =>
+      'Exact alarms off — reminders may be late when the screen is locked';
+
+  @override
   String get devPlayground => 'Phase 0 tech playground';
 
   @override
@@ -86,9 +103,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionRemove => 'Remove';
-
-  @override
-  String get actionCreate => 'Create';
 
   @override
   String get actionDiscard => 'Discard';
@@ -339,9 +353,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickExerciseTitle => 'Choose an exercise';
 
   @override
-  String get newExercise => 'New exercise';
-
-  @override
   String get searchExercise => 'Search exercises';
 
   @override
@@ -355,12 +366,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exerciseGuide => 'How to do it';
-
-  @override
-  String get fieldName => 'Name';
-
-  @override
-  String get fieldMuscleGroup => 'Muscle group';
 
   @override
   String get fieldEquipment => 'Equipment';
@@ -626,6 +631,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restNotificationBody => 'Time for your next set';
+
+  @override
+  String get restReminderTitle => 'Turn on rest reminders';
+
+  @override
+  String get restReminderBody =>
+      'Get notified when your rest timer ends, even with the screen locked or in another app. Two permissions are needed:';
+
+  @override
+  String get restReminderStepNotifications => 'Allow notifications';
+
+  @override
+  String get restReminderStepNotificationsHint => 'The system will ask';
+
+  @override
+  String get restReminderStepExactAlarm => 'Allow exact alarms';
+
+  @override
+  String get restReminderStepExactAlarmHint =>
+      'Keeps reminders on time. Android opens a system settings page; turn it on and come back';
+
+  @override
+  String get restReminderEnable => 'Turn on';
+
+  @override
+  String get restReminderLater => 'Not now';
+
+  @override
+  String get restReminderEnabledToast => 'Rest reminders on';
+
+  @override
+  String get restReminderDeniedToast =>
+      'Notification permission denied — you can turn it on later in Settings';
+
+  @override
+  String get restReminderInexactToast =>
+      'Reminders on, but exact alarms are off — they may be late when the screen is locked';
 
   @override
   String get undoComplete => 'Mark as not done';

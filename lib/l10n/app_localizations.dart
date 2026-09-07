@@ -188,6 +188,36 @@ abstract class AppLocalizations {
   /// **'跟随系统'**
   String get followSystemLanguage;
 
+  /// No description provided for @settingsTraining.
+  ///
+  /// In zh, this message translates to:
+  /// **'训练'**
+  String get settingsTraining;
+
+  /// No description provided for @restReminderSetting.
+  ///
+  /// In zh, this message translates to:
+  /// **'休息结束提醒'**
+  String get restReminderSetting;
+
+  /// No description provided for @restReminderStatusOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启'**
+  String get restReminderStatusOn;
+
+  /// No description provided for @restReminderStatusNoNotifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'未允许通知，休息结束不会提醒'**
+  String get restReminderStatusNoNotifications;
+
+  /// No description provided for @restReminderStatusInexact.
+  ///
+  /// In zh, this message translates to:
+  /// **'未授予精确闹钟，锁屏后提醒可能延迟'**
+  String get restReminderStatusInexact;
+
   /// No description provided for @devPlayground.
   ///
   /// In zh, this message translates to:
@@ -247,12 +277,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'移除'**
   String get actionRemove;
-
-  /// No description provided for @actionCreate.
-  ///
-  /// In zh, this message translates to:
-  /// **'创建'**
-  String get actionCreate;
 
   /// No description provided for @actionDiscard.
   ///
@@ -668,12 +692,6 @@ abstract class AppLocalizations {
   /// **'选择动作'**
   String get pickExerciseTitle;
 
-  /// No description provided for @newExercise.
-  ///
-  /// In zh, this message translates to:
-  /// **'新建动作'**
-  String get newExercise;
-
   /// No description provided for @searchExercise.
   ///
   /// In zh, this message translates to:
@@ -703,18 +721,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'动作要领'**
   String get exerciseGuide;
-
-  /// No description provided for @fieldName.
-  ///
-  /// In zh, this message translates to:
-  /// **'名称'**
-  String get fieldName;
-
-  /// No description provided for @fieldMuscleGroup.
-  ///
-  /// In zh, this message translates to:
-  /// **'肌群'**
-  String get fieldMuscleGroup;
 
   /// No description provided for @fieldEquipment.
   ///
@@ -1189,6 +1195,72 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'开始下一组'**
   String get restNotificationBody;
+
+  /// No description provided for @restReminderTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启休息结束提醒'**
+  String get restReminderTitle;
+
+  /// No description provided for @restReminderBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'组间休息倒计时结束时提醒你开始下一组，锁屏或切到别的 App 也不会错过。需要下面两项权限：'**
+  String get restReminderBody;
+
+  /// No description provided for @restReminderStepNotifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许通知'**
+  String get restReminderStepNotifications;
+
+  /// No description provided for @restReminderStepNotificationsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统会弹窗询问'**
+  String get restReminderStepNotificationsHint;
+
+  /// No description provided for @restReminderStepExactAlarm.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许精确闹钟'**
+  String get restReminderStepExactAlarm;
+
+  /// No description provided for @restReminderStepExactAlarmHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'保证准点。Android 会跳到系统设置页，打开后返回即可'**
+  String get restReminderStepExactAlarmHint;
+
+  /// No description provided for @restReminderEnable.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启提醒'**
+  String get restReminderEnable;
+
+  /// No description provided for @restReminderLater.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂不'**
+  String get restReminderLater;
+
+  /// No description provided for @restReminderEnabledToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'休息提醒已开启'**
+  String get restReminderEnabledToast;
+
+  /// No description provided for @restReminderDeniedToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'未获得通知权限，可稍后在「设置」里重新开启'**
+  String get restReminderDeniedToast;
+
+  /// No description provided for @restReminderInexactToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒已开启，但未授予精确闹钟，锁屏后可能延迟'**
+  String get restReminderInexactToast;
 
   /// No description provided for @undoComplete.
   ///

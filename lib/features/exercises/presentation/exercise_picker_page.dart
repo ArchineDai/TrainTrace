@@ -6,7 +6,6 @@ import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
-import '../data/exercise_repository.dart';
 import '../models/exercise.dart';
 import '../state/exercise_list_view_model.dart';
 import 'exercise_labels.dart';
@@ -45,17 +44,9 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.pickExerciseTitle),
-        actions: [
-          // 创建一律是标题行右侧的加号图标，和模板页一致（ui-conventions 操作语法）。
-          IconButton(
-            onPressed: () => _createCustom(context),
-            icon: const Icon(Icons.add),
-            tooltip: l10n.newExercise,
-          ),
-        ],
-      ),
+      // 不提供新建：动作库只由内置种子决定（接后端后在后台配），
+      // 这样才没有"建了删不掉"的半吊子逻辑。
+      appBar: AppBar(title: Text(l10n.pickExerciseTitle)),
       body: Column(
         children: [
           Padding(
@@ -139,15 +130,6 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
     );
   }
 
-  Future<void> _createCustom(BuildContext context) async {
-    final created = await showDialog<Exercise>(
-      context: context,
-      builder: (_) => const _CreateExerciseDialog(),
-    );
-    if (created != null && context.mounted) {
-      context.pop(created.id);
-    }
-  }
 }
 
 class _GroupChip extends StatelessWidget {
@@ -172,88 +154,5 @@ class _GroupChip extends StatelessWidget {
         onSelected: (_) => onTap(),
       ),
     );
-  }
-}
-
-/// 新建自定义动作：名称 + 肌群 + 器械。其余用默认值，详情页可再改。
-class _CreateExerciseDialog extends ConsumerStatefulWidget {
-  const _CreateExerciseDialog();
-
-  @override
-  ConsumerState<_CreateExerciseDialog> createState() =>
-      _CreateExerciseDialogState();
-}
-
-class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
-  final _name = TextEditingController();
-  MuscleGroup _group = MuscleGroup.chest;
-  EquipmentType _equipment = EquipmentType.machine;
-  bool _saving = false;
-
-  @override
-  void dispose() {
-    _name.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final valid = _name.text.trim().isNotEmpty;
-    final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(l10n.newExercise),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _name,
-            autofocus: true,
-            decoration: InputDecoration(labelText: l10n.fieldName),
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<MuscleGroup>(
-            initialValue: _group,
-            decoration: InputDecoration(labelText: l10n.fieldMuscleGroup),
-            items: [
-              for (final g in MuscleGroup.values)
-                DropdownMenuItem(value: g, child: Text(g.label(l10n))),
-            ],
-            onChanged: (v) => setState(() => _group = v ?? _group),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<EquipmentType>(
-            initialValue: _equipment,
-            decoration: InputDecoration(labelText: l10n.fieldEquipment),
-            items: [
-              for (final t in EquipmentType.values)
-                DropdownMenuItem(value: t, child: Text(t.label(l10n))),
-            ],
-            onChanged: (v) => setState(() => _equipment = v ?? _equipment),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.actionCancel),
-        ),
-        FilledButton(
-          onPressed: valid && !_saving ? _save : null,
-          child: Text(l10n.actionCreate),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _save() async {
-    setState(() => _saving = true);
-    final e = await ref.read(exerciseRepositoryProvider).create(
-          nameZh: _name.text,
-          muscleGroup: _group,
-          equipmentType: _equipment,
-          minIncrementKg: _equipment == EquipmentType.dumbbell ? 1.0 : null,
-        );
-    if (mounted) Navigator.of(context).pop(e);
   }
 }

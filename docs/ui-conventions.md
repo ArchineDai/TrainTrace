@@ -75,7 +75,7 @@
 
 | 操作类型 | 放哪 | 控件 | 现有例子 |
 |---|---|---|---|
-| 页面级创建（新建模板 / 新建动作） | AppBar 右侧 | `IconButton(Icons.add)` 带 tooltip | 模板页、动作选择器 |
+| 页面级创建（新建模板） | AppBar 右侧 | `IconButton(Icons.add)` 带 tooltip | 模板页 |
 | 开始空白训练 | 训练页顶部 | 满宽 `OutlinedButton.icon` | 首页 |
 | 开始某张模板 | 卡片内 | `FilledButton` | 首页模板卡 |
 | 执行类主操作（完成本组 / 结束训练） | 页面底部 | 满宽 `FilledButton`，高 56 | 训练页 |
