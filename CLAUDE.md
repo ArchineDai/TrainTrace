@@ -39,6 +39,16 @@ Repository 查询默认过滤 `deleted_at IS NULL`。物理删除只有一处例
 提示 → `AppTheme.showToast`。`lib/features` 与 `lib/shared` 里不写裸 `Color(0xFF...)`
 和 `fontSize: <数字>`。训练页按钮不小于 `AppTheme.minTouch`（48dp）。
 
+### 5. 真机验证只走 release 脚本装包
+
+任何"改完看一眼手机"—— 调 bug、验功能、复现问题 —— 一律
+`powershell -File scripts/build_release.ps1 -Install -Force`，装完在真机上验证。
+不用 `flutter run`，不用 `build_dev.ps1`，模拟器不算验证。
+
+原因：手机上的 SQLite 是用户训练数据的唯一副本（V0.1 无同步、无导出）。`flutter run`
+装不上时会自动卸载重装，2026-09-07 已经这样清空过一次真实记录；脚本走 `adb install -r`，
+失败只报错不卸载。release 包还是 AOT 的最终形态，验到的就是用户拿到的。
+
 ---
 
 ## 变更纪律
@@ -97,22 +107,20 @@ dart run build_runner build
 改了 `core/db/` 下任何表必跑。`*.g.dart` 在 git 追踪中，需提交。
 
 ```bash
-pwsh scripts/check_l10n.ps1
+powershell -File scripts/check_l10n.ps1
 ```
 改完 ARB 必跑（内含 `flutter gen-l10n`）。基线为零：**任何 locale 漏一个 key 就 exit 1**。
-生成码 `lib/l10n/app_localizations*.dart` 在 git 追踪中，需提交。
+生成码 `lib/l10n/app_localizations*.dart` 在 git 追踪中，需提交。本机没有 `pwsh`，用 `powershell`。
 
 ```bash
-flutter run -d 10ACBQ18A8000QD
+powershell -File scripts/build_release.ps1 -Install -Force
 ```
-真机（vivo V2241A，Android 16）。休息提醒、进程被杀恢复必须在真机验证，模拟器不算。
-
-```bash
-powershell -File scripts/build_dev.ps1 -Install
-```
-打 dev 包装真机（debug + 只打 arm64，约 170 MB —— 大头是 JIT 的 kernel_blob，debug 去不掉）。
-对外分发用 `scripts/build_release.ps1`（AOT，单个通用包约 66 MB，什么机器都能装）：正式
-签名读 `android/key.properties`，缺该文件时回退 debug 签名并在构建前警告。
+真机（vivo V2241A，Android 16，`10ACBQ18A8000QD`）装包验证的唯一路径，见铁律 5。AOT 单个通用包
+约 66 MB，`adb install -r` 覆盖安装保留数据。装前确认手机已解锁，锁屏时 vivo 会拒绝安装。
+`-Force` 是跳过"没有 `android/key.properties`、回退 debug 签名"的交互确认 —— 非交互 shell 里
+`Read-Host` 拿不到输入会直接退出；本机自测用 debug 签名没问题，对外分发前再配正式签名。
+要看日志用 `adb logcat`，不要为此切回 `flutter run`。`scripts/build_dev.ps1` 只在需要
+热重载 / 断点时由用户自己决定用。
 
 ## 提交约定
 
