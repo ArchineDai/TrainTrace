@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/text_fields_dialog.dart';
 import '../../../exercises/data/exercise_repository.dart';
 import '../../../exercises/models/exercise.dart';
 import '../../../exercises/presentation/widgets/equipment_note_photo.dart';
@@ -133,50 +134,20 @@ class _EquipmentLabelSheetState extends ConsumerState<EquipmentLabelSheet> {
 
   Future<void> _create() async {
     final l10n = AppLocalizations.of(context);
-    final gym = TextEditingController();
-    final label = TextEditingController();
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.newLabel),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: gym,
-              decoration: InputDecoration(
-                labelText: l10n.fieldGymOptional,
-                hintText: l10n.hintGym,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: label,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: l10n.fieldEquipment,
-                hintText: l10n.hintEquipment,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.actionConfirm),
-          ),
-        ],
-      ),
+    // controller 归对话框自己持有（见 showTextFieldsDialog），这里不再手工 dispose。
+    final texts = await showTextFieldsDialog(
+      context,
+      title: l10n.newLabel,
+      confirmLabel: l10n.actionConfirm,
+      fields: [
+        DialogField(label: l10n.fieldGymOptional, hint: l10n.hintGym),
+        DialogField(label: l10n.fieldEquipment, hint: l10n.hintEquipment, autofocus: true),
+      ],
     );
-    final labelText = label.text.trim();
-    final gymText = gym.text.trim();
-    gym.dispose();
-    label.dispose();
-    if (ok != true || labelText.isEmpty || !mounted) return;
+    if (texts == null || !mounted) return;
+    final gymText = texts[0].trim();
+    final labelText = texts[1].trim();
+    if (labelText.isEmpty) return;
     final note = await ref.read(exerciseRepositoryProvider).upsertNote(
           exerciseId: widget.exerciseId,
           gymName: gymText.isEmpty ? null : gymText,
