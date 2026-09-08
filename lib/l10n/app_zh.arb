@@ -454,6 +454,19 @@
     }
   },
   "removeExercise": "删除动作",
+  "supersetLinkNext": "与下一动作组成超级组",
+  "supersetUnlink": "退出超级组",
+  "supersetTitle": "超级组 {label}",
+  "@supersetTitle": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "supersetHint": "{tags} 交替 · 一轮后休息 {seconds}s",
+  "@supersetHint": {
+    "placeholders": {
+      "tags": { "type": "String" },
+      "seconds": { "type": "int" }
+    }
+  },
   "lastTimeNone": "上次：无记录",
   "lastTimeValue": "上次：{summary}",
   "lastNoteLabel": "上次备注 · {date}",

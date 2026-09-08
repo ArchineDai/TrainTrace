@@ -1,4 +1,5 @@
 import '../../history/models/history_models.dart';
+import 'superset.dart' as superset;
 import 'workout_session.dart';
 
 /// 进行中训练的内存态。DB 才是真相源，这里只是它的缓存 + 展示用的附属数据。
@@ -53,6 +54,14 @@ class ActiveWorkoutState {
     }
     return null;
   }
+
+  /// 超级组字母（A、B、C…），按组在列表中首次出现的顺序。
+  String? supersetLabelOf(int groupId) =>
+      superset.supersetLabelOf(session.exercises, groupId);
+
+  /// 成员位置标记 `A1` / `A2`；不在超级组里为 null。
+  String? supersetTagOf(String workoutExerciseId) =>
+      superset.supersetTagOf(session.exercises, workoutExerciseId);
 
   /// 替换一个动作（按 id）。
   ActiveWorkoutState replaceExercise(WorkoutExercise ex) => copyWith(

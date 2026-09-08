@@ -11,6 +11,7 @@ import '../../../suggestion/state/suggestion_provider.dart';
 import '../../models/numeric_input.dart';
 import '../../models/workout_session.dart';
 import 'set_row.dart';
+import 'superset_tag.dart';
 
 /// 卡片菜单动作。
 enum ExerciseCardAction {
@@ -24,6 +25,12 @@ enum ExerciseCardAction {
   /// 本次动作备注（座椅档位、把手位置这类下次要看的话）。
   editNote,
   viewExercise,
+
+  /// 与列表里紧随其后的动作组成超级组。
+  linkNext,
+
+  /// 退出所在的超级组。
+  unlink,
   remove,
 }
 
@@ -50,9 +57,17 @@ class WorkoutExerciseCard extends StatelessWidget {
     this.onLongPressLabel,
     required this.onAction,
     this.onLongPressWeight,
+    this.supersetTag,
+    this.canLinkNext = false,
   });
 
   final WorkoutExercise exercise;
+
+  /// 超级组位置标记（`A1`），不在组里为 null。
+  final String? supersetTag;
+
+  /// 菜单里是否给出「与下一动作组成超级组」（不在组里且有下一动作时由页面传 true）。
+  final bool canLinkNext;
   final ExercisePerformance? last;
 
   /// 历史里最近一条非空备注；本次已写备注时不显示它。
@@ -109,16 +124,26 @@ class WorkoutExerciseCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          exerciseDisplayName(
-                            context,
-                            exercise.exerciseName,
-                            exercise.exerciseNameEn,
-                          ),
-                          style: TextStyle(
-                            fontSize: AppTextSize.lg,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Row(
+                          children: [
+                            if (supersetTag != null) ...[
+                              SupersetTag(supersetTag!),
+                              const SizedBox(width: 6),
+                            ],
+                            Expanded(
+                              child: Text(
+                                exerciseDisplayName(
+                                  context,
+                                  exercise.exerciseName,
+                                  exercise.exerciseNameEn,
+                                ),
+                                style: TextStyle(
+                                  fontSize: AppTextSize.lg,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         if (meta.isNotEmpty)
                           Text(
@@ -166,6 +191,16 @@ class WorkoutExerciseCard extends StatelessWidget {
                       value: ExerciseCardAction.viewExercise,
                       child: Text(l10n.viewExerciseGuide),
                     ),
+                    if (!exercise.isInSuperset && canLinkNext)
+                      PopupMenuItem(
+                        value: ExerciseCardAction.linkNext,
+                        child: Text(l10n.supersetLinkNext),
+                      ),
+                    if (exercise.isInSuperset)
+                      PopupMenuItem(
+                        value: ExerciseCardAction.unlink,
+                        child: Text(l10n.supersetUnlink),
+                      ),
                     PopupMenuItem(
                       value: ExerciseCardAction.remove,
                       child: Text(l10n.removeExercise,

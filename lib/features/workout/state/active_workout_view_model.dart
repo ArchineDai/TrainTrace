@@ -13,6 +13,7 @@ import '../../routines/models/routine.dart';
 import '../data/workout_repository.dart';
 import '../models/active_workout_state.dart';
 import '../models/rest_timer_state.dart';
+import '../models/superset.dart';
 import '../models/workout_session.dart';
 import 'rest_timer_view_model.dart';
 
@@ -124,6 +125,8 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       lastByExercise: last,
       lastNoteByExercise: await _loadLastNotes(session),
     ));
+    // 原训练里组内某个动作已删时，拷过来的组可能只剩一个成员或不再相邻。
+    await _normalizeSupersets();
   }
 
   /// 结束训练，返回已完成的 session（总结页用）。
@@ -220,6 +223,8 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
         ));
     await _persist(() => _repo.setCompleted(setId, completing), 'complete set');
     if (!completing) return;
+    // 超级组内交替不休息：只有组里最后一个成员完成时才开计时（一轮结束）。
+    if (ex.isInSuperset && !isLastInSuperset(s.session.exercises, ex.id)) return;
     await _timer.start(ex.restSeconds ?? AppConstants.defaultRestSeconds);
   }
 
@@ -299,6 +304,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
           ),
         ));
     await _persist(() => _repo.removeExercise(workoutExerciseId), 'remove exercise');
+    await _normalizeSupersets();
   }
 
   Future<void> reorderExercises(List<String> orderedIds) async {
@@ -312,6 +318,84 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
           ]),
         ));
     await _persist(() => _repo.reorderExercises(orderedIds), 'reorder exercises');
+    await _normalizeSupersets();
+  }
+
+  // ── 超级组 ───────────────────────────────────────────────────
+
+  /// 把该动作与列表里紧随其后的动作绑成一组。
+  ///
+  /// - 当前动作已在组里 → 下一动作加入同组（追加）
+  /// - 否则分配新组号（现有最大 +1，从 1 起）给两者
+  /// - 下一动作已属于别的组 → 那组全体并入当前组
+  /// - 没有下一动作 → 不做
+  Future<void> linkWithNext(String workoutExerciseId) async {
+    final s = state.value;
+    if (s == null) return;
+    final list = s.session.exercises;
+    final i = list.indexWhere((e) => e.id == workoutExerciseId);
+    if (i < 0 || i + 1 >= list.length) return;
+    final cur = list[i];
+    final next = list[i + 1];
+    final g = cur.supersetGroup ?? nextSupersetGroup(list);
+    final changes = <String, int?>{};
+    if (cur.supersetGroup != g) changes[cur.id] = g;
+    final nextGroup = next.supersetGroup;
+    if (nextGroup != null && nextGroup != g) {
+      for (final e in list) {
+        if (e.supersetGroup == nextGroup) changes[e.id] = g;
+      }
+    } else if (nextGroup != g) {
+      changes[next.id] = g;
+    }
+    await _setSupersetGroups(changes, 'link superset');
+  }
+
+  /// 把该动作移出组；原组只剩 1 个成员时那个成员也清组号（由归一化兜底）。
+  Future<void> unlink(String workoutExerciseId) async {
+    final s = state.value;
+    final ex = s?.exerciseById(workoutExerciseId);
+    if (s == null || ex == null || !ex.isInSuperset) return;
+    await _setSupersetGroups({ex.id: null}, 'unlink superset');
+    await _normalizeSupersets();
+  }
+
+  /// 组必须连续且 ≥ 2 个成员：与 [normalizeSupersets] 的结果对比，不一致的写库。
+  Future<void> _normalizeSupersets() async {
+    final s = state.value;
+    if (s == null) return;
+    final want = normalizeSupersets(s.session.exercises);
+    final changes = <String, int?>{
+      for (final e in s.session.exercises)
+        if (e.supersetGroup != want[e.id]) e.id: want[e.id],
+    };
+    await _setSupersetGroups(changes, 'normalize superset');
+  }
+
+  /// 批量改组号：先改内存，再逐个写库。
+  Future<void> _setSupersetGroups(Map<String, int?> changes, String label) async {
+    if (changes.isEmpty) return;
+    _mutate((st) => st.copyWith(
+          session: st.session.copyWith(exercises: [
+            for (final e in st.session.exercises)
+              changes.containsKey(e.id)
+                  ? e.copyWith(
+                      supersetGroup: changes[e.id],
+                      clearSupersetGroup: changes[e.id] == null,
+                    )
+                  : e,
+          ]),
+        ));
+    for (final entry in changes.entries) {
+      await _persist(
+        () => _repo.updateExercise(
+          entry.key,
+          supersetGroup: entry.value,
+          clearSupersetGroup: entry.value == null,
+        ),
+        label,
+      );
+    }
   }
 
   /// 改器械标签 / 目标区间 / 休息。换了标签会重查该标签下的上次表现。

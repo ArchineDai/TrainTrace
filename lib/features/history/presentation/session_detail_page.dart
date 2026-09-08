@@ -10,7 +10,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../workout/data/workout_repository.dart';
+import '../../workout/models/superset.dart';
 import '../../workout/models/workout_session.dart';
+import '../../workout/presentation/widgets/superset_tag.dart';
 import '../../workout/state/active_workout_view_model.dart';
 
 /// 一次历史训练的详情：每个动作的每组数据；可删除、再练一次。
@@ -73,7 +75,10 @@ class SessionDetailPage extends ConsumerWidget {
                 ],
                 const SizedBox(height: 16),
                 for (final ex in session.exercises) ...[
-                  _ExerciseBlock(exercise: ex),
+                  _ExerciseBlock(
+                    exercise: ex,
+                    supersetTag: supersetTagOf(session.exercises, ex.id),
+                  ),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -124,9 +129,12 @@ class SessionDetailPage extends ConsumerWidget {
 }
 
 class _ExerciseBlock extends StatelessWidget {
-  const _ExerciseBlock({required this.exercise});
+  const _ExerciseBlock({required this.exercise, this.supersetTag});
 
   final WorkoutExercise exercise;
+
+  /// 超级组位置标记（`A1`），不在组里为 null。
+  final String? supersetTag;
 
   /// 动作名 +（器械标签）。
   String _title(BuildContext context, AppLocalizations l10n) {
@@ -154,6 +162,10 @@ class _ExerciseBlock extends StatelessWidget {
               onTap: () => context.push(AppRoutes.exerciseDetail(exercise.exerciseId)),
               child: Row(
                 children: [
+                  if (supersetTag != null) ...[
+                    SupersetTag(supersetTag!),
+                    const SizedBox(width: 6),
+                  ],
                   Expanded(
                     child: Text(
                       _title(context, l10n),

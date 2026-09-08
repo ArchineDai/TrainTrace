@@ -355,6 +355,114 @@ void main() {
     expect(row2.note, isNull);
   });
 
+  // ── 超级组 ─────────────────────────────────────────────────────
+
+  Future<int?> dbGroup(String weId) async => (await (db.select(db.workoutExercises)
+            ..where((t) => t.id.equals(weId)))
+          .getSingle())
+      .supersetGroup;
+
+  List<WorkoutExercise> exs() => container.read(activeWorkoutProvider).value!.session.exercises;
+
+  test('linkWithNext：新组从 1 起、追加进同组、合并别的组，全部落库', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final ids = exs().map((e) => e.id).toList();
+
+    await vm.linkWithNext(ids[0]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, null, null, null, null]);
+    expect(await dbGroup(ids[0]), 1);
+    expect(await dbGroup(ids[1]), 1);
+
+    // 已在组里的最后一个成员再链 → 下一动作追加进同组
+    await vm.linkWithNext(ids[1]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, null, null, null]);
+
+    // 另起一组：组号为现有最大 +1
+    await vm.linkWithNext(ids[3]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 2, 2, null]);
+    expect(await dbGroup(ids[4]), 2);
+
+    // 组 1 的尾巴链上组 2 的头 → 组 2 全体并入组 1
+    await vm.linkWithNext(ids[2]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 1, 1, null]);
+    expect(await dbGroup(ids[4]), 1);
+
+    // 最后一个动作没有下一动作 → 不做
+    await vm.linkWithNext(ids[5]);
+    expect(exs()[5].supersetGroup, isNull);
+
+    final st = container.read(activeWorkoutProvider).value!;
+    expect(st.supersetTagOf(ids[0]), 'A1');
+    expect(st.supersetTagOf(ids[4]), 'A5');
+    expect(st.supersetTagOf(ids[5]), isNull);
+  });
+
+  test('unlink：移出组；原组只剩一个成员时那个成员也清空', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final ids = exs().map((e) => e.id).toList();
+    await vm.linkWithNext(ids[0]);
+    await vm.linkWithNext(ids[1]); // 0,1,2 同组
+
+    await vm.unlink(ids[2]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, null, null, null, null]);
+    expect(await dbGroup(ids[2]), isNull);
+
+    await vm.unlink(ids[0]);
+    expect(exs().map((e) => e.supersetGroup), everyElement(isNull), reason: '只剩 1 个成员的组解散');
+    expect(await dbGroup(ids[1]), isNull);
+  });
+
+  test('reorderExercises 打断相邻 → 解散该组；removeExercise 后只剩一个 → 解散', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final ids = exs().map((e) => e.id).toList();
+    await vm.linkWithNext(ids[0]); // 0,1 组 1
+    await vm.linkWithNext(ids[3]); // 3,4 组 2
+
+    // 把 2 插到 0 与 1 之间：组 1 不再相邻，组 2 不受影响
+    await vm.reorderExercises([ids[0], ids[2], ids[1], ids[3], ids[4], ids[5]]);
+    final byId = {for (final e in exs()) e.id: e.supersetGroup};
+    expect(byId[ids[0]], isNull);
+    expect(byId[ids[1]], isNull);
+    expect(byId[ids[3]], 2);
+    expect(byId[ids[4]], 2);
+    expect(await dbGroup(ids[0]), isNull);
+    expect(await dbGroup(ids[3]), 2);
+
+    await vm.removeExercise(ids[4]);
+    expect(exs().firstWhere((e) => e.id == ids[3]).supersetGroup, isNull);
+    expect(await dbGroup(ids[3]), isNull);
+  });
+
+  test('超级组：完成 A1 不开计时，完成 A2（组尾）按 A2 的休息秒数开计时', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    // 反向蝴蝶机（60s）+ 面拉（60s）组成超级组，前面的高位下拉（90s）不在组里。
+    final ids = exs().map((e) => e.id).toList();
+    await vm.linkWithNext(ids[3]);
+    final a1 = exs()[3];
+    final a2 = exs()[4];
+    expect(a2.restSeconds, 60);
+
+    await vm.toggleComplete(a1.sets[0].id);
+    expect(container.read(restTimerProvider).isIdle, isTrue, reason: '组内交替不休息');
+
+    await vm.toggleComplete(a2.sets[0].id);
+    final timer = container.read(restTimerProvider);
+    expect(timer.isIdle, isFalse);
+    expect(timer.remainingSeconds(clock.now()), 60);
+
+    // 不在组里的动作照常
+    await vm.toggleComplete(exs()[1].sets[0].id);
+    expect(container.read(restTimerProvider).remainingSeconds(clock.now()), 90);
+  });
+
   test('isStale：开始超过 12 小时', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();

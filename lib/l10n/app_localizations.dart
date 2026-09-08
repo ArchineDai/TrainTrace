@@ -1436,6 +1436,30 @@ abstract class AppLocalizations {
   /// **'删除动作'**
   String get removeExercise;
 
+  /// No description provided for @supersetLinkNext.
+  ///
+  /// In zh, this message translates to:
+  /// **'与下一动作组成超级组'**
+  String get supersetLinkNext;
+
+  /// No description provided for @supersetUnlink.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出超级组'**
+  String get supersetUnlink;
+
+  /// No description provided for @supersetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'超级组 {label}'**
+  String supersetTitle(String label);
+
+  /// No description provided for @supersetHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'{tags} 交替 · 一轮后休息 {seconds}s'**
+  String supersetHint(String tags, int seconds);
+
   /// No description provided for @lastTimeNone.
   ///
   /// In zh, this message translates to:

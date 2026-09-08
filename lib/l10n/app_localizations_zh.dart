@@ -772,6 +772,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeExercise => '删除动作';
 
   @override
+  String get supersetLinkNext => '与下一动作组成超级组';
+
+  @override
+  String get supersetUnlink => '退出超级组';
+
+  @override
+  String supersetTitle(String label) {
+    return '超级组 $label';
+  }
+
+  @override
+  String supersetHint(String tags, int seconds) {
+    return '$tags 交替 · 一轮后休息 ${seconds}s';
+  }
+
+  @override
   String get lastTimeNone => '上次：无记录';
 
   @override

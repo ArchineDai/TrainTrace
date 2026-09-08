@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../../../core/constants.dart';
 import '../../../core/log.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
@@ -19,7 +20,10 @@ import '../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
 import '../../settings/presentation/widgets/rest_reminder_guide_sheet.dart';
 import '../../settings/state/rest_reminder_view_model.dart';
+import '../models/active_workout_state.dart';
 import '../models/numeric_input.dart';
+import '../models/superset.dart';
+import '../models/workout_session.dart';
 import '../state/active_workout_view_model.dart';
 import 'widgets/equipment_label_sheet.dart';
 import 'widgets/numeric_keypad.dart';
@@ -161,36 +165,23 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                       ),
                     ),
                   ),
-                for (final ex in session.exercises)
+                // 连续同组的卡片包成一块（左侧竖条 + 组头）；不在组里的卡片照旧。
+                for (final block in supersetBlocks(session.exercises))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: WorkoutExerciseCard(
-                      key: ValueKey('ex-${ex.id}'),
-                      exercise: ex,
-                      last: st.lastByExercise[ex.id],
-                      lastNote: st.lastNoteByExercise[ex.id],
-                      now: now,
-                      focusedSetId: _focusSetId,
-                      focusedField: _focusField,
-                      editingText: _editing,
-                      rirExpanded: _rirExpanded.contains(ex.id),
-                      onTapField: _focus,
-                      onToggleComplete: _toggleComplete,
-                      onAddSet: () => _vm.addSet(ex.id),
-                      onDeleteSet: (id) {
-                        if (_focusSetId == id) _unfocus();
-                        _vm.deleteSet(id);
-                      },
-                      onSetRir: (id, v) => _vm.editSet(id, rir: v, clearRir: v == null),
-                      onTapLabel: () => _changeLabel(ex.id, ex.exerciseId, ex.equipmentLabel),
-                      onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
-                      onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
-                      // 板片计算器只对杠铃动作开放；其他器械长按不响应。
-                      onLongPressWeight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.equipmentType ==
-                              EquipmentType.barbell
-                          ? _showPlateCalculator
-                          : null,
-                    ),
+                    child: block.isSuperset
+                        ? _SupersetBlock(
+                            label: st.supersetLabelOf(block.groupId!) ?? '',
+                            tags: [
+                              for (final ex in block.exercises) st.supersetTagOf(ex.id) ?? '',
+                            ],
+                            restSeconds: block.exercises.last.restSeconds ??
+                                AppConstants.defaultRestSeconds,
+                            children: [
+                              for (final ex in block.exercises) _exerciseCard(st, ex, now),
+                            ],
+                          )
+                        : _exerciseCard(st, block.exercises.single, now),
                   ),
                 // 追加动作放列表末尾，和编辑模板页同一条规则：练完最后一个动作时
                 // 用户正停在这里，空白训练时它就是页面上的第一个东西。
@@ -215,6 +206,40 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             SizedBox(height: MediaQuery.paddingOf(context).bottom),
         ],
       ),
+    );
+  }
+
+  Widget _exerciseCard(ActiveWorkoutState st, WorkoutExercise ex, DateTime now) {
+    final list = st.session.exercises;
+    final hasNext = list.isNotEmpty && list.last.id != ex.id;
+    return WorkoutExerciseCard(
+      key: ValueKey('ex-${ex.id}'),
+      exercise: ex,
+      last: st.lastByExercise[ex.id],
+      lastNote: st.lastNoteByExercise[ex.id],
+      now: now,
+      focusedSetId: _focusSetId,
+      focusedField: _focusField,
+      editingText: _editing,
+      rirExpanded: _rirExpanded.contains(ex.id),
+      onTapField: _focus,
+      onToggleComplete: _toggleComplete,
+      onAddSet: () => _vm.addSet(ex.id),
+      onDeleteSet: (id) {
+        if (_focusSetId == id) _unfocus();
+        _vm.deleteSet(id);
+      },
+      onSetRir: (id, v) => _vm.editSet(id, rir: v, clearRir: v == null),
+      onTapLabel: () => _changeLabel(ex.id, ex.exerciseId, ex.equipmentLabel),
+      onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
+      onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
+      supersetTag: st.supersetTagOf(ex.id),
+      canLinkNext: hasNext,
+      // 板片计算器只对杠铃动作开放；其他器械长按不响应。
+      onLongPressWeight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.equipmentType ==
+              EquipmentType.barbell
+          ? _showPlateCalculator
+          : null,
     );
   }
 
@@ -392,6 +417,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         await _editNote(weId);
       case ExerciseCardAction.viewExercise:
         await context.push(AppRoutes.exerciseDetail(exerciseId));
+      case ExerciseCardAction.linkNext:
+        await _vm.linkWithNext(weId);
+      case ExerciseCardAction.unlink:
+        await _vm.unlink(weId);
       case ExerciseCardAction.remove:
         final st = ref.read(activeWorkoutProvider).value;
         final ex = st?.exerciseById(weId);
@@ -469,6 +498,83 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           ],
         ),
       );
+}
+
+/// 一个超级组：左侧 4dp 橙色竖条，右侧组头（链接图标 + 「超级组 A」+ 交替 / 休息提示）
+/// 与各成员卡片。休息秒数取组里最后一个动作的 —— 计时也只在它完成时才开。
+class _SupersetBlock extends StatelessWidget {
+  const _SupersetBlock({
+    required this.label,
+    required this.tags,
+    required this.restSeconds,
+    required this.children,
+  });
+
+  final String label;
+  final List<String> tags;
+  final int restSeconds;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = AppTheme.of(context).accentText;
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          width: 4,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: scheme.primary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 32,
+                child: Row(
+                  children: [
+                    Icon(Icons.link, size: 16, color: accent),
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.supersetTitle(label),
+                      style: TextStyle(
+                        fontSize: AppTextSize.sm,
+                        fontWeight: FontWeight.w600,
+                        color: accent,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.supersetHint(tags.join(' → '), restSeconds),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: AppTextSize.xs,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              for (var i = 0; i < children.length; i++) ...[
+                if (i > 0) const SizedBox(height: 6),
+                children[i],
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// 已用时长，每秒刷新。只在本页显示，setState 足够。

@@ -793,6 +793,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeExercise => 'Remove exercise';
 
   @override
+  String get supersetLinkNext => 'Superset with next exercise';
+
+  @override
+  String get supersetUnlink => 'Leave superset';
+
+  @override
+  String supersetTitle(String label) {
+    return 'Superset $label';
+  }
+
+  @override
+  String supersetHint(String tags, int seconds) {
+    return 'Alternate $tags · rest ${seconds}s after each round';
+  }
+
+  @override
   String get lastTimeNone => 'Last time: no record';
 
   @override
