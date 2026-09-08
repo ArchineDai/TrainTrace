@@ -38,6 +38,12 @@ class Exercises extends Table with UuidPrimaryKey, SyncColumns {
   BoolColumn get isBodyweight =>
       boolean().withDefault(const Constant(false))();
 
+  /// 辅助自重动作（schema v4，Strong / Hevy 的 "Assisted Bodyweight"）：
+  /// 用户填的是辅助重量（正数），库里 `workout_sets.weight_kg` 存负数，
+  /// 容量 = (体重 − 辅助) × 次数。为 true 时 [isBodyweight] 必为 true。
+  BoolColumn get isAssisted =>
+      boolean().withDefault(const Constant(false))();
+
   // ── 新手向内容（schema v2）。JSON 数组文本，内置动作由种子填，自定义动作为空。──
 
   /// 动作要领，3–5 条。

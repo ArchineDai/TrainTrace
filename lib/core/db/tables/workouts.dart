@@ -24,6 +24,16 @@ class WorkoutSessions extends Table with UuidPrimaryKey, SyncColumns {
   /// 休息倒计时结束的时间戳（epoch ms）。只存终点不存剩余秒数，恢复时重算。
   IntColumn get restEndsAt => integer().nullable()();
   TextColumn get note => text().nullable()();
+
+  /// 正在正计时的组（计时类动作，schema v4）。和 [restEndsAt] 一样只存时间戳，
+  /// 已过秒数恢复时用 clock 重算。三列同生共死：没有组在计时时全为 null。
+  TextColumn get runningSetId => text().nullable()();
+
+  /// 开始计时的时刻（epoch ms）。
+  IntColumn get runningSetStartedAt => integer().nullable()();
+
+  /// 目标秒数；开放计时为 null。
+  IntColumn get runningSetTargetSeconds => integer().nullable()();
 }
 
 /// 训练中的一个动作。目标区间 / 休息是从模板复制的快照，训练中可改。

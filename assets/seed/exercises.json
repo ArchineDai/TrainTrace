@@ -322,7 +322,7 @@
     ]
   },
   {
-    "id": "ex_assisted_pullup", "nameZh": "辅助引体向上", "nameEn": "Assisted Pull-up", "muscleGroup": "back", "equipmentType": "machine",
+    "id": "ex_assisted_pullup", "nameZh": "辅助引体向上", "nameEn": "Assisted Pull-up", "muscleGroup": "back", "equipmentType": "machine", "isBodyweight": true, "isAssisted": true,
     "defaultRepMin": 8, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
     "cues": [
       "膝盖或双脚踩在辅助踏板上，双手正握上方把手",

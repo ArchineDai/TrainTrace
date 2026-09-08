@@ -865,8 +865,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bodyweightChipNoRecord => '自重 · 记体重';
 
   @override
+  String assistedChip(String kg) {
+    return '自重 $kg kg · 辅助';
+  }
+
+  @override
+  String get assistedChipNoRecord => '自重 · 辅助 · 记体重';
+
+  @override
   String bodyweightVolumeHint(String body, String added, String total) {
     return '容量按 $body + $added = $total kg 计';
+  }
+
+  @override
+  String assistedVolumeHint(String body, String assist, String total) {
+    return '容量按 $body − $assist = $total kg 计';
   }
 
   @override

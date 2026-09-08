@@ -95,6 +95,22 @@ void main() {
     expect(e.equipmentType, EquipmentType.machine);
     expect(e.measure, ExerciseMeasure.reps);
     expect(e.isBodyweight, isFalse);
+    expect(e.isAssisted, isFalse);
+  });
+
+  test('种子里的 isAssisted：辅助引体为 true 且必为自重，引体向上为 false', () async {
+    final assisted = (await repo.getById('ex_assisted_pullup'))!;
+    expect(assisted.isAssisted, isTrue);
+    expect(assisted.isBodyweight, isTrue, reason: 'isAssisted 为 true 时 isBodyweight 必为 true');
+    expect(assisted.equipmentType, EquipmentType.machine, reason: '器械类型保持 machine');
+
+    final pullup = (await repo.getById('ex_pullup'))!;
+    expect(pullup.isAssisted, isFalse);
+    expect(pullup.isBodyweight, isTrue);
+
+    final all = await repo.getAll();
+    expect(all.where((e) => e.isAssisted).map((e) => e.id), ['ex_assisted_pullup']);
+    expect(all.where((e) => e.isAssisted && !e.isBodyweight), isEmpty);
   });
 
   test('种子里的 measure / isBodyweight 映射到 model', () async {
@@ -116,8 +132,11 @@ void main() {
     final all = await repo.getAll();
     expect(
       all.where((e) => e.isBodyweight).map((e) => e.id).toSet(),
-      all.where((e) => e.equipmentType == EquipmentType.bodyweight).map((e) => e.id).toSet(),
-      reason: '种子里 equipmentType 为 bodyweight 的都标了 isBodyweight',
+      {
+        ...all.where((e) => e.equipmentType == EquipmentType.bodyweight).map((e) => e.id),
+        'ex_assisted_pullup',
+      },
+      reason: '种子里 equipmentType 为 bodyweight 的都标了 isBodyweight，外加辅助引体（machine）',
     );
   });
 
@@ -137,6 +156,28 @@ void main() {
     expect(after.isBodyweight, isTrue);
     expect(after.copyWith(defaultRepMin: 5).measure, ExerciseMeasure.seconds,
         reason: 'copyWith 不传就保留');
+  });
+
+  test('create / update 带 isAssisted 往返；isAssisted 会连带把 isBodyweight 写成 true', () async {
+    final e = await repo.create(
+      nameZh: '辅助双杠臂屈伸',
+      muscleGroup: MuscleGroup.chest,
+      equipmentType: EquipmentType.machine,
+      isAssisted: true,
+    );
+    expect(e.isAssisted, isTrue);
+    expect(e.isBodyweight, isTrue, reason: '只传 isAssisted 也必为自重');
+
+    await repo.update(e.copyWith(isAssisted: false));
+    var after = (await repo.getById(e.id))!;
+    expect(after.isAssisted, isFalse);
+    expect(after.isBodyweight, isTrue, reason: '取消辅助不影响自重标记');
+
+    await repo.update(after.copyWith(isBodyweight: false, isAssisted: true));
+    after = (await repo.getById(e.id))!;
+    expect(after.isAssisted, isTrue);
+    expect(after.isBodyweight, isTrue, reason: '辅助为 true 时自重被拉成 true');
+    expect(after.copyWith(defaultRepMin: 5).isAssisted, isTrue, reason: 'copyWith 不传就保留');
   });
 
   group('器械备注', () {

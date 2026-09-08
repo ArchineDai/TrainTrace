@@ -1586,11 +1586,29 @@ abstract class AppLocalizations {
   /// **'自重 · 记体重'**
   String get bodyweightChipNoRecord;
 
+  /// No description provided for @assistedChip.
+  ///
+  /// In zh, this message translates to:
+  /// **'自重 {kg} kg · 辅助'**
+  String assistedChip(String kg);
+
+  /// No description provided for @assistedChipNoRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'自重 · 辅助 · 记体重'**
+  String get assistedChipNoRecord;
+
   /// No description provided for @bodyweightVolumeHint.
   ///
   /// In zh, this message translates to:
   /// **'容量按 {body} + {added} = {total} kg 计'**
   String bodyweightVolumeHint(String body, String added, String total);
+
+  /// No description provided for @assistedVolumeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'容量按 {body} − {assist} = {total} kg 计'**
+  String assistedVolumeHint(String body, String assist, String total);
 
   /// No description provided for @bodyweightVolumeHintPlain.
   ///

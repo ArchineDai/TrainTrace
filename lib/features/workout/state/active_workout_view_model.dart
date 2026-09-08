@@ -25,6 +25,8 @@ import 'rest_timer_view_model.dart';
 /// - 输入框的改动经 [editSet] debounce 300ms 写库，"完成"等关键操作先 flush
 /// - 休息计时终点经 `ref.listen(restTimerProvider)` 写到 `rest_ends_at`，
 ///   进程被杀后 [build] 从库里恢复 session 并重建计时
+/// - 组计时（计时类动作的正计时）同样只存时间戳（`running_set_*` 三列），
+///   [build] 里还原成 [RunningSet]；那组已完成 / 已删就把库里的清掉
 class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
   WorkoutRepository get _repo => ref.read(workoutRepositoryProvider);
   HistoryRepository get _history => ref.read(historyRepositoryProvider);
@@ -63,11 +65,36 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
           session.restEndsAt?.millisecondsSinceEpoch,
           totalSeconds: restSeconds,
         ));
-    return ActiveWorkoutState(
+    final restored = ActiveWorkoutState(
       session: session,
       lastByExercise: last,
       lastNoteByExercise: notes,
     );
+    return restored.copyWith(runningSet: await _restoreRunningSet(restored));
+  }
+
+  /// 从 session 行的 `running_set_*` 三列还原组计时。
+  ///
+  /// 那组还在且未完成 → 还原（页面 tick 发现已到点会振动 + 自动完成，接电话
+  /// 回来那组算完成）；组已删 / 已完成 / 缺开始时刻 → 当没在计时，顺手把库里的三列清掉。
+  Future<RunningSet?> _restoreRunningSet(ActiveWorkoutState s) async {
+    final session = s.session;
+    final setId = session.runningSetId;
+    if (setId == null) return null;
+    final set = s.setById(setId);
+    final startedAt = session.runningSetStartedAt;
+    if (set != null && !set.isCompleted && startedAt != null) {
+      return RunningSet(
+        setId: setId,
+        startedAt: startedAt,
+        targetSeconds: session.runningSetTargetSeconds,
+      );
+    }
+    await _persist(
+      () => _repo.setRunningSet(session.id, setId: null),
+      'clear stale running set',
+    );
+    return null;
   }
 
   // ── 会话 ─────────────────────────────────────────────────────
@@ -215,20 +242,29 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
   /// 开始给 [setId] 正计时。目标 = 该组此刻已填的秒数（没填就是开放计时）。
   /// 已有别的组在计时时先按"提前结束"停掉它（记实际秒数、不完成）。
   ///
-  /// 只改内存态，见 [RunningSet]。到点的判定与振动由页面层每秒 tick 驱动。
+  /// 开始时刻与目标即时落库（`running_set_*` 三列，铁律 2），见 [RunningSet]。
+  /// 到点的判定与振动由页面层每秒 tick 驱动。
   Future<void> startSetTimer(String setId) async {
     if (state.value?.runningSet != null) await stopSetTimer(complete: false);
     final s = state.value;
     final set = s?.setById(setId);
     if (s == null || set == null) return;
     await flushPending();
-    _mutate((st) => st.copyWith(
-          runningSet: RunningSet(
-            setId: setId,
-            startedAt: _clock.now(),
-            targetSeconds: set.durationSeconds,
-          ),
-        ));
+    final running = RunningSet(
+      setId: setId,
+      startedAt: _clock.now(),
+      targetSeconds: set.durationSeconds,
+    );
+    _mutate((st) => st.copyWith(runningSet: running));
+    await _persist(
+      () => _repo.setRunningSet(
+        s.session.id,
+        setId: running.setId,
+        startedAt: running.startedAt,
+        targetSeconds: running.targetSeconds,
+      ),
+      'start set timer',
+    );
   }
 
   /// 停止正在计时的组，把实际秒数写进 `durationSeconds`（四舍五入到秒，即时落库）。
@@ -243,6 +279,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     if (s == null || r == null) return;
     // 先同步清掉计时态，页面的下一次 tick 就不会再触发一遍。
     _mutate((st) => st.copyWith(clearRunningSet: true));
+    await _clearRunningSetInDb(s.session.id);
     final set = s.setById(r.setId);
     if (set == null) return; // 计时中被删了
     final ms = _clock.now().difference(r.startedAt).inMilliseconds;
@@ -260,6 +297,11 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     );
     if (complete && !set.isCompleted) await toggleComplete(r.setId);
   }
+
+  Future<void> _clearRunningSetInDb(String sessionId) => _persist(
+        () => _repo.setRunningSet(sessionId, setId: null),
+        'clear running set',
+      );
 
   /// 完成 / 取消完成。完成时开始休息计时。
   ///
@@ -334,9 +376,11 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     if (s == null || ex == null) return;
     _debounce.remove(setId)?.cancel();
     _pending.remove(setId);
-    _mutate((st) => st.copyWith(clearRunningSet: st.runningSet?.setId == setId).replaceExercise(
+    final wasRunning = s.runningSet?.setId == setId;
+    _mutate((st) => st.copyWith(clearRunningSet: wasRunning).replaceExercise(
           ex.copyWith(sets: ex.sets.where((x) => x.id != setId).toList()),
         ));
+    if (wasRunning) await _clearRunningSetInDb(s.session.id);
     await _persist(() => _repo.deleteSet(setId), 'delete set');
   }
 
@@ -372,12 +416,15 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       _debounce.remove(set.id)?.cancel();
       _pending.remove(set.id);
     }
+    final wasRunning =
+        s.exerciseOfSet(s.runningSet?.setId ?? '')?.id == workoutExerciseId;
     _mutate((st) => st.copyWith(
-          clearRunningSet: st.exerciseOfSet(st.runningSet?.setId ?? '')?.id == workoutExerciseId,
+          clearRunningSet: wasRunning,
           session: st.session.copyWith(
             exercises: st.session.exercises.where((e) => e.id != workoutExerciseId).toList(),
           ),
         ));
+    if (wasRunning) await _clearRunningSetInDb(s.session.id);
     await _persist(() => _repo.removeExercise(workoutExerciseId), 'remove exercise');
     await _normalizeSupersets();
   }

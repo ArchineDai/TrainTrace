@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
+import 'package:traintrace/core/db/seed/seed_loader.dart';
 import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/backup/data/backup_repository.dart';
 import 'package:traintrace/features/backup/models/backup_summary.dart';
@@ -78,7 +79,7 @@ void main() {
     expect(weights, contains(18.16), reason: 'REAL 列不丢精度');
     expect(summary.routineCount, 3);
     expect(summary.sessionCount, 3);
-    expect(summary.seededVersion, 7);
+    expect(summary.seededVersion, SeedLoader.seedVersion);
   });
 
   test('恢复是整体替换：目标库里多出来的东西会没掉', () async {
@@ -148,7 +149,8 @@ void main() {
     final version = await (fresh.select(fresh.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7', reason: '恢复后跑了 v5 → v7');
+    expect(version.value, '${SeedLoader.seedVersion}',
+        reason: '恢复后跑了 v5 → 当前种子版本');
   });
 
   test('inspect 拒绝：非 JSON / 别的 App / 更新的 schema / 缺表', () async {

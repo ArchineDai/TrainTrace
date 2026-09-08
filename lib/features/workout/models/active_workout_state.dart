@@ -4,10 +4,10 @@ import 'workout_session.dart';
 
 /// 正在计时的一组（计时类动作的正计时）。
 ///
-/// **纯内存、不落库**：一组计时最多一两分钟，进程在这期间被杀就当没开始过 ——
-/// 用户回来看到的是"还没计时"的那组，重按一次开始即可。这是有意的取舍：
-/// 落库要为一个几十秒的临时态加列、加恢复逻辑，换来的只是极小概率下少按一次。
-/// 这与休息计时不同（休息跨越切 App / 锁屏，必须持久化到 `rest_ends_at`）。
+/// **落库**（schema v4，铁律 2）：与休息计时的 `rest_ends_at` 同一套做法 ——
+/// `workout_sessions.running_set_id / running_set_started_at / running_set_target_seconds`
+/// 只存开始时刻与目标，不存已过秒数；进程被杀后 `ActiveWorkoutViewModel.build`
+/// 从库里还原，页面的 tick 发现已到点就振动 + 自动完成（接电话回来那组算完成）。
 class RunningSet {
   const RunningSet({
     required this.setId,
@@ -45,7 +45,8 @@ class ActiveWorkoutState {
 
   final WorkoutSession session;
 
-  /// 正在正计时的组；null 表示没有。见 [RunningSet] 的类注释（不落库）。
+  /// 正在正计时的组；null 表示没有。与 [session] 上的 `runningSet*` 三列同步落库，
+  /// 见 [RunningSet] 的类注释。
   final RunningSet? runningSet;
 
   /// 每个训练动作（key = workoutExerciseId）对应的"上次表现"，没有则为 null。

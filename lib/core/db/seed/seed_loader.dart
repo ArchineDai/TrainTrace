@@ -32,8 +32,9 @@ class SeedLoader {
   /// v5 模板从"部位三分"改为"拉 / 推 / 腿腹 / 肩背强化"四套；
   /// v6 起内置模板以种子为准，每次升级把四套的动作清单同步成种子里的样子
   ///（A 拉日改为辅助引体开头、加绳索面拉、杠铃弯举收尾）；
-  /// v7 给内置动作补 measure（平板 / 侧平板为 seconds）与 isBodyweight（自重动作）。
-  static const seedVersion = 7;
+  /// v7 给内置动作补 measure（平板 / 侧平板为 seconds）与 isBodyweight（自重动作）；
+  /// v8 辅助引体标为辅助自重（isBodyweight + isAssisted），重量列改为辅助重量。
+  static const seedVersion = 8;
 
   /// v4 及之前的三套内置模板 id，v5 迁移时软删。
   static const _v4RoutineIds = [
@@ -217,6 +218,25 @@ class SeedLoader {
     if (from < 5) await _reseedRoutines();
     if (from < 6) await _syncSeedRoutines();
     if (from < 7) await _fillExerciseMeasures();
+    if (from < 8) await _fillExerciseAssisted();
+  }
+
+  /// v7 → v8：按 id 回填 isBodyweight / isAssisted（辅助引体从"机器配重"改为
+  /// "辅助自重"）。只更新已有行，不碰用户改过的目标，不复活已删动作。
+  Future<void> _fillExerciseAssisted() async {
+    final exercises = _list(await _read(exercisesAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      for (final e in exercises) {
+        await (_db.update(_db.exercises)
+              ..where((t) => t.id.equals(e['id'] as String)))
+            .write(ExercisesCompanion(
+          isBodyweight: Value(e['isBodyweight'] == true),
+          isAssisted: Value(e['isAssisted'] == true),
+          updatedAt: Value(now),
+        ));
+      }
+    });
   }
 
   /// v6 → v7：给已存在的内置动作写入计量方式与自重标记。
@@ -359,6 +379,7 @@ class SeedLoader {
         equipmentVariants: Value(_strings(e['equipmentVariants'])),
         measure: Value(_measure(e['measure'])),
         isBodyweight: Value(e['isBodyweight'] == true),
+        isAssisted: Value(e['isAssisted'] == true),
         createdAt: now,
         updatedAt: now,
       );

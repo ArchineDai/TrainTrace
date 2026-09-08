@@ -69,6 +69,7 @@ class ExerciseRepository {
     double? minIncrementKg,
     ExerciseMeasure measure = ExerciseMeasure.reps,
     bool isBodyweight = false,
+    bool isAssisted = false,
   }) async {
     final now = _clock.nowMs();
     final id = newId();
@@ -83,7 +84,8 @@ class ExerciseRepository {
           defaultRestSeconds: Value.absentIfNull(defaultRestSeconds),
           minIncrementKg: Value.absentIfNull(minIncrementKg),
           measure: Value(measure.name),
-          isBodyweight: Value(isBodyweight),
+          isBodyweight: Value(isBodyweight || isAssisted),
+          isAssisted: Value(isAssisted),
           isCustom: const Value(true),
           createdAt: now,
           updatedAt: now,
@@ -104,7 +106,8 @@ class ExerciseRepository {
         defaultRestSeconds: Value(exercise.defaultRestSeconds),
         minIncrementKg: Value(exercise.minIncrementKg),
         measure: Value(exercise.measure.name),
-        isBodyweight: Value(exercise.isBodyweight),
+        isBodyweight: Value(exercise.isBodyweight || exercise.isAssisted),
+        isAssisted: Value(exercise.isAssisted),
         updatedAt: Value(_clock.nowMs()),
       ));
 
@@ -235,7 +238,8 @@ class ExerciseRepository {
         commonMistakes: r.commonMistakes,
         equipmentVariants: r.equipmentVariants,
         measure: ExerciseMeasure.parse(r.measure),
-        isBodyweight: r.isBodyweight,
+        isBodyweight: r.isBodyweight || r.isAssisted,
+        isAssisted: r.isAssisted,
       );
 
   static EquipmentNote _toNote(EquipmentNoteRow r) => EquipmentNote(

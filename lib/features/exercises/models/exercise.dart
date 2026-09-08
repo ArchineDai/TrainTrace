@@ -56,6 +56,7 @@ class Exercise {
     this.equipmentVariants = const [],
     this.measure = ExerciseMeasure.reps,
     this.isBodyweight = false,
+    this.isAssisted = false,
   });
 
   final String id;
@@ -84,8 +85,13 @@ class Exercise {
   /// 计量方式：次数 / 秒数 / 米数。决定组行怎么输入、容量怎么算。
   final ExerciseMeasure measure;
 
-  /// 自重动作：训练时记体重快照，重量列变"附加重量"（辅助引体填负数）。
+  /// 自重动作：训练时记体重快照，重量列变"附加重量"。
   final bool isBodyweight;
+
+  /// 辅助自重动作（辅助引体这类）：用户填的是辅助重量（正数），库里
+  /// `workout_sets.weight_kg` 存负数，容量 = (体重 − 辅助) × 次数。
+  /// 为 true 时 [isBodyweight] 也必为 true。
+  final bool isAssisted;
 
   Exercise copyWith({
     String? nameZh,
@@ -98,6 +104,7 @@ class Exercise {
     double? minIncrementKg,
     ExerciseMeasure? measure,
     bool? isBodyweight,
+    bool? isAssisted,
   }) {
     return Exercise(
       id: id,
@@ -116,6 +123,7 @@ class Exercise {
       equipmentVariants: equipmentVariants,
       measure: measure ?? this.measure,
       isBodyweight: isBodyweight ?? this.isBodyweight,
+      isAssisted: isAssisted ?? this.isAssisted,
     );
   }
 

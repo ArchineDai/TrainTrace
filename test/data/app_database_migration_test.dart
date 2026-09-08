@@ -5,10 +5,10 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 
-/// schema v2 → v3 的步进迁移契约：老库升级后新列有默认值、新表能用、老数据不丢。
+/// 步进迁移契约：老库升级后新列有默认值、新表能用、老数据不丢。
 ///
-/// 没有 drift 的 schema 导出，所以把一个 v3 库手工降回 v2（删新列、删新表、
-/// `user_version = 2`），再用 [AppDatabase] 重新打开触发 `onUpgrade`。
+/// 没有 drift 的 schema 导出，所以把一个当前版本的库手工降回旧版（删新列、删新表、
+/// 改 `user_version`），再用 [AppDatabase] 重新打开触发 `onUpgrade`。
 void main() {
   late Directory dir;
   late File file;
@@ -19,7 +19,7 @@ void main() {
   });
   tearDown(() => dir.delete(recursive: true));
 
-  test('v2 库打开后升到 v3：新列默认值、body_weights 可写、旧行保留', () async {
+  test('v2 库打开后升到 v4：新列默认值、body_weights 可写、旧行保留', () async {
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.into(v3.exercises).insert(ExercisesCompanion.insert(
           id: 'ex1',
@@ -49,8 +49,12 @@ void main() {
           weightKg: const Value(20),
           reps: const Value(12),
         ));
-    // 降回 v2。
+    // 降回 v2（先去掉 v4 的四列，再去掉 v3 的）。
     for (final sql in const [
+      'ALTER TABLE exercises DROP COLUMN is_assisted',
+      'ALTER TABLE workout_sessions DROP COLUMN running_set_id',
+      'ALTER TABLE workout_sessions DROP COLUMN running_set_started_at',
+      'ALTER TABLE workout_sessions DROP COLUMN running_set_target_seconds',
       'ALTER TABLE exercises DROP COLUMN measure',
       'ALTER TABLE exercises DROP COLUMN is_bodyweight',
       'ALTER TABLE workout_exercises DROP COLUMN superset_group',
@@ -71,6 +75,11 @@ void main() {
     expect(ex.nameZh, '高位下拉', reason: '旧行保留');
     expect(ex.measure, 'reps');
     expect(ex.isBodyweight, isFalse);
+    expect(ex.isAssisted, isFalse);
+    final session = await upgraded.select(upgraded.workoutSessions).getSingle();
+    expect(session.runningSetId, isNull);
+    expect(session.runningSetStartedAt, isNull);
+    expect(session.runningSetTargetSeconds, isNull);
     final we = await upgraded.select(upgraded.workoutExercises).getSingle();
     expect(we.supersetGroup, isNull);
     expect(we.bodyWeightKg, isNull);
@@ -89,6 +98,68 @@ void main() {
         .customSelect('PRAGMA user_version')
         .getSingle()
         .then((r) => r.data.values.first);
-    expect(version, 3);
+    expect(version, 4);
+  });
+
+  test('v3 库打开后升到 v4：is_assisted 默认 false、running_set_* 三列可空、旧行保留', () async {
+    final v4 = AppDatabase(NativeDatabase(file));
+    await v4.into(v4.exercises).insert(ExercisesCompanion.insert(
+          id: 'ex_assisted_pullup',
+          nameZh: '辅助引体向上',
+          muscleGroup: 'back',
+          equipmentType: 'machine',
+          isBodyweight: const Value(true),
+          createdAt: 1000,
+          updatedAt: 1000,
+        ));
+    await v4.into(v4.workoutSessions).insert(WorkoutSessionsCompanion.insert(
+          id: 's1',
+          startedAt: 1000,
+          status: 'inProgress',
+          restEndsAt: const Value(5000),
+          updatedAt: 1000,
+        ));
+    // 降回 v3：只去掉 v4 加的四列。
+    for (final sql in const [
+      'ALTER TABLE exercises DROP COLUMN is_assisted',
+      'ALTER TABLE workout_sessions DROP COLUMN running_set_id',
+      'ALTER TABLE workout_sessions DROP COLUMN running_set_started_at',
+      'ALTER TABLE workout_sessions DROP COLUMN running_set_target_seconds',
+      'PRAGMA user_version = 3',
+    ]) {
+      await v4.customStatement(sql);
+    }
+    await v4.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    addTearDown(upgraded.close);
+
+    final ex = await upgraded.select(upgraded.exercises).getSingle();
+    expect(ex.nameZh, '辅助引体向上', reason: '旧行保留');
+    expect(ex.isBodyweight, isTrue, reason: 'v3 已有的列不受影响');
+    expect(ex.isAssisted, isFalse, reason: '新列默认 false，种子 v8 再按 id 回填');
+    final session = await upgraded.select(upgraded.workoutSessions).getSingle();
+    expect(session.restEndsAt, 5000);
+    expect(session.runningSetId, isNull);
+    expect(session.runningSetStartedAt, isNull);
+    expect(session.runningSetTargetSeconds, isNull);
+
+    // 新列能写能读。
+    await (upgraded.update(upgraded.workoutSessions)
+          ..where((t) => t.id.equals('s1')))
+        .write(const WorkoutSessionsCompanion(
+      runningSetId: Value('set1'),
+      runningSetStartedAt: Value(7000),
+      runningSetTargetSeconds: Value(50),
+    ));
+    final after = await upgraded.select(upgraded.workoutSessions).getSingle();
+    expect(after.runningSetId, 'set1');
+    expect(after.runningSetStartedAt, 7000);
+    expect(after.runningSetTargetSeconds, 50);
+    final version = await upgraded
+        .customSelect('PRAGMA user_version')
+        .getSingle()
+        .then((r) => r.data.values.first);
+    expect(version, 4);
   });
 }

@@ -29,12 +29,26 @@ void main() {
     expect(row.defaultRepMax, 15);
   });
 
-  test('schema v3：动作 measure 默认 reps、is_bodyweight 默认 false', () async {
-    expect(db.schemaVersion, 3);
+  test('schema v4：动作 measure 默认 reps、is_bodyweight / is_assisted 默认 false', () async {
+    expect(db.schemaVersion, 4);
     await db.into(db.exercises).insert(exercise('ex1'));
     final row = await db.select(db.exercises).getSingle();
     expect(row.measure, 'reps');
     expect(row.isBodyweight, isFalse);
+    expect(row.isAssisted, isFalse);
+  });
+
+  test('schema v4：训练的 running_set_* 三列默认为空', () async {
+    await db.into(db.workoutSessions).insert(WorkoutSessionsCompanion.insert(
+          id: 's1',
+          startedAt: 1000,
+          status: 'inProgress',
+          updatedAt: 1000,
+        ));
+    final row = await db.select(db.workoutSessions).getSingle();
+    expect(row.runningSetId, isNull);
+    expect(row.runningSetStartedAt, isNull);
+    expect(row.runningSetTargetSeconds, isNull);
   });
 
   test('schema v3：训练动作与组的新列默认为空', () async {

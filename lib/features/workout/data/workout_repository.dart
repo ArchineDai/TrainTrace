@@ -86,6 +86,9 @@ class WorkoutRepository {
       status: SessionStatus.parse(s.status),
       restEndsAt: _dt(s.restEndsAt),
       note: s.note,
+      runningSetId: s.runningSetId,
+      runningSetStartedAt: _dt(s.runningSetStartedAt),
+      runningSetTargetSeconds: s.runningSetTargetSeconds,
       exercises: await _loadExercises(id),
     );
   }
@@ -134,6 +137,24 @@ class WorkoutRepository {
         ),
       );
 
+  /// 正在计时的组。[setId] 为 null 即清空三列；否则三列一起写
+  /// （[startedAt] 经 clock 取，[targetSeconds] 为 null 表示开放计时）。
+  Future<void> setRunningSet(
+    String sessionId, {
+    required String? setId,
+    DateTime? startedAt,
+    int? targetSeconds,
+  }) =>
+      (_db.update(_db.workoutSessions)..where((t) => t.id.equals(sessionId))).write(
+        WorkoutSessionsCompanion(
+          runningSetId: Value(setId),
+          runningSetStartedAt:
+              Value(setId == null ? null : startedAt?.millisecondsSinceEpoch),
+          runningSetTargetSeconds: Value(setId == null ? null : targetSeconds),
+          updatedAt: Value(_clock.nowMs()),
+        ),
+      );
+
   /// 结束训练：清理从未填写过的空组（唯一的物理删除），写 completed。
   Future<WorkoutSession> finishSession(String sessionId, {String? note}) async {
     final now = _clock.nowMs();
@@ -160,6 +181,9 @@ class WorkoutRepository {
         status: Value(SessionStatus.completed.name),
         endedAt: Value(now),
         restEndsAt: const Value(null),
+        runningSetId: const Value(null),
+        runningSetStartedAt: const Value(null),
+        runningSetTargetSeconds: const Value(null),
         note: Value.absentIfNull(note),
         updatedAt: Value(now),
       ));
@@ -175,6 +199,9 @@ class WorkoutRepository {
       status: Value(SessionStatus.discarded.name),
       endedAt: Value(now),
       restEndsAt: const Value(null),
+      runningSetId: const Value(null),
+      runningSetStartedAt: const Value(null),
+      runningSetTargetSeconds: const Value(null),
       deletedAt: Value(now),
       updatedAt: Value(now),
     ));

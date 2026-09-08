@@ -654,6 +654,185 @@ void main() {
     expect(container.read(activeWorkoutProvider).value!.runningSet, isNull);
   });
 
+  // ── 组计时落库（schema v4，铁律 2）────────────────────────────
+
+  Future<WorkoutSessionRow> sessionRow(String id) =>
+      (db.select(db.workoutSessions)..where((t) => t.id.equals(id))).getSingle();
+
+  test('startSetTimer 三列即时落库；stopSetTimer 清掉', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final sessionId = container.read(activeWorkoutProvider).value!.session.id;
+    final setId = ex.sets[0].id;
+    vm.editSet(setId, durationSeconds: 50);
+
+    await vm.startSetTimer(setId);
+    var row = await sessionRow(sessionId);
+    expect(row.runningSetId, setId);
+    expect(row.runningSetStartedAt, clock.nowMs());
+    expect(row.runningSetTargetSeconds, 50);
+
+    clock.advance(const Duration(seconds: 20));
+    await vm.stopSetTimer(complete: false);
+    row = await sessionRow(sessionId);
+    expect(row.runningSetId, isNull);
+    expect(row.runningSetStartedAt, isNull);
+    expect(row.runningSetTargetSeconds, isNull);
+
+    // 开放计时：目标列为 null。
+    final b = ex.sets[1].id;
+    await vm.startSetTimer(b);
+    row = await sessionRow(sessionId);
+    expect(row.runningSetId, b);
+    expect(row.runningSetTargetSeconds, isNull);
+  });
+
+  test('进程被杀后：新容器从库恢复 runningSet，clock 走到点后 isDue', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final sessionId = container.read(activeWorkoutProvider).value!.session.id;
+    final setId = ex.sets[0].id;
+    vm.editSet(setId, durationSeconds: 50);
+    await vm.startSetTimer(setId);
+    final startedAt = clock.now();
+    container.dispose();
+
+    // "重启"：新容器、同一个库、时间过去 20 秒。
+    clock.advance(const Duration(seconds: 20));
+    container = makeContainer();
+    final restored = await container.read(activeWorkoutProvider.future);
+    expect(restored, isNotNull);
+    expect(restored!.session.id, sessionId);
+    final r = restored.runningSet;
+    expect(r, isNotNull, reason: '组计时从 running_set_* 三列还原');
+    expect(r!.setId, setId);
+    expect(r.startedAt, startedAt, reason: '只存开始时刻，不存已过秒数');
+    expect(r.targetSeconds, 50);
+    expect(r.elapsedSeconds(clock.now()), 20, reason: '已过秒数由 clock 重算');
+    expect(r.isDue(clock.now()), isFalse);
+
+    clock.advance(const Duration(seconds: 30));
+    expect(r.isDue(clock.now()), isTrue, reason: '页面 tick 看到到点就振动 + 自动完成');
+
+    // 到点后页面调 stopSetTimer(complete: true)：记目标秒数、完成、库里清空。
+    await container.read(activeWorkoutProvider.notifier).stopSetTimer(complete: true);
+    final st = container.read(activeWorkoutProvider).value!;
+    expect(st.runningSet, isNull);
+    expect(st.setById(setId)!.durationSeconds, 50);
+    expect(st.setById(setId)!.isCompleted, isTrue);
+    expect((await sessionRow(sessionId)).runningSetId, isNull);
+  });
+
+  test('恢复时那组已完成 → runningSet 为 null，库里三列被清', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final sessionId = container.read(activeWorkoutProvider).value!.session.id;
+    final setId = ex.sets[0].id;
+    vm.editSet(setId, durationSeconds: 50);
+    await vm.startSetTimer(setId);
+    // 绕过 VM 直接把那组标完成（模拟库里留下了不一致的残留）。
+    await container.read(workoutRepositoryProvider).setCompleted(setId, true);
+    expect((await sessionRow(sessionId)).runningSetId, setId, reason: '残留仍在');
+    container.dispose();
+
+    container = makeContainer();
+    final restored = await container.read(activeWorkoutProvider.future);
+    expect(restored!.runningSet, isNull);
+    final row = await sessionRow(sessionId);
+    expect(row.runningSetId, isNull);
+    expect(row.runningSetStartedAt, isNull);
+    expect(row.runningSetTargetSeconds, isNull);
+  });
+
+  test('恢复时那组已删 → runningSet 为 null，库里三列被清', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final sessionId = container.read(activeWorkoutProvider).value!.session.id;
+    final setId = ex.sets[0].id;
+    await vm.startSetTimer(setId);
+    // 绕过 VM 直接物理删那组。
+    await container.read(workoutRepositoryProvider).deleteSet(setId);
+    container.dispose();
+
+    container = makeContainer();
+    final restored = await container.read(activeWorkoutProvider.future);
+    expect(restored!.runningSet, isNull);
+    expect(restored.setById(setId), isNull);
+    final row = await sessionRow(sessionId);
+    expect(row.runningSetId, isNull);
+    expect(row.runningSetStartedAt, isNull);
+    expect(row.runningSetTargetSeconds, isNull);
+  });
+
+  test('deleteSet / removeExercise 清掉计时中的组时，库里三列一起清', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final sessionId = container.read(activeWorkoutProvider).value!.session.id;
+
+    await vm.startSetTimer(ex.sets[0].id);
+    expect((await sessionRow(sessionId)).runningSetId, ex.sets[0].id);
+    await vm.deleteSet(ex.sets[0].id);
+    expect(container.read(activeWorkoutProvider).value!.runningSet, isNull);
+    expect((await sessionRow(sessionId)).runningSetId, isNull);
+
+    await vm.startSetTimer(ex.sets[1].id);
+    expect((await sessionRow(sessionId)).runningSetId, ex.sets[1].id);
+    await vm.removeExercise(ex.id);
+    expect(container.read(activeWorkoutProvider).value!.runningSet, isNull);
+    final row = await sessionRow(sessionId);
+    expect(row.runningSetId, isNull);
+    expect(row.runningSetStartedAt, isNull);
+    expect(row.runningSetTargetSeconds, isNull);
+  });
+
+  test('finish 时库里的 running_set_* 一起清', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final sessionId = container.read(activeWorkoutProvider).value!.session.id;
+    vm.editSet(ex.sets[0].id, durationSeconds: 45);
+    await vm.toggleComplete(ex.sets[0].id);
+    vm.editSet(ex.sets[1].id, durationSeconds: 40);
+    await vm.startSetTimer(ex.sets[1].id);
+
+    final done = await vm.finish();
+    expect(done!.runningSetId, isNull);
+    expect((await sessionRow(sessionId)).runningSetId, isNull);
+  });
+
+  // ── 辅助自重（schema v4）──────────────────────────────────────
+
+  test('辅助自重：weight_kg 存负数，容量 (72 − 10) × 8；沿用上次负数原样抄', () async {
+    await container.read(activeWorkoutProvider.future);
+    await container.read(bodyWeightRepositoryProvider).add(72);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    await vm.start();
+    final assisted =
+        (await container.read(exerciseRepositoryProvider).getById('ex_assisted_pullup'))!;
+    expect(assisted.isAssisted, isTrue);
+    expect(assisted.isBodyweight, isTrue);
+    await vm.addExercise(assisted);
+
+    var st = container.read(activeWorkoutProvider).value!;
+    final we = st.session.exercises.single;
+    expect(we.bodyWeightKg, 72, reason: '辅助自重也打体重快照');
+
+    // 页面把键盘上的 10 取负写进来。
+    vm.editSet(we.sets[0].id, weightKg: -10, reps: 8);
+    await vm.toggleComplete(we.sets[0].id);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.exerciseById(we.id)!.volumeKg, 62 * 8);
+    expect(WorkoutSet.volumeOf(bodyWeightKg: 72, weightKg: -10, reps: 8), 62 * 8);
+
+    // 结束后再练：上次的 −10 原样预填，不做符号转换。
+    await vm.finish();
+    clock.advance(const Duration(days: 2));
+    await vm.start();
+    await vm.addExercise(assisted);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.session.exercises.single.sets.map((s) => s.weightKg), everyElement(-10));
+    expect(st.session.exercises.single.sets.first.reps, 8);
+  });
+
   test('finish：只填过秒数的组算"填过"，不被当空组清掉', () async {
     final ex = await startWithPlank();
     final vm = container.read(activeWorkoutProvider.notifier);

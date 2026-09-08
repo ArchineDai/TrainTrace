@@ -266,6 +266,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       last: st.lastByExercise[ex.id],
       lastNote: st.lastNoteByExercise[ex.id],
       isBodyweight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.isBodyweight ?? false,
+      isAssisted: ref.watch(exerciseByIdProvider(ex.exerciseId))?.isAssisted ?? false,
       now: now,
       focusedSetId: _focusSetId,
       focusedField: _focusField,
@@ -299,12 +300,21 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
 
   // ── 焦点与键盘 ─────────────────────────────────────────────────
 
+  /// 辅助自重动作（`Exercise.isAssisted`）：键盘上填的是正的辅助重量，库里存负数。
+  /// 编辑框显示绝对值，写库时取负（见 `WorkoutSet.volumeOf` 的存储约定）。
+  bool _isAssistedSet(String setId) {
+    final ex = ref.read(activeWorkoutProvider).value?.exerciseOfSet(setId);
+    if (ex == null) return false;
+    return ref.read(exerciseByIdProvider(ex.exerciseId))?.isAssisted ?? false;
+  }
+
   void _focus(String setId, SetField field) {
     final st = ref.read(activeWorkoutProvider).value;
     final set = st?.setById(setId);
     if (set == null) return;
     if (st?.runningSet?.setId == setId) return; // 计时中的组用 ✕ 结束，不进编辑
     if (set.isCompleted) _vm.toggleComplete(setId); // 点已完成组的字段 = 解锁
+    final assisted = field == SetField.weight && _isAssistedSet(setId);
     setState(() {
       _focusSetId = setId;
       _focusField = field;
@@ -312,7 +322,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       _editing = switch (field) {
         SetField.weight => set.weightKg == null
             ? ''
-            : NumericInput.format(set.weightKg!, allowDecimal: true),
+            : NumericInput.format(
+                assisted ? set.weightKg!.abs() : set.weightKg!,
+                allowDecimal: true,
+              ),
         SetField.reps => set.reps?.toString() ?? '',
         SetField.duration => set.durationSeconds?.toString() ?? '',
       };
@@ -378,7 +391,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     });
     final v = NumericInput.parse(text);
     if (_focusField == SetField.weight) {
-      _vm.editSet(setId, weightKg: v, clearWeight: v == null);
+      // 辅助自重：键盘填的正数是辅助重量，落库为负数（−10 = 辅助 10 kg）。
+      final stored = v != null && _isAssistedSet(setId) ? -v.abs() : v;
+      _vm.editSet(setId, weightKg: stored, clearWeight: v == null);
     } else if (_focusField == SetField.duration) {
       _vm.editSet(setId, durationSeconds: v?.round(), clearDurationSeconds: v == null);
     } else {

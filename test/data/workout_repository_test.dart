@@ -108,7 +108,60 @@ void main() {
         .any((r) => r.id == we.sets[1].id), isFalse);
   });
 
-  test('finishSession：只清从未填过的空组，写 completed 并清 rest_ends_at', () async {
+  test('setRunningSet：三列一起写、一起清；只存开始时刻不存已过秒数', () async {
+    final s = await startA();
+    final setId = s.exercises.first.sets[0].id;
+    expect(s.runningSetId, isNull);
+    expect(s.runningSetStartedAt, isNull);
+    expect(s.runningSetTargetSeconds, isNull);
+
+    await repo.setRunningSet(s.id, setId: setId, startedAt: clock.now(), targetSeconds: 50);
+    var after = (await repo.getSession(s.id))!;
+    expect(after.runningSetId, setId);
+    expect(after.runningSetStartedAt, clock.now());
+    expect(after.runningSetTargetSeconds, 50);
+    final row = await (db.select(db.workoutSessions)..where((t) => t.id.equals(s.id))).getSingle();
+    expect(row.updatedAt, clock.nowMs());
+
+    // 开放计时：目标为 null。
+    clock.advance(const Duration(seconds: 12));
+    await repo.setRunningSet(s.id, setId: setId, startedAt: clock.now());
+    after = (await repo.getSession(s.id))!;
+    expect(after.runningSetStartedAt, clock.now());
+    expect(after.runningSetTargetSeconds, isNull);
+
+    // setId 为 null 即清空三列，就算传了别的参数也不写。
+    await repo.setRunningSet(s.id, setId: null, startedAt: clock.now(), targetSeconds: 30);
+    after = (await repo.getSession(s.id))!;
+    expect(after.runningSetId, isNull);
+    expect(after.runningSetStartedAt, isNull);
+    expect(after.runningSetTargetSeconds, isNull);
+  });
+
+  test('WorkoutSession.copyWith：clearRunningSet 一次清三个字段', () async {
+    final s = (await startA()).copyWith(
+      runningSetId: 'x',
+      runningSetStartedAt: clock.now(),
+      runningSetTargetSeconds: 40,
+    );
+    expect(s.copyWith(note: 'n').runningSetId, 'x', reason: '不传就保留');
+    final cleared = s.copyWith(clearRunningSet: true);
+    expect(cleared.runningSetId, isNull);
+    expect(cleared.runningSetStartedAt, isNull);
+    expect(cleared.runningSetTargetSeconds, isNull);
+  });
+
+  test('discardSession 清空 running_set_* 三列', () async {
+    final s = await startA();
+    await repo.setRunningSet(s.id, setId: s.exercises.first.sets[0].id, startedAt: clock.now());
+    await repo.discardSession(s.id);
+    final row = await (db.select(db.workoutSessions)..where((t) => t.id.equals(s.id))).getSingle();
+    expect(row.runningSetId, isNull);
+    expect(row.runningSetStartedAt, isNull);
+    expect(row.runningSetTargetSeconds, isNull);
+  });
+
+  test('finishSession：只清从未填过的空组，写 completed 并清 rest_ends_at / running_set_*', () async {
     final s = await startA();
     final lat = s.exercises[0];
     final row = s.exercises[1];
@@ -118,7 +171,9 @@ void main() {
     await repo.updateSet(lat.sets[1].id, weightKg: 20); // 填了重量没完成，保留
     await repo.setCompleted(row.sets[0].id, true); // 空但已完成，保留
     await repo.setRestEndsAt(s.id, clock.now().add(const Duration(seconds: 90)));
+    await repo.setRunningSet(s.id, setId: row.sets[1].id, startedAt: clock.now(), targetSeconds: 45);
     expect((await repo.getSession(s.id))!.restEndsAt, isNotNull);
+    expect((await repo.getSession(s.id))!.runningSetId, row.sets[1].id);
 
     clock.advance(const Duration(minutes: 50));
     final done = await repo.finishSession(s.id, note: '状态不错');
@@ -126,6 +181,9 @@ void main() {
     expect(done.status, SessionStatus.completed);
     expect(done.endedAt, clock.now());
     expect(done.restEndsAt, isNull);
+    expect(done.runningSetId, isNull);
+    expect(done.runningSetStartedAt, isNull);
+    expect(done.runningSetTargetSeconds, isNull);
     expect(done.note, '状态不错');
     expect(done.exercises[0].sets.length, 2, reason: '第 3 组空且未完成被清');
     expect(done.exercises[1].sets.length, 1);
@@ -292,6 +350,8 @@ void main() {
     expect(WorkoutSet.volumeOf(weightKg: 5, reps: 10, bodyWeightKg: 70), 750);
     expect(WorkoutSet.volumeOf(weightKg: -20, reps: 10, bodyWeightKg: 70), 500);
     expect(WorkoutSet.volumeOf(weightKg: 5, reps: null, bodyWeightKg: 70), 0);
+    // 辅助自重的存储约定：weight_kg 存负数，−10 = 辅助 10 kg，(72 − 10) × 8。
+    expect(WorkoutSet.volumeOf(weightKg: -10, reps: 8, bodyWeightKg: 72), 62 * 8);
   });
 
   test('getInProgress 有多个时取最新的', () async {

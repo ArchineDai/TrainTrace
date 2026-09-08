@@ -64,6 +64,7 @@ class WorkoutExerciseCard extends StatelessWidget {
     this.supersetTag,
     this.canLinkNext = false,
     this.isBodyweight = false,
+    this.isAssisted = false,
     this.measure = ExerciseMeasure.reps,
     this.runningSetId,
     this.runningElapsed,
@@ -118,6 +119,13 @@ class WorkoutExerciseCard extends StatelessWidget {
   /// 自重动作（`Exercise.isBodyweight`）：器械芯片换成体重芯片，重量列是附加重量
   /// （前面带 `+`），组下方说明容量怎么算。页面按 exerciseId 查动作后传入。
   final bool isBodyweight;
+
+  /// 辅助自重动作（`Exercise.isAssisted`，此时 [isBodyweight] 也为 true）：重量列是
+  /// 辅助重量，库里存负数，这里显示绝对值并带 `−` 前缀；芯片与容量说明换成辅助口径。
+  final bool isAssisted;
+
+  /// 重量列前缀：辅助 `−`（U+2212）、自重 `+`、其它无。
+  String? get _weightPrefix => isAssisted ? '−' : (isBodyweight ? '+' : null);
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +195,7 @@ class WorkoutExerciseCard extends StatelessWidget {
                 if (isBodyweight)
                   _BodyWeightChip(
                     kg: exercise.bodyWeightKg,
+                    assisted: isAssisted,
                     onTap: () => onAction(ExerciseCardAction.recordBodyWeight),
                   )
                 else if (timed)
@@ -308,7 +317,7 @@ class WorkoutExerciseCard extends StatelessWidget {
                   onLongPressWeight: onLongPressWeight == null
                       ? null
                       : () => onLongPressWeight!(exercise.sets[i].id),
-                  weightPrefix: isBodyweight ? '+' : null,
+                  weightPrefix: _weightPrefix,
                   measure: measure,
                   durationText: _text(exercise.sets[i], SetField.duration),
                   runningElapsed:
@@ -376,6 +385,7 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   /// 自重动作的容量说明。有体重快照时写明「72 + 5 = 77 kg」，附加重量取最后一组
   /// 填了的值；各组都没填附加重量就只写体重；没有快照提示先去记体重。
+  /// 辅助自重存的是负数，写成「72 − 10 = 62 kg」。
   String _bodyweightHint(AppLocalizations l10n) {
     final body = exercise.bodyWeightKg;
     if (body == null) return l10n.bodyweightNoWeightHint;
@@ -386,6 +396,13 @@ class WorkoutExerciseCard extends StatelessWidget {
     if (added == null || added == 0) {
       return l10n.bodyweightVolumeHintPlain(Formatters.kg(body));
     }
+    if (isAssisted && added < 0) {
+      return l10n.assistedVolumeHint(
+        Formatters.kg(body),
+        Formatters.kg(-added),
+        Formatters.kg(body + added),
+      );
+    }
     return l10n.bodyweightVolumeHint(
       Formatters.kg(body),
       Formatters.kg(added),
@@ -393,12 +410,16 @@ class WorkoutExerciseCard extends StatelessWidget {
     );
   }
 
+  /// 辅助自重的重量库里是负数，显示绝对值（`−` 由 [_weightPrefix] 补在前面）。
   String _text(WorkoutSet set, SetField field) {
     if (focusedSetId == set.id && focusedField == field) return editingText;
     return switch (field) {
       SetField.weight => set.weightKg == null
           ? ''
-          : NumericInput.format(set.weightKg!, allowDecimal: true),
+          : NumericInput.format(
+              isAssisted ? set.weightKg!.abs() : set.weightKg!,
+              allowDecimal: true,
+            ),
       SetField.reps => set.reps?.toString() ?? '',
       SetField.duration => set.durationSeconds?.toString() ?? '',
     };
@@ -532,12 +553,18 @@ class _LabelChip extends StatelessWidget {
   }
 }
 
-/// 自重动作的体重芯片，替代器械芯片。有体重记录显示「自重 72 kg」，没有就提示去记；
-/// 点击打开体重弹层。primaryContainer 底让它和灰底的器械芯片一眼可分。
+/// 自重动作的体重芯片，替代器械芯片。有体重记录显示「自重 72 kg」（辅助自重
+/// 「自重 72 kg · 辅助」），没有就提示去记；点击打开体重弹层。
+/// primaryContainer 底让它和灰底的器械芯片一眼可分。
 class _BodyWeightChip extends StatelessWidget {
-  const _BodyWeightChip({required this.kg, required this.onTap});
+  const _BodyWeightChip({
+    required this.kg,
+    required this.onTap,
+    this.assisted = false,
+  });
 
   final double? kg;
+  final bool assisted;
   final VoidCallback onTap;
 
   @override
@@ -554,8 +581,10 @@ class _BodyWeightChip extends StatelessWidget {
         ),
         label: Text(
           kg == null
-              ? l10n.bodyweightChipNoRecord
-              : l10n.bodyweightChip(Formatters.kg(kg!)),
+              ? (assisted ? l10n.assistedChipNoRecord : l10n.bodyweightChipNoRecord)
+              : (assisted
+                  ? l10n.assistedChip(Formatters.kg(kg!))
+                  : l10n.bodyweightChip(Formatters.kg(kg!))),
           style: TextStyle(
             fontSize: AppTextSize.xs,
             color: scheme.onPrimaryContainer,

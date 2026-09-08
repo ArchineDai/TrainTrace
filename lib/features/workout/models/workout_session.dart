@@ -46,7 +46,8 @@ class WorkoutSet {
   final int setIndex;
   final SetType setType;
 
-  /// 重量（kg）。自重动作里是附加重量，辅助引体为负数。
+  /// 重量（kg）。自重动作里是附加重量；辅助自重动作（`Exercise.isAssisted`）
+  /// 存负数 —— −10 = 辅助 10 kg，见 [volumeOf]。
   final double? weightKg;
 
   /// 次数；distance 类动作里存米数。
@@ -78,6 +79,12 @@ class WorkoutSet {
   /// - 没有次数 → 0（计时类动作不算容量）
   /// - 没有体重快照 → 重量 × 次数，重量缺就是 0（旧行为）
   /// - 有体重快照 → (体重 + 附加重量) × 次数，附加重量缺按 0
+  ///
+  /// **辅助自重的存储约定**（`Exercise.isAssisted`）：`weight_kg` 存**负数**，
+  /// −10 表示辅助 10 kg。用户在键盘上填的是正的辅助重量，页面取负再写库；
+  /// 展示取绝对值并加 `−` 前缀。这样容量 (72 − 10) × 8 不用另写一条分支，
+  /// CSV / 历史摘要 / `setsSummary(signed:)` 自然显示 −10 kg，建议引擎的
+  /// "加 2.5 kg"对辅助动作就是 −10 → −7.5 = 辅助变少，进步方向也对。
   static double volumeOf({
     required double? weightKg,
     required int? reps,
@@ -237,6 +244,9 @@ class WorkoutSession {
     required this.status,
     this.restEndsAt,
     this.note,
+    this.runningSetId,
+    this.runningSetStartedAt,
+    this.runningSetTargetSeconds,
     this.exercises = const [],
   });
 
@@ -253,6 +263,14 @@ class WorkoutSession {
   /// 休息倒计时终点。只存终点不存剩余。
   final DateTime? restEndsAt;
   final String? note;
+
+  /// 正在正计时的组（计时类动作）。三个字段同生共死，没有组在计时时全为 null；
+  /// 只存开始时刻不存已过秒数，恢复时由 clock 重算（与 [restEndsAt] 同一套做法）。
+  final String? runningSetId;
+  final DateTime? runningSetStartedAt;
+
+  /// 目标秒数；开放计时为 null。
+  final int? runningSetTargetSeconds;
   final List<WorkoutExercise> exercises;
 
   bool get isInProgress => status == SessionStatus.inProgress;
@@ -271,8 +289,12 @@ class WorkoutSession {
     SessionStatus? status,
     DateTime? restEndsAt,
     String? note,
+    String? runningSetId,
+    DateTime? runningSetStartedAt,
+    int? runningSetTargetSeconds,
     List<WorkoutExercise>? exercises,
     bool clearRestEndsAt = false,
+    bool clearRunningSet = false,
   }) {
     return WorkoutSession(
       id: id,
@@ -284,6 +306,13 @@ class WorkoutSession {
       status: status ?? this.status,
       restEndsAt: clearRestEndsAt ? null : (restEndsAt ?? this.restEndsAt),
       note: note ?? this.note,
+      runningSetId: clearRunningSet ? null : (runningSetId ?? this.runningSetId),
+      runningSetStartedAt: clearRunningSet
+          ? null
+          : (runningSetStartedAt ?? this.runningSetStartedAt),
+      runningSetTargetSeconds: clearRunningSet
+          ? null
+          : (runningSetTargetSeconds ?? this.runningSetTargetSeconds),
       exercises: exercises ?? this.exercises,
     );
   }

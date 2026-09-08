@@ -887,8 +887,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bodyweightChipNoRecord => 'Bodyweight · log weight';
 
   @override
+  String assistedChip(String kg) {
+    return 'Bodyweight $kg kg · assisted';
+  }
+
+  @override
+  String get assistedChipNoRecord => 'Bodyweight · assisted · log weight';
+
+  @override
   String bodyweightVolumeHint(String body, String added, String total) {
     return 'Volume counts $body + $added = $total kg';
+  }
+
+  @override
+  String assistedVolumeHint(String body, String assist, String total) {
+    return 'Volume counts $body − $assist = $total kg';
   }
 
   @override

@@ -68,7 +68,8 @@ class SetRow extends StatelessWidget {
 
   /// 长按重量框（杠铃动作打开板片计算器）。null 不响应长按。
   final VoidCallback? onLongPressWeight;
-  /// 重量数字前的符号。自重动作传 `'+'`（重量列是附加重量）；空值与负数不加。
+  /// 重量数字前的符号。自重动作传 `'+'`（重量列是附加重量），辅助自重传 `'−'`
+  /// （U+2212，[weightText] 由父级给绝对值）；空值与以 ASCII `-` 开头的文本不加。
   final String? weightPrefix;
   bool get _running => runningElapsed != null;
 
@@ -210,7 +211,8 @@ class _FieldBox extends StatelessWidget {
   final String text;
   final String unit;
 
-  /// 数字前的小号符号（自重动作的 `+`）。空值与负数不显示。
+  /// 数字前的小号符号（自重动作的 `+`、辅助自重的 `−`）。空值与以 ASCII `-`
+  /// 开头的负数文本不显示 —— 父级传的 `−` 是 U+2212，不会被这条判断吃掉。
   final String? prefix;
   final bool focused;
   final bool completed;

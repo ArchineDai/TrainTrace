@@ -40,9 +40,10 @@ class AppDatabase extends _$AppDatabase {
   /// v1 首版；v2 动作加 cues / common_mistakes / equipment_variants，
   /// 器械备注加 photo_path；v3 超级组 / 体重与自重 / 计时类动作：
   /// 动作加 measure、is_bodyweight，训练动作加 superset_group、body_weight_kg，
-  /// 组加 duration_seconds，新表 body_weights。
+  /// 组加 duration_seconds，新表 body_weights；v4 动作加 is_assisted（辅助自重），
+  /// 训练加 running_set_id / running_set_started_at / running_set_target_seconds（组计时落库）。
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -63,6 +64,14 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(workoutSets, workoutSets.durationSeconds);
             await m.createTable(bodyWeights);
             await m.createIndex(idxBodyWeightsMeasured);
+          }
+          if (from < 4) {
+            await m.addColumn(exercises, exercises.isAssisted);
+            await m.addColumn(workoutSessions, workoutSessions.runningSetId);
+            await m.addColumn(
+                workoutSessions, workoutSessions.runningSetStartedAt);
+            await m.addColumn(
+                workoutSessions, workoutSessions.runningSetTargetSeconds);
           }
         },
         beforeOpen: (details) async {

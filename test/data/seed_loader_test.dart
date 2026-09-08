@@ -24,7 +24,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7');
+    expect(version.value, '8');
   });
 
   test('种子 v4 → v5：旧三套模板软删、四套新模板插入、自建模板不动、历史不受影响', () async {
@@ -82,7 +82,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7');
+    expect(version.value, '8');
   });
 
   test('v5 起的迁移重跑不会把模板插两遍：模板数不变，未删动作行数不变', () async {
@@ -162,7 +162,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7');
+    expect(version.value, '8');
   });
 
   test('种子 v6 → v7：补写 measure / isBodyweight，不动用户改过的目标，不复活已删动作', () async {
@@ -197,20 +197,56 @@ void main() {
     final side = rows.singleWhere((r) => r.id == 'ex_side_plank');
     expect(side.deletedAt, 1, reason: '已删的不复活');
     expect(side.measure, 'seconds', reason: '字段照样补，复活时就是对的');
-    expect(rows.where((r) => r.isBodyweight).length, 9);
+    expect(rows.where((r) => r.isBodyweight).length, 10);
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7');
+    expect(version.value, '8');
   });
 
-  test('首次导入时种子里的 measure / isBodyweight 直接落库', () async {
+  test('种子 v7 → v8：按 id 回填 isAssisted，辅助引体连带 isBodyweight，不动用户改过的目标', () async {
+    final loader = seedLoader(db, fixedClock());
+    await loader.seedIfNeeded();
+    // 模拟一台 v7 用户机：is_assisted 还是 schema 迁移给的默认值 false，
+    // 辅助引体在 v7 种子里也不是自重；改过一个目标、删过一个动作。
+    await db.update(db.exercises).write(const ExercisesCompanion(isAssisted: Value(false)));
+    await (db.update(db.exercises)..where((t) => t.id.equals('ex_assisted_pullup')))
+        .write(const ExercisesCompanion(isBodyweight: Value(false), defaultRepMin: Value(6)));
+    await (db.update(db.exercises)..where((t) => t.id.equals('ex_pullup')))
+        .write(const ExercisesCompanion(deletedAt: Value(1)));
+    await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
+        .write(const AppSettingsCompanion(value: Value('7')));
+
+    expect(await loader.seedIfNeeded(), isTrue);
+
+    final rows = await db.select(db.exercises).get();
+    expect(rows.length, 48, reason: '只更新已有行，不插新行');
+    final assisted = rows.singleWhere((r) => r.id == 'ex_assisted_pullup');
+    expect(assisted.isAssisted, isTrue);
+    expect(assisted.isBodyweight, isTrue, reason: '辅助必为自重');
+    expect(assisted.equipmentType, 'machine', reason: '器械类型保持');
+    expect(assisted.defaultRepMin, 6, reason: '用户改过的目标保留');
+    final pullup = rows.singleWhere((r) => r.id == 'ex_pullup');
+    expect(pullup.isAssisted, isFalse);
+    expect(pullup.isBodyweight, isTrue);
+    expect(pullup.deletedAt, 1, reason: '已删的不复活，字段照样补');
+    expect(rows.where((r) => r.isAssisted).map((r) => r.id), ['ex_assisted_pullup']);
+    expect(rows.where((r) => r.isBodyweight).length, 10);
+    final version = await (db.select(db.appSettings)
+          ..where((t) => t.key.equals('seededVersion')))
+        .getSingle();
+    expect(version.value, '8');
+  });
+
+  test('首次导入时种子里的 measure / isBodyweight / isAssisted 直接落库', () async {
     await seedLoader(db, fixedClock()).seedIfNeeded();
     final rows = await db.select(db.exercises).get();
     expect(rows.where((r) => r.measure == 'seconds').map((r) => r.id).toSet(),
         {'ex_plank', 'ex_side_plank'});
-    expect(rows.where((r) => r.isBodyweight).length, 9);
+    expect(rows.where((r) => r.isBodyweight).length, 10);
     expect(rows.where((r) => r.equipmentType == 'bodyweight' && !r.isBodyweight), isEmpty);
+    expect(rows.where((r) => r.isAssisted).map((r) => r.id), ['ex_assisted_pullup']);
+    expect(rows.where((r) => r.isAssisted && !r.isBodyweight), isEmpty);
   });
 
   test('历史记录的组全部标记完成，且完成时间落在训练时长内', () async {
@@ -273,7 +309,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7');
+    expect(version.value, '8');
   });
 
   test('种子 v3 → v4：补 32 个新动作，没被引用的自定义动作软删、引用过的留着', () async {
@@ -319,7 +355,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '7');
+    expect(version.value, '8');
   });
 
   test('种子 v2 → v3：v2 之前的记录整表作废，只剩种子的三次和进行中的那次', () async {
