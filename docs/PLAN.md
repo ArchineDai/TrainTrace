@@ -391,7 +391,7 @@ ActiveWorkoutScreen
 - 当前场馆（预填 sessions.gym_name，用于器械标签默认前缀）。
 - 训练时保持屏幕常亮。
 - 默认显示 RIR。
-- 数据：导出 CSV、重置种子数据、清空所有数据（二次确认）。
+- 数据：备份与恢复（已落地，`/settings/backup`：全库 JSON 经系统文件对话框存到沙盒外，恢复整体替换后续跑种子迁移）、导出 CSV、重置种子数据、清空所有数据（二次确认）。
 - 关于 / 版本号。
 
 ---
@@ -589,6 +589,7 @@ dev_dependencies:
 | 6.3 | 空态、错误态、深色模式、触控尺寸检查（训练时手出汗，按钮 ≥ 48dp） | 全部 |
 | 6.4 | Android 签名、release APK、真机自用一周 | 全部 |
 | 6.5 | iOS 编译验证（需 Mac，可后置） | 6.4 |
+| 6.6 | JSON 全量备份 / 恢复到本地文件（`file_picker` SAF，已完成，提前自 V0.5） | 1.5 |
 
 ### MVP 到后续版本的演进路径
 
@@ -629,7 +630,7 @@ dev_dependencies:
    对策：SetRow 只 select 自己的数据；输入 debounce 写 DB；ListView.builder。
 
 8. **数据丢失（无云备份）**
-   离线优先意味着换机即丢。对策：V0.1 做 CSV 导出；V0.5 尽早做 JSON 全量备份/恢复到本地文件。
+   离线优先意味着换机即丢。对策：JSON 全量备份 / 恢复已在设置页落地（`features/backup/`，文件由用户经系统文件对话框存到 App 沙盒之外，卸载不带走）；CSV 导出留 Phase 6 给"拿到 Excel 里看"。仍是手动备份，没有自动提醒。
 
 9. **iOS 兼容性无法在 Windows 上验证**
    对策：避免 Android-only 插件；通知、wakelock 均选跨平台包；iOS 构建留到有 Mac 时。

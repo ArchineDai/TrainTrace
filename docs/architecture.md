@@ -41,7 +41,9 @@ lib/
 │   ├─ history/
 │   │   ├─ models/history_models.dart     SessionSummary / ExercisePerformance / PersonalRecords
 │   │   └─ data/history_repository.dart   摘要聚合、上次表现（按器械标签分组）、PR / Epley 1RM
-│   ├─ settings/                          ThemeSettings + SettingsRepository + 主题 / 语言两个 ViewModel + 设置页
+│   ├─ backup/                            BackupRepository（全表 JSON dump / 整体替换恢复）+ BackupController（file_picker SAF）+ 备份页；
+│   │                                      它依赖 workout 与 settings 两边的 ViewModel（恢复后 invalidate），所以不放进 settings
+│   ├─ settings/                          ThemeSettings + SettingsRepository + 主题 / 语言两个 ViewModel + 设置页（数据分组进备份页）
 │   ├─ dev/presentation/dev_playground_page.dart  Phase 0 验证页，仅 debug 注册（backlog D-6）
 │   └─ home / routines / history           占位页
 ├─ services/

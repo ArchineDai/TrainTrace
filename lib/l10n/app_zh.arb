@@ -20,6 +20,42 @@
   "language": "语言",
   "followSystemLanguage": "跟随系统",
   "settingsTraining": "训练",
+  "settingsData": "数据",
+  "backupTitle": "备份与恢复",
+  "backupSettingsSubtitle": "备份到文件，卸载重装或换手机后恢复",
+  "backupIntro": "备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。",
+  "backupExport": "备份到文件",
+  "backupLastAt": "上次备份：{date}",
+  "@backupLastAt": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "backupNever": "还没备份过",
+  "backupRestore": "从文件恢复",
+  "backupRestoreHint": "用备份文件整体替换当前数据",
+  "backupRestoreConfirmTitle": "恢复这份备份？",
+  "backupRestoreConfirmBody": "备份于 {date}，含 {routines} 个模板、{sessions} 次训练。当前手机上的全部数据会被替换，无法撤销。",
+  "@backupRestoreConfirmBody": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "routines": { "type": "int" },
+      "sessions": { "type": "int" }
+    }
+  },
+  "backupRestoreConfirmAction": "替换并恢复",
+  "backupExportDone": "备份已保存",
+  "backupRestoreDone": "已恢复 {routines} 个模板、{sessions} 次训练",
+  "@backupRestoreDone": {
+    "placeholders": {
+      "routines": { "type": "int" },
+      "sessions": { "type": "int" }
+    }
+  },
+  "backupBlockedActiveWorkout": "有训练正在进行，先结束或放弃它再恢复",
+  "backupInvalidFile": "这不是 TrainTrace 的备份文件",
+  "backupTooNew": "这份备份来自更新版本的 App，请先升级再恢复",
+  "backupFailed": "操作失败，请重试",
   "restReminderSetting": "休息结束提醒",
   "restReminderStatusOn": "已开启",
   "restReminderStatusNoNotifications": "未允许通知，休息结束不会提醒",

@@ -99,3 +99,15 @@ model 用枚举，表用 `text()`。
 
 `test/data/` 每个 repository 至少锁：**软删除过滤生效**、**updated_at 被刷新**、
 **映射往返一致**。`test/state/` 锁 ViewModel 状态流转。纯 Dart，无 `pumpWidget`。
+
+## 备份格式（`features/backup/data/backup_repository.dart`）
+
+- **format 1**：`{"app":"traintrace","format":1,"schemaVersion":N,"exportedAt":ISO8601,"tables":{<表名>:[<行>]}}`。
+  行按 **SQL 列名**（snake_case）原样 dump，含软删除行与 `app_settings`；不经过任何 Repository 的 model 映射。
+- **恢复 = 整体替换**：一个事务里倒序清空全部表、正序逐行插回，任一行失败整体回滚；
+  比当前 `schemaVersion` 新的备份拒绝，老备份缺的列吃列默认值，未知列忽略；
+  恢复完调 `SeedLoader.seedIfNeeded()` 让老种子版本续跑迁移，并写 `lastBackupAt` = 文件的 `exportedAt`。
+- 有 `inProgress` 训练时拒绝恢复（`BackupBlockedException`）：训练中状态以 DB 为准，不能被清表带走。
+- 改表结构时**不用改备份代码**：dump 与 restore 都走 `allTables` / `$columns`。只有一种情况要动：
+  新列 NOT NULL 且无默认值 —— 那样老备份插不进去，而这也是 SQLite `ALTER TABLE ADD COLUMN` 本身不允许的。
+- 照片文件不在备份里（backlog D-13）。

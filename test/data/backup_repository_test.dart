@@ -1,0 +1,198 @@
+import 'dart:convert';
+
+import 'package:drift/drift.dart' hide isNotNull, isNull;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:traintrace/core/db/app_database.dart';
+import 'package:traintrace/core/time/clock.dart';
+import 'package:traintrace/features/backup/data/backup_repository.dart';
+import 'package:traintrace/features/backup/models/backup_summary.dart';
+import 'package:traintrace/features/routines/data/routine_repository.dart';
+
+import 'test_db.dart';
+
+/// 备份格式的契约：全表原样往返、恢复即整体替换、拒绝该拒绝的文件。
+void main() {
+  late AppDatabase db;
+  late FixedClock clock;
+  late BackupRepository repo;
+
+  BackupRepository repoFor(AppDatabase d) =>
+      BackupRepository(d, clock, seedLoader(d, clock));
+
+  Future<int> count(AppDatabase d, TableInfo table) async =>
+      (await d.select(table).get()).length;
+
+  // 恢复测试要开第二个内存库当目标，Drift 会警告"同一个类建了两次"；两个库各自
+  // 独立的 executor，警告不成立。
+  setUpAll(() => driftRuntimeOptions.dontWarnAboutMultipleDatabases = true);
+
+  setUp(() async {
+    db = memoryDb();
+    clock = fixedClock();
+    await seedLoader(db, clock).seedIfNeeded();
+    repo = repoFor(db);
+  });
+  tearDown(() => db.close());
+
+  test('导出的 JSON 带信封，且每张表都在', () async {
+    final json = jsonDecode(await repo.exportJson()) as Map<String, dynamic>;
+    expect(json['app'], 'traintrace');
+    expect(json['format'], BackupRepository.format);
+    expect(json['schemaVersion'], db.schemaVersion);
+    expect(DateTime.parse(json['exportedAt'] as String), clock.now());
+    final tables = json['tables'] as Map<String, dynamic>;
+    expect(
+      tables.keys.toSet(),
+      db.allTables.map((t) => t.actualTableName).toSet(),
+    );
+    expect((tables['exercises'] as List).length, 48);
+    // 列名是 SQL 里的 snake_case，不是 Dart 字段名：备份不经过 model 映射。
+    expect((tables['exercises'] as List).first, contains('name_zh'));
+  });
+
+  test('导出 → 恢复到空库：每张表行数一致，软删除行与小数重量原样回来', () async {
+    // 造一点"用户数据"：软删一套模板，让备份里有墓碑行。
+    await RoutineRepository(db, clock).softDelete('rt_d_shoulder_back');
+    final json = await repo.exportJson();
+
+    final fresh = memoryDb();
+    addTearDown(fresh.close);
+    final summary = await repoFor(fresh).restore(json);
+
+    for (final table in db.allTables) {
+      // app_settings 恢复后多一行 lastBackupAt，单独比。
+      if (table.actualTableName == 'app_settings') continue;
+      expect(await count(fresh, table), await count(db, table),
+          reason: '${table.actualTableName} 行数');
+    }
+    final settingKeys =
+        (await fresh.select(fresh.appSettings).get()).map((r) => r.key).toSet();
+    expect(settingKeys, {'seededVersion', 'lastBackupAt'});
+    final d = await (fresh.select(fresh.routines)
+          ..where((t) => t.id.equals('rt_d_shoulder_back')))
+        .getSingle();
+    expect(d.deletedAt, isNotNull, reason: '软删除墓碑一并恢复');
+    final weights = (await fresh.select(fresh.workoutSets).get())
+        .map((s) => s.weightKg)
+        .toSet();
+    expect(weights, contains(18.16), reason: 'REAL 列不丢精度');
+    expect(summary.routineCount, 3);
+    expect(summary.sessionCount, 3);
+    expect(summary.seededVersion, 6);
+  });
+
+  test('恢复是整体替换：目标库里多出来的东西会没掉', () async {
+    final json = await repo.exportJson();
+
+    final target = memoryDb();
+    addTearDown(target.close);
+    await seedLoader(target, clock).seedIfNeeded();
+    await RoutineRepository(target, clock).create(name: '目标库自己的');
+    expect(await count(target, target.routines), 5);
+
+    await repoFor(target).restore(json);
+
+    expect(await count(target, target.routines), 4);
+    expect(
+      (await target.select(target.routines).get()).map((r) => r.name),
+      isNot(contains('目标库自己的')),
+    );
+  });
+
+  test('恢复后写入 lastBackupAt = 备份的导出时间，并能 watch 到', () async {
+    final json = await repo.exportJson();
+    clock.advance(const Duration(days: 3));
+
+    final fresh = memoryDb();
+    addTearDown(fresh.close);
+    final freshRepo = repoFor(fresh);
+    expect(await freshRepo.watchLastBackupAt().first, isNull);
+
+    await freshRepo.restore(json);
+
+    expect(await freshRepo.watchLastBackupAt().first, fixedClock().now());
+  });
+
+  test('markBackedUp 记当前时间', () async {
+    expect(await repo.watchLastBackupAt().first, isNull);
+    await repo.markBackedUp();
+    expect(await repo.watchLastBackupAt().first, clock.now());
+  });
+
+  test('有进行中的训练时拒绝恢复，库不动', () async {
+    final json = await repo.exportJson();
+    await db.into(db.workoutSessions).insert(WorkoutSessionsCompanion.insert(
+          id: 'live',
+          startedAt: clock.nowMs(),
+          status: 'inProgress',
+          updatedAt: clock.nowMs(),
+        ));
+
+    await expectLater(repo.restore(json), throwsA(isA<BackupBlockedException>()));
+
+    expect(await count(db, db.workoutSessions), 4, reason: '一行没动');
+  });
+
+  test('老备份恢复后续跑种子迁移：seededVersion 追到当前', () async {
+    final exported = jsonDecode(await repo.exportJson()) as Map<String, dynamic>;
+    final settings = (exported['tables'] as Map)['app_settings'] as List;
+    for (final row in settings.cast<Map<String, dynamic>>()) {
+      if (row['key'] == 'seededVersion') row['value'] = '5';
+    }
+
+    final fresh = memoryDb();
+    addTearDown(fresh.close);
+    final summary = await repoFor(fresh).restore(jsonEncode(exported));
+
+    expect(summary.seededVersion, 5, reason: '概要说的是文件里的版本');
+    final version = await (fresh.select(fresh.appSettings)
+          ..where((t) => t.key.equals('seededVersion')))
+        .getSingle();
+    expect(version.value, '6', reason: '恢复后跑了 v5 → v6');
+  });
+
+  test('inspect 拒绝：非 JSON / 别的 App / 更新的 schema / 缺表', () async {
+    expect(() => repo.inspect('not json'), throwsA(isA<BackupFormatException>()));
+    expect(() => repo.inspect('[]'), throwsA(isA<BackupFormatException>()));
+    expect(
+      () => repo.inspect(jsonEncode({'app': 'hevy', 'format': 1})),
+      throwsA(isA<BackupFormatException>()),
+    );
+
+    final good = jsonDecode(await repo.exportJson()) as Map<String, dynamic>;
+    final tooNew = Map<String, dynamic>.from(good)
+      ..['schemaVersion'] = db.schemaVersion + 1;
+    expect(
+      () => repo.inspect(jsonEncode(tooNew)),
+      throwsA(isA<BackupTooNewException>()),
+    );
+
+    final missingTable = Map<String, dynamic>.from(good)
+      ..['tables'] = (Map<String, dynamic>.from(good['tables'] as Map)
+        ..remove('workout_sets'));
+    expect(
+      () => repo.inspect(jsonEncode(missingTable)),
+      throwsA(isA<BackupFormatException>()),
+    );
+
+    // 正常文件的概要只数未删除的模板和已完成的训练。
+    final summary = repo.inspect(jsonEncode(good));
+    expect(summary.routineCount, 4);
+    expect(summary.sessionCount, 3);
+    expect(summary.exportedAt, clock.now());
+  });
+
+  test('备份里多出来的未知列被忽略，不会让恢复失败', () async {
+    final exported = jsonDecode(await repo.exportJson()) as Map<String, dynamic>;
+    final routines = (exported['tables'] as Map)['routines'] as List;
+    for (final row in routines.cast<Map<String, dynamic>>()) {
+      row['column_from_the_future'] = 1;
+    }
+
+    final fresh = memoryDb();
+    addTearDown(fresh.close);
+    await repoFor(fresh).restore(jsonEncode(exported));
+
+    expect(await count(fresh, fresh.routines), 4);
+  });
+}

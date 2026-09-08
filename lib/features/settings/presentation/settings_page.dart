@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../router/app_routes.dart';
 import '../models/rest_reminder_state.dart';
 import '../models/theme_settings.dart';
 import '../state/locale_settings_view_model.dart';
@@ -104,6 +106,15 @@ class SettingsPage extends ConsumerWidget {
             subtitle: Text(_localeLabel(l10n, selectedLocale)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _pickLocale(context, ref),
+          ),
+          _SectionHeader(l10n.settingsData),
+          ListTile(
+            minTileHeight: AppTheme.minTouch,
+            leading: const Icon(Icons.backup_outlined),
+            title: Text(l10n.backupTitle),
+            subtitle: Text(l10n.backupSettingsSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.backup),
           ),
           const SizedBox(height: 16),
         ],

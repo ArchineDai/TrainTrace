@@ -34,6 +34,10 @@ abstract final class AppRoutes {
   static const sessionDetailPath = '/history/:id';
   static String sessionDetail(String sessionId) => '/history/$sessionId';
 
+  // ── 设置 ─────────────────────────────────────────────────────
+  /// 备份与恢复。从设置页进，全屏根栈。
+  static const backup = '/settings/backup';
+
   // ── 开发 ─────────────────────────────────────────────────────
   /// Phase 0 技术验证页，只在 debug 构建注册。
   static const dev = '/dev';

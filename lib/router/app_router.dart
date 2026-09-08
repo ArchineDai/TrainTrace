@@ -11,6 +11,7 @@ import '../features/history/presentation/session_detail_page.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/routines/presentation/routine_edit_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
+import '../features/backup/presentation/backup_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/workout/presentation/active_workout_page.dart';
 import '../features/workout/presentation/widgets/workout_dark_scope.dart';
@@ -118,6 +119,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) =>
             ExerciseDetailPage(exerciseId: state.pathParameters['id']!),
+      ),
+      // ── 根栈：设置 ────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.backup,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BackupPage(),
       ),
       // ── 根栈：历史 ────────────────────────────────────────────
       GoRoute(

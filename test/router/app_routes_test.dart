@@ -23,4 +23,9 @@ void main() {
     expect(AppRoutes.workoutSummary('s1'), '/workout/summary/s1');
     expect(AppRoutes.sessionDetail('s1'), '/history/s1');
   });
+
+  test('backup 挂在 settings 之下，是根栈全屏页', () {
+    expect(AppRoutes.backup, '/settings/backup');
+    expect(AppRoutes.backup.startsWith('${AppRoutes.settings}/'), isTrue);
+  });
 }

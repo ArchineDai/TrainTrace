@@ -63,6 +63,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTraining => 'Training';
 
   @override
+  String get settingsData => 'Data';
+
+  @override
+  String get backupTitle => 'Backup & Restore';
+
+  @override
+  String get backupSettingsSubtitle =>
+      'Save to a file; restore after a reinstall or on a new phone';
+
+  @override
+  String get backupIntro =>
+      'A backup file holds every routine, workout and setting. After a reinstall or on a new phone, restore from the file to get them back. Equipment photos are not included.';
+
+  @override
+  String get backupExport => 'Back up to file';
+
+  @override
+  String backupLastAt(String date) {
+    return 'Last backup: $date';
+  }
+
+  @override
+  String get backupNever => 'Never backed up';
+
+  @override
+  String get backupRestore => 'Restore from file';
+
+  @override
+  String get backupRestoreHint => 'Replace all current data with a backup file';
+
+  @override
+  String get backupRestoreConfirmTitle => 'Restore this backup?';
+
+  @override
+  String backupRestoreConfirmBody(String date, int routines, int sessions) {
+    return 'Made on $date with $routines routines and $sessions workouts. Everything on this phone will be replaced. This cannot be undone.';
+  }
+
+  @override
+  String get backupRestoreConfirmAction => 'Replace & restore';
+
+  @override
+  String get backupExportDone => 'Backup saved';
+
+  @override
+  String backupRestoreDone(int routines, int sessions) {
+    return 'Restored $routines routines and $sessions workouts';
+  }
+
+  @override
+  String get backupBlockedActiveWorkout =>
+      'A workout is in progress. Finish or discard it before restoring';
+
+  @override
+  String get backupInvalidFile => 'This is not a TrainTrace backup file';
+
+  @override
+  String get backupTooNew =>
+      'This backup is from a newer version of the app. Update the app first';
+
+  @override
+  String get backupFailed => 'Something went wrong, please try again';
+
+  @override
   String get restReminderSetting => 'Rest reminder';
 
   @override

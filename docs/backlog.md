@@ -19,14 +19,14 @@
 
 - **D-14 Phase 6 设置项**：重量单位（lb 显示换算）、默认休息时间（现为常量 90s，
   `AppConstants.defaultRestSeconds`）、当前场馆（预填 `sessions.gym_name` 与标签前缀）、
-  CSV 导出（`share_plus` 已在依赖里）。`SettingsRepository` 目前只有主题 / 语言两组键。
+  CSV 导出（`share_plus` 已在依赖里）。`SettingsRepository` 目前只有主题 / 语言 / 提醒几组键；备份时间戳（`lastBackupAt`）由 `BackupRepository` 自己读写。
 - **D-15 建议引擎的取舍**：只看第 1 组的 RIR 与次数决定降重，后段掉次数判为疲劳（保持 +
   提示）。这是刻意的：新手后几组掉次数很常见，按"任一组 RIR 0 就降重"会一直劝退。
   V0.5 加多次训练趋势规则时再评估。
 - **D-12 动作示意换真人素材**：现在是 `exercise_figure_data.dart` 里手写关键帧的火柴人
   （48 个内置动作，起止两帧插值）。姿态是手调的，不保证解剖学精确；V0.5 若接真人
   动图 / 视频，这份数据留作离线回退。遗留的自定义动作（入口已下线）没有示意图，显示占位。
-- **D-13 器械照片不随导出走**：`exercise_equipment_notes.photo_path` 只是相对路径，
+- **D-13 器械照片不随导出走**：`exercise_equipment_notes.photo_path` 只是相对路径，JSON 备份（`features/backup/`）只带数据库行不带照片文件，重装后恢复的备注会显示 broken image 占位；
   CSV 导出（D-2）与未来同步（D-4）都要单独处理文件；相机权限 iOS 字符串已在 Info.plist。
 - **D-1 iOS 构建**：无 Mac，未验证。避免 Android-only 插件。
 - **D-2 CSV 导出**：Phase 6。

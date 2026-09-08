@@ -61,6 +61,66 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTraining => '训练';
 
   @override
+  String get settingsData => '数据';
+
+  @override
+  String get backupTitle => '备份与恢复';
+
+  @override
+  String get backupSettingsSubtitle => '备份到文件，卸载重装或换手机后恢复';
+
+  @override
+  String get backupIntro => '备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。';
+
+  @override
+  String get backupExport => '备份到文件';
+
+  @override
+  String backupLastAt(String date) {
+    return '上次备份：$date';
+  }
+
+  @override
+  String get backupNever => '还没备份过';
+
+  @override
+  String get backupRestore => '从文件恢复';
+
+  @override
+  String get backupRestoreHint => '用备份文件整体替换当前数据';
+
+  @override
+  String get backupRestoreConfirmTitle => '恢复这份备份？';
+
+  @override
+  String backupRestoreConfirmBody(String date, int routines, int sessions) {
+    return '备份于 $date，含 $routines 个模板、$sessions 次训练。当前手机上的全部数据会被替换，无法撤销。';
+  }
+
+  @override
+  String get backupRestoreConfirmAction => '替换并恢复';
+
+  @override
+  String get backupExportDone => '备份已保存';
+
+  @override
+  String backupRestoreDone(int routines, int sessions) {
+    return '已恢复 $routines 个模板、$sessions 次训练';
+  }
+
+  @override
+  String get backupBlockedActiveWorkout => '有训练正在进行，先结束或放弃它再恢复';
+
+  @override
+  String get backupInvalidFile => '这不是 TrainTrace 的备份文件';
+
+  @override
+  String get backupTooNew => '这份备份来自更新版本的 App，请先升级再恢复';
+
+  @override
+  String get backupFailed => '操作失败，请重试';
+
+  @override
   String get restReminderSetting => '休息结束提醒';
 
   @override

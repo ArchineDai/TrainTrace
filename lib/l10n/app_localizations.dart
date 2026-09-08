@@ -200,6 +200,114 @@ abstract class AppLocalizations {
   /// **'训练'**
   String get settingsTraining;
 
+  /// No description provided for @settingsData.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据'**
+  String get settingsData;
+
+  /// No description provided for @backupTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份与恢复'**
+  String get backupTitle;
+
+  /// No description provided for @backupSettingsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份到文件，卸载重装或换手机后恢复'**
+  String get backupSettingsSubtitle;
+
+  /// No description provided for @backupIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。'**
+  String get backupIntro;
+
+  /// No description provided for @backupExport.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份到文件'**
+  String get backupExport;
+
+  /// No description provided for @backupLastAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次备份：{date}'**
+  String backupLastAt(String date);
+
+  /// No description provided for @backupNever.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没备份过'**
+  String get backupNever;
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In zh, this message translates to:
+  /// **'从文件恢复'**
+  String get backupRestore;
+
+  /// No description provided for @backupRestoreHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'用备份文件整体替换当前数据'**
+  String get backupRestoreHint;
+
+  /// No description provided for @backupRestoreConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复这份备份？'**
+  String get backupRestoreConfirmTitle;
+
+  /// No description provided for @backupRestoreConfirmBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份于 {date}，含 {routines} 个模板、{sessions} 次训练。当前手机上的全部数据会被替换，无法撤销。'**
+  String backupRestoreConfirmBody(String date, int routines, int sessions);
+
+  /// No description provided for @backupRestoreConfirmAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'替换并恢复'**
+  String get backupRestoreConfirmAction;
+
+  /// No description provided for @backupExportDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份已保存'**
+  String get backupExportDone;
+
+  /// No description provided for @backupRestoreDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复 {routines} 个模板、{sessions} 次训练'**
+  String backupRestoreDone(int routines, int sessions);
+
+  /// No description provided for @backupBlockedActiveWorkout.
+  ///
+  /// In zh, this message translates to:
+  /// **'有训练正在进行，先结束或放弃它再恢复'**
+  String get backupBlockedActiveWorkout;
+
+  /// No description provided for @backupInvalidFile.
+  ///
+  /// In zh, this message translates to:
+  /// **'这不是 TrainTrace 的备份文件'**
+  String get backupInvalidFile;
+
+  /// No description provided for @backupTooNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'这份备份来自更新版本的 App，请先升级再恢复'**
+  String get backupTooNew;
+
+  /// No description provided for @backupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败，请重试'**
+  String get backupFailed;
+
   /// No description provided for @restReminderSetting.
   ///
   /// In zh, this message translates to:
