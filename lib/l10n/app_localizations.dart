@@ -1310,12 +1310,6 @@ abstract class AppLocalizations {
   /// **'添加动作'**
   String get addExercise;
 
-  /// No description provided for @discardWorkout.
-  ///
-  /// In zh, this message translates to:
-  /// **'放弃训练'**
-  String get discardWorkout;
-
   /// No description provided for @workoutEmptyHint.
   ///
   /// In zh, this message translates to:
@@ -1327,12 +1321,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'结束训练'**
   String get finishWorkout;
-
-  /// No description provided for @finishShort.
-  ///
-  /// In zh, this message translates to:
-  /// **'结束'**
-  String get finishShort;
 
   /// No description provided for @pickEquipmentLabelFirst.
   ///
@@ -1363,12 +1351,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'结束训练？'**
   String get finishWorkoutTitle;
-
-  /// No description provided for @finishWorkoutBodyEmpty.
-  ///
-  /// In zh, this message translates to:
-  /// **'还没有完成任何一组。结束后会保存为一次空训练。'**
-  String get finishWorkoutBodyEmpty;
 
   /// No description provided for @finishWorkoutBody.
   ///

@@ -155,45 +155,29 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     _syncSetTick(running);
 
     return Scaffold(
+      // AppBar 单行：标题 + 右侧「用时 · 结束训练」。用时挨着结束按钮，读起来是
+      // "练了 23 分钟，要结束吗"。结束用文字按钮而不是实心橙：页面里的填充橙已经在
+      // 每组的 ✓ 和键盘"完成"上，一场只点一次的动作不该每次抬头都抢注意力。
+      // 放弃训练不放这里：退到首页的横幅上有"放弃"；没完成任何一组就点结束时也会
+      // 直接问是否放弃，误开的空训练不用绕路。
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              session.routineName ?? l10n.emptyWorkoutName,
-              style: TextStyle(fontSize: AppTextSize.lg),
-            ),
-            _Elapsed(startedAt: session.startedAt),
-          ],
+        title: Text(
+          session.routineName ?? l10n.emptyWorkoutName,
+          style: TextStyle(fontSize: AppTextSize.lg),
+          overflow: TextOverflow.ellipsis,
         ),
         actions: [
-          // 结束是一次性收尾动作，不占底部拇指区；AppBar 里只有它一个实心按钮
-          // （docs/ui-conventions.md 操作语法）。视觉 40dp，触控区由 padded 补到 48。
+          _Elapsed(startedAt: session.startedAt),
           Padding(
             padding: const EdgeInsets.only(right: 4),
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(0, 40),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                tapTargetSize: MaterialTapTargetSize.padded,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                minimumSize: const Size(0, AppTheme.minTouch),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
               onPressed: _finishing ? null : _finish,
-              child: Text(l10n.finishShort),
+              child: Text(l10n.finishWorkout),
             ),
-          ),
-          PopupMenuButton<String>(
-            onSelected: (v) {
-              if (v == 'discard') _confirmDiscard();
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'discard',
-                child: Text(
-                  l10n.discardWorkout,
-                  style: TextStyle(color: AppTheme.of(context).danger),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -548,9 +532,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     if (st == null) return;
     final l10n = AppLocalizations.of(context);
     final done = st.session.completedSetCount;
+    // 一组都没完成就点结束，多半是误开的：直接问放弃，不存空训练（Hevy 也这么处理）。
+    if (done == 0) return _confirmDiscard();
     final ok = await _confirm(
       l10n.finishWorkoutTitle,
-      done == 0 ? l10n.finishWorkoutBodyEmpty : l10n.finishWorkoutBody(done),
+      l10n.finishWorkoutBody(done),
     );
     if (ok != true || !mounted) return;
     setState(() => _finishing = true);
@@ -728,10 +714,12 @@ class _ElapsedState extends ConsumerState<_Elapsed> {
     final h = d.inHours;
     final m = (d.inMinutes % 60).toString().padLeft(2, '0');
     final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    // 等宽数字：每秒跳动时右边的"结束训练"不会左右抖。
     return Text(
       h > 0 ? '$h:$m:$s' : '$m:$s',
       style: TextStyle(
-        fontSize: AppTextSize.xs,
+        fontSize: AppTextSize.sm,
+        fontFeatures: const [FontFeature.tabularFigures()],
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );

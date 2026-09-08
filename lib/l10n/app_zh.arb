@@ -381,10 +381,8 @@
 
   "noActiveWorkoutBack": "没有进行中的训练，返回",
   "addExercise": "添加动作",
-  "discardWorkout": "放弃训练",
   "workoutEmptyHint": "点下方「添加动作」开始",
   "finishWorkout": "结束训练",
-  "finishShort": "结束",
   "pickEquipmentLabelFirst": "先选一个器械标签",
   "labelHasNoPhoto": "「{label}」还没有照片，在动作详情页可以拍一张",
   "@labelHasNoPhoto": {
@@ -405,7 +403,6 @@
     }
   },
   "finishWorkoutTitle": "结束训练？",
-  "finishWorkoutBodyEmpty": "还没有完成任何一组。结束后会保存为一次空训练。",
   "finishWorkoutBody": "已完成 {sets} 组，未填写的空组会被清理。",
   "@finishWorkoutBody": {
     "placeholders": {

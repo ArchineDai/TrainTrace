@@ -709,16 +709,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addExercise => 'Add exercise';
 
   @override
-  String get discardWorkout => 'Discard workout';
-
-  @override
   String get workoutEmptyHint => 'Tap “Add exercise” below to start';
 
   @override
   String get finishWorkout => 'Finish workout';
-
-  @override
-  String get finishShort => 'Finish';
 
   @override
   String get pickEquipmentLabelFirst => 'Pick an equipment label first';
@@ -740,10 +734,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get finishWorkoutTitle => 'Finish workout?';
-
-  @override
-  String get finishWorkoutBodyEmpty =>
-      'No sets completed yet. Finishing saves this as an empty workout.';
 
   @override
   String finishWorkoutBody(int sets) {

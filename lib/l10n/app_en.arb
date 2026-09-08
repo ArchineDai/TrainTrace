@@ -219,16 +219,13 @@
 
   "noActiveWorkoutBack": "No workout in progress — go back",
   "addExercise": "Add exercise",
-  "discardWorkout": "Discard workout",
   "workoutEmptyHint": "Tap “Add exercise” below to start",
   "finishWorkout": "Finish workout",
-  "finishShort": "Finish",
   "pickEquipmentLabelFirst": "Pick an equipment label first",
   "labelHasNoPhoto": "“{label}” has no photo yet — you can take one on the exercise page",
   "removeExerciseTitle": "Remove “{name}”?",
   "removeExerciseBody": "The {sets} completed sets will be deleted too.",
   "finishWorkoutTitle": "Finish workout?",
-  "finishWorkoutBodyEmpty": "No sets completed yet. Finishing saves this as an empty workout.",
   "finishWorkoutBody": "{sets} sets completed; blank sets will be cleaned up.",
   "saveFailedRetry": "Could not save — please try again",
 

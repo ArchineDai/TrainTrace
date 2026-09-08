@@ -689,16 +689,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addExercise => '添加动作';
 
   @override
-  String get discardWorkout => '放弃训练';
-
-  @override
   String get workoutEmptyHint => '点下方「添加动作」开始';
 
   @override
   String get finishWorkout => '结束训练';
-
-  @override
-  String get finishShort => '结束';
 
   @override
   String get pickEquipmentLabelFirst => '先选一个器械标签';
@@ -720,9 +714,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get finishWorkoutTitle => '结束训练？';
-
-  @override
-  String get finishWorkoutBodyEmpty => '还没有完成任何一组。结束后会保存为一次空训练。';
 
   @override
   String finishWorkoutBody(int sets) {
