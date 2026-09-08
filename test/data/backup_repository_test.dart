@@ -46,7 +46,7 @@ void main() {
       tables.keys.toSet(),
       db.allTables.map((t) => t.actualTableName).toSet(),
     );
-    expect((tables['exercises'] as List).length, 48);
+    expect((tables['exercises'] as List).length, 50);
     // 列名是 SQL 里的 snake_case，不是 Dart 字段名：备份不经过 model 映射。
     expect((tables['exercises'] as List).first, contains('name_zh'));
   });
@@ -197,7 +197,7 @@ void main() {
     await repoFor(fresh).restore(jsonEncode(old));
 
     expect(await count(fresh, fresh.bodyWeights), 0);
-    expect(await count(fresh, fresh.exercises), 48);
+    expect(await count(fresh, fresh.exercises), 50);
 
     final sameVersion = Map<String, dynamic>.from(exported)..['tables'] = tables;
     expect(

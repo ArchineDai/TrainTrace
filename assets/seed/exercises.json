@@ -901,5 +901,43 @@
       "膝盖着地版更简单",
       "上侧腿抬起更难"
     ]
+  },
+  {
+    "id": "ex_farmers_walk", "nameZh": "农夫行走", "nameEn": "Farmer's Walk", "muscleGroup": "core", "equipmentType": "dumbbell", "measure": "distance",
+    "defaultRepMin": 30, "defaultRepMax": 40, "defaultRestSeconds": 90, "minIncrementKg": 2,
+    "cues": [
+      "两侧各拎一个同重量的哑铃，站直，肩膀下沉往后收",
+      "收紧腹部，目视前方，小步快走，别让哑铃晃",
+      "走满目标距离再放下，放下时屈膝别弯腰",
+      "重量记单手的，两手各 20 kg 就填 20"
+    ],
+    "commonMistakes": [
+      "身体向一侧歪、肩膀被拽着往前塌",
+      "步子迈太大，哑铃前后甩"
+    ],
+    "equipmentVariants": [
+      "哑铃（最常见）",
+      "壶铃 / 六角杠（专门的农夫行走把手）",
+      "单手拎一个就是行李箱行走，核心更吃力"
+    ]
+  },
+  {
+    "id": "ex_sled_push", "nameZh": "雪橇推", "nameEn": "Sled Push", "muscleGroup": "leg", "equipmentType": "machine", "measure": "distance",
+    "defaultRepMin": 15, "defaultRepMax": 20, "defaultRestSeconds": 120, "minIncrementKg": 5,
+    "cues": [
+      "双手握住雪橇立杆，手臂伸直，身体前倾成一条斜线",
+      "低头看前方一两米，别抬头",
+      "用腿蹬地推，脚掌全落地，一步一步把雪橇推到目标距离",
+      "重量记加在雪橇上的片，雪橇自重不算"
+    ],
+    "commonMistakes": [
+      "弓背、用手臂去推，腿没发力",
+      "加重后步子迈不开，中途停下来"
+    ],
+    "equipmentVariants": [
+      "力量雪橇（Prowler，带高低两组把手）",
+      "健身房功能区的雪橇 + 人工草坪 / 滑道",
+      "没雪橇就在跑道上推轮胎 / 加片的推车"
+    ]
   }
 ]

@@ -27,12 +27,12 @@ void main() {
   });
 
   test('getAll 排除软删除，softDelete 刷新 updated_at', () async {
-    expect((await repo.getAll()).length, 48);
+    expect((await repo.getAll()).length, 50);
 
     clock.advance(const Duration(minutes: 5));
     await repo.softDelete('ex_plank');
 
-    expect((await repo.getAll()).length, 47);
+    expect((await repo.getAll()).length, 49);
     expect(await repo.getById('ex_plank'), isNull);
     final row = await (db.select(db.exercises)
           ..where((t) => t.id.equals('ex_plank')))
@@ -77,7 +77,13 @@ void main() {
     // Dumbbell Curl / Machine Bicep Curl / Leg Curl / Barbell Curl / Hammer Curl
     expect((await repo.search('curl')).length, 5);
     // 腿举 腿屈伸 腿弯举 提踵 + v4：杠铃深蹲 高脚杯深蹲 史密斯深蹲 罗马尼亚硬拉 箭步蹲 臀推 髋外展
-    expect((await repo.search('', muscleGroup: MuscleGroup.leg)).length, 11);
+    // + v9：雪橇推
+    expect((await repo.search('', muscleGroup: MuscleGroup.leg)).length, 12);
+    // 距离类动作也走同一套搜索：中文名 / 英文名都能搜到
+    expect((await repo.search('农夫')).map((e) => e.id), ['ex_farmers_walk']);
+    expect((await repo.search('sled')).map((e) => e.id), ['ex_sled_push']);
+    expect((await repo.search('', muscleGroup: MuscleGroup.core)).map((e) => e.id),
+        contains('ex_farmers_walk'));
   });
 
   test('库里的未知枚举字符串回落而不抛错', () async {

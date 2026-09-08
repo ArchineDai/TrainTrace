@@ -33,8 +33,9 @@ class SeedLoader {
   /// v6 起内置模板以种子为准，每次升级把四套的动作清单同步成种子里的样子
   ///（A 拉日改为辅助引体开头、加绳索面拉、杠铃弯举收尾）；
   /// v7 给内置动作补 measure（平板 / 侧平板为 seconds）与 isBodyweight（自重动作）；
-  /// v8 辅助引体标为辅助自重（isBodyweight + isAssisted），重量列改为辅助重量。
-  static const seedVersion = 8;
+  /// v8 辅助引体标为辅助自重（isBodyweight + isAssisted），重量列改为辅助重量；
+  /// v9 补两个距离类动作（农夫行走 / 雪橇推，measure 为 distance，目标以米计）。
+  static const seedVersion = 9;
 
   /// v4 及之前的三套内置模板 id，v5 迁移时软删。
   static const _v4RoutineIds = [
@@ -219,6 +220,22 @@ class SeedLoader {
     if (from < 6) await _syncSeedRoutines();
     if (from < 7) await _fillExerciseMeasures();
     if (from < 8) await _fillExerciseAssisted();
+    if (from < 9) await _insertMissingExercises();
+  }
+
+  /// v8 → v9：按 id 补插种子里库中还没有的动作（两个距离类动作）。
+  /// 已有行一律不碰：用户改过的目标 / 增量保留，删掉的不复活。
+  Future<void> _insertMissingExercises() async {
+    final exercises = _list(await _read(exercisesAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      for (final e in exercises) {
+        await _db.into(_db.exercises).insert(
+              _exerciseCompanion(e, now),
+              mode: InsertMode.insertOrIgnore,
+            );
+      }
+    });
   }
 
   /// v7 → v8：按 id 回填 isBodyweight / isAssisted（辅助引体从"机器配重"改为

@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/features/exercises/presentation/widgets/exercise_figure_data.dart';
 
-/// 动画数据契约：每个内置动作都有动画，两帧肢体数一致（否则插值越界），
-/// 坐标都在 0–100 画布内。
+/// 动画数据契约：内置动作要么有动画、要么在 [noFigureYet] 里显式登记（详情页显示占位），
+/// 动画表里没有种子之外的 id；两帧肢体数一致（否则插值越界），坐标都在 0–100 画布内。
 void main() {
+  /// 还没有示意图的内置动作：距离类的两条，火柴人不手画，留给真人素材（backlog D-12）。
+  const noFigureYet = {'ex_farmers_walk', 'ex_sled_push'};
   late List<String> seedIds;
 
   setUpAll(() async {
@@ -17,12 +19,14 @@ void main() {
         .toList();
   });
 
-  test('48 个内置动作都有动画，动画表里也没有种子之外的 id', () {
-    expect(seedIds.length, 48);
+  test('50 个内置动作：除登记为暂无示意图的，其余都有动画；动画表里也没有种子之外的 id', () {
+    expect(seedIds.length, 50);
     for (final id in seedIds) {
-      expect(exerciseAnimations.containsKey(id), isTrue, reason: '缺 $id');
+      expect(exerciseAnimations.containsKey(id), !noFigureYet.contains(id),
+          reason: noFigureYet.contains(id) ? '$id 登记为暂无示意图，却有动画' : '缺 $id');
     }
-    expect(exerciseAnimations.keys.toSet(), seedIds.toSet());
+    expect(noFigureYet.every(seedIds.contains), isTrue, reason: '登记表里的 id 必须在种子里');
+    expect(exerciseAnimations.keys.toSet(), seedIds.toSet().difference(noFigureYet));
   });
 
   test('起止两帧肢体数一致，脚尖要么都有要么都没有', () {
