@@ -1478,12 +1478,6 @@ abstract class AppLocalizations {
   /// **'手头的片'**
   String get availablePlatesLabel;
 
-  /// No description provided for @availablePlatesHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'手头的片 · 勾掉没有的'**
-  String get availablePlatesHint;
-
   /// No description provided for @plateNotExact.
   ///
   /// In zh, this message translates to:
@@ -1526,17 +1520,35 @@ abstract class AppLocalizations {
   /// **'删除动作'**
   String get removeExercise;
 
-  /// No description provided for @supersetLinkNext.
+  /// No description provided for @supersetMenu.
   ///
   /// In zh, this message translates to:
-  /// **'与下一动作组成超级组'**
-  String get supersetLinkNext;
+  /// **'超级组…'**
+  String get supersetMenu;
 
   /// No description provided for @supersetUnlink.
   ///
   /// In zh, this message translates to:
   /// **'退出超级组'**
   String get supersetUnlink;
+
+  /// No description provided for @supersetPickerIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'超级组：两个动作交替做，组间不休息，一轮做完才休息。选一个要和「{name}」配对的动作。'**
+  String supersetPickerIntro(String name);
+
+  /// No description provided for @supersetPickerEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'先添加第二个动作'**
+  String get supersetPickerEmpty;
+
+  /// No description provided for @supersetEditGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑超级组'**
+  String get supersetEditGroup;
 
   /// No description provided for @supersetTitle.
   ///

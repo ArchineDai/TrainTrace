@@ -27,8 +27,8 @@ enum ExerciseCardAction {
   editNote,
   viewExercise,
 
-  /// 与列表里紧随其后的动作组成超级组。
-  linkNext,
+  /// 打开超级组配对弹层（[SupersetPickerSheet]），常驻菜单项。
+  superset,
 
   /// 退出所在的超级组。
   unlink,
@@ -63,7 +63,6 @@ class WorkoutExerciseCard extends StatelessWidget {
     this.onLongPressWeight,
     this.onTapPlateCalculator,
     this.supersetTag,
-    this.canLinkNext = false,
     this.isBodyweight = false,
     this.isAssisted = false,
     this.measure = ExerciseMeasure.reps,
@@ -77,9 +76,6 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   /// 超级组位置标记（`A1`），不在组里为 null。
   final String? supersetTag;
-
-  /// 菜单里是否给出「与下一动作组成超级组」（不在组里且有下一动作时由页面传 true）。
-  final bool canLinkNext;
   final ExercisePerformance? last;
 
   /// 动作的计量方式：次数 / 秒 / 米。决定组行字段、单位、上次摘要与头部芯片。
@@ -239,11 +235,10 @@ class WorkoutExerciseCard extends StatelessWidget {
                       value: ExerciseCardAction.viewExercise,
                       child: Text(l10n.viewExerciseGuide),
                     ),
-                    if (!exercise.isInSuperset && canLinkNext)
-                      PopupMenuItem(
-                        value: ExerciseCardAction.linkNext,
-                        child: Text(l10n.supersetLinkNext),
-                      ),
+                    PopupMenuItem(
+                      value: ExerciseCardAction.superset,
+                      child: Text(l10n.supersetMenu),
+                    ),
                     if (exercise.isInSuperset)
                       PopupMenuItem(
                         value: ExerciseCardAction.unlink,

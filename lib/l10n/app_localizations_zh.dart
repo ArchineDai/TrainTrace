@@ -789,9 +789,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get availablePlatesLabel => '手头的片';
 
   @override
-  String get availablePlatesHint => '手头的片 · 勾掉没有的';
-
-  @override
   String plateNotExact(String target, String achieved) {
     return '配不出 $target，最近可配 $achieved';
   }
@@ -825,10 +822,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeExercise => '删除动作';
 
   @override
-  String get supersetLinkNext => '与下一动作组成超级组';
+  String get supersetMenu => '超级组…';
 
   @override
   String get supersetUnlink => '退出超级组';
+
+  @override
+  String supersetPickerIntro(String name) {
+    return '超级组：两个动作交替做，组间不休息，一轮做完才休息。选一个要和「$name」配对的动作。';
+  }
+
+  @override
+  String get supersetPickerEmpty => '先添加第二个动作';
+
+  @override
+  String get supersetEditGroup => '编辑超级组';
 
   @override
   String supersetTitle(String label) {

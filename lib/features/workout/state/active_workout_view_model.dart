@@ -445,32 +445,61 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
 
   // ── 超级组 ───────────────────────────────────────────────────
 
-  /// 把该动作与列表里紧随其后的动作绑成一组。
+  /// 把 [otherId] 和 [workoutExerciseId] 绑成一组（配对弹层与卡片间的连接件都走这里）。
   ///
-  /// - 当前动作已在组里 → 下一动作加入同组（追加）
-  /// - 否则分配新组号（现有最大 +1，从 1 起）给两者
-  /// - 下一动作已属于别的组 → 那组全体并入当前组
-  /// - 没有下一动作 → 不做
-  Future<void> linkWithNext(String workoutExerciseId) async {
+  /// - other 已与当前动作同组 → 不做
+  /// - other 原属别的组 → 先退出那组（那组只剩 1 个时由归一化解散）
+  /// - other 不在当前动作所在块的紧后面 → 先挪到块的紧后面（组必须连续）
+  /// - 当前动作没组 → 分配新组号（现有最大 +1，从 1 起）
+  Future<void> linkWith(String workoutExerciseId, String otherId) async {
+    final s = state.value;
+    if (s == null || workoutExerciseId == otherId) return;
+    if (s.exerciseById(otherId) == null) return;
+    final curBlock = _blockOf(s.session.exercises, workoutExerciseId);
+    if (curBlock == null) return;
+    if (curBlock.isSuperset && curBlock.exercises.any((e) => e.id == otherId)) return;
+
+    if (_blockOf(s.session.exercises, otherId)?.isSuperset ?? false) {
+      await unlink(otherId);
+    }
+
+    final list = state.value?.session.exercises;
+    if (list == null) return;
+    final ids = list.map((e) => e.id).toList();
+    final blockEnd = ids.indexOf(curBlock.exercises.last.id);
+    if (blockEnd < 0) return;
+    if (ids.indexOf(otherId) != blockEnd + 1) {
+      ids.remove(otherId);
+      ids.insert(ids.indexOf(curBlock.exercises.last.id) + 1, otherId);
+      await reorderExercises(ids);
+    }
+
+    final after = state.value?.session.exercises;
+    if (after == null) return;
+    final g = curBlock.groupId ?? nextSupersetGroup(after);
+    await _setSupersetGroups({
+      for (final e in curBlock.exercises)
+        if (e.supersetGroup != g) e.id: g,
+      otherId: g,
+    }, 'link superset');
+  }
+
+  /// 把 [otherId] 移出 [workoutExerciseId] 所在的组；两者不同组时不做。
+  Future<void> unlinkFrom(String workoutExerciseId, String otherId) async {
     final s = state.value;
     if (s == null) return;
-    final list = s.session.exercises;
-    final i = list.indexWhere((e) => e.id == workoutExerciseId);
-    if (i < 0 || i + 1 >= list.length) return;
-    final cur = list[i];
-    final next = list[i + 1];
-    final g = cur.supersetGroup ?? nextSupersetGroup(list);
-    final changes = <String, int?>{};
-    if (cur.supersetGroup != g) changes[cur.id] = g;
-    final nextGroup = next.supersetGroup;
-    if (nextGroup != null && nextGroup != g) {
-      for (final e in list) {
-        if (e.supersetGroup == nextGroup) changes[e.id] = g;
-      }
-    } else if (nextGroup != g) {
-      changes[next.id] = g;
+    final block = _blockOf(s.session.exercises, workoutExerciseId);
+    if (block == null || !block.isSuperset) return;
+    if (!block.exercises.any((e) => e.id == otherId)) return;
+    await unlink(otherId);
+  }
+
+  /// 该动作所在的连续块：有效超级组，或它自己一个。
+  SupersetBlock? _blockOf(List<WorkoutExercise> list, String workoutExerciseId) {
+    for (final b in supersetBlocks(list)) {
+      if (b.exercises.any((e) => e.id == workoutExerciseId)) return b;
     }
-    await _setSupersetGroups(changes, 'link superset');
+    return null;
   }
 
   /// 把该动作移出组；原组只剩 1 个成员时那个成员也清组号（由归一化兜底）。

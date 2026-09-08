@@ -367,50 +367,96 @@ void main() {
 
   List<WorkoutExercise> exs() => container.read(activeWorkoutProvider).value!.session.exercises;
 
-  test('linkWithNext：新组从 1 起、追加进同组、合并别的组，全部落库', () async {
+  Future<int> dbSort(String weId) async => (await (db.select(db.workoutExercises)
+            ..where((t) => t.id.equals(weId)))
+          .getSingle())
+      .sortOrder;
+
+  test('linkWith（相邻）：新组从 1 起、追加进同组、other 原在别组先退出，全部落库', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
     final ids = exs().map((e) => e.id).toList();
 
-    await vm.linkWithNext(ids[0]);
+    await vm.linkWith(ids[0], ids[1]);
+    expect(exs().map((e) => e.id), ids, reason: '相邻不挪位');
     expect(exs().map((e) => e.supersetGroup), [1, 1, null, null, null, null]);
     expect(await dbGroup(ids[0]), 1);
     expect(await dbGroup(ids[1]), 1);
 
-    // 已在组里的最后一个成员再链 → 下一动作追加进同组
-    await vm.linkWithNext(ids[1]);
+    // 组尾再配下一个 → 追加进同组
+    await vm.linkWith(ids[1], ids[2]);
     expect(exs().map((e) => e.supersetGroup), [1, 1, 1, null, null, null]);
 
     // 另起一组：组号为现有最大 +1
-    await vm.linkWithNext(ids[3]);
+    await vm.linkWith(ids[3], ids[4]);
     expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 2, 2, null]);
     expect(await dbGroup(ids[4]), 2);
 
-    // 组 1 的尾巴链上组 2 的头 → 组 2 全体并入组 1
-    await vm.linkWithNext(ids[2]);
-    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 1, 1, null]);
-    expect(await dbGroup(ids[4]), 1);
+    // other 原在组 2 → 先退出（组 2 只剩 ids[4]，解散），再加入组 1
+    await vm.linkWith(ids[2], ids[3]);
+    expect(exs().map((e) => e.id), ids);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 1, null, null]);
+    expect(await dbGroup(ids[3]), 1);
+    expect(await dbGroup(ids[4]), isNull);
 
-    // 最后一个动作没有下一动作 → 不做
-    await vm.linkWithNext(ids[5]);
-    expect(exs()[5].supersetGroup, isNull);
+    // 已同组 / 自己配自己 → 不做
+    await vm.linkWith(ids[0], ids[2]);
+    await vm.linkWith(ids[5], ids[5]);
+    expect(exs().map((e) => e.id), ids);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 1, null, null]);
 
     final st = container.read(activeWorkoutProvider).value!;
     expect(st.supersetTagOf(ids[0]), 'A1');
-    expect(st.supersetTagOf(ids[4]), 'A5');
+    expect(st.supersetTagOf(ids[3]), 'A4');
     expect(st.supersetTagOf(ids[5]), isNull);
   });
 
-  test('unlink：移出组；原组只剩一个成员时那个成员也清空', () async {
+  test('linkWith（不相邻）：other 先挪到当前动作所在块的紧后面再成组，顺序落库', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
     final ids = exs().map((e) => e.id).toList();
-    await vm.linkWithNext(ids[0]);
-    await vm.linkWithNext(ids[1]); // 0,1,2 同组
 
-    await vm.unlink(ids[2]);
+    // other 在后面隔了两个
+    await vm.linkWith(ids[0], ids[3]);
+    expect(exs().map((e) => e.id), [ids[0], ids[3], ids[1], ids[2], ids[4], ids[5]]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, null, null, null, null]);
+    expect(await dbSort(ids[3]), 1);
+    expect(await dbSort(ids[1]), 2);
+    expect(await dbGroup(ids[3]), 1);
+
+    // 当前动作已在组里：other 挪到整块的紧后面（不是紧跟当前动作）
+    await vm.linkWith(ids[0], ids[5]);
+    expect(exs().map((e) => e.id), [ids[0], ids[3], ids[5], ids[1], ids[2], ids[4]]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, null, null, null]);
+    expect(await dbSort(ids[5]), 2);
+
+    // other 在前面：也是挪到块后面
+    await vm.linkWith(ids[2], ids[1]);
+    expect(exs().map((e) => e.id), [ids[0], ids[3], ids[5], ids[2], ids[1], ids[4]]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, 2, 2, null]);
+    expect(await dbGroup(ids[1]), 2);
+    expect(await dbSort(ids[1]), 4);
+
+    final st = container.read(activeWorkoutProvider).value!;
+    expect(st.supersetTagOf(ids[5]), 'A3');
+    expect(st.supersetTagOf(ids[1]), 'B2');
+  });
+
+  test('unlink / unlinkFrom：移出组；原组只剩一个成员时那个成员也清空', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final ids = exs().map((e) => e.id).toList();
+    await vm.linkWith(ids[0], ids[1]);
+    await vm.linkWith(ids[1], ids[2]); // 0,1,2 同组
+
+    // 不同组 → 不做
+    await vm.unlinkFrom(ids[0], ids[4]);
+    expect(exs().map((e) => e.supersetGroup), [1, 1, 1, null, null, null]);
+
+    await vm.unlinkFrom(ids[0], ids[2]);
     expect(exs().map((e) => e.supersetGroup), [1, 1, null, null, null, null]);
     expect(await dbGroup(ids[2]), isNull);
 
@@ -424,8 +470,8 @@ void main() {
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
     final ids = exs().map((e) => e.id).toList();
-    await vm.linkWithNext(ids[0]); // 0,1 组 1
-    await vm.linkWithNext(ids[3]); // 3,4 组 2
+    await vm.linkWith(ids[0], ids[1]); // 0,1 组 1
+    await vm.linkWith(ids[3], ids[4]); // 3,4 组 2
 
     // 把 2 插到 0 与 1 之间：组 1 不再相邻，组 2 不受影响
     await vm.reorderExercises([ids[0], ids[2], ids[1], ids[3], ids[4], ids[5]]);
@@ -448,7 +494,7 @@ void main() {
     final vm = container.read(activeWorkoutProvider.notifier);
     // 反向蝴蝶机（60s）+ 面拉（60s）组成超级组，前面的高位下拉（90s）不在组里。
     final ids = exs().map((e) => e.id).toList();
-    await vm.linkWithNext(ids[3]);
+    await vm.linkWith(ids[3], ids[4]);
     final a1 = exs()[3];
     final a2 = exs()[4];
     expect(a2.restSeconds, 60);

@@ -811,10 +811,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get availablePlatesLabel => 'Available plates';
 
   @override
-  String get availablePlatesHint =>
-      'Available plates · untick the ones you don\'t have';
-
-  @override
   String plateNotExact(String target, String achieved) {
     return 'Can\'t load $target exactly — closest is $achieved';
   }
@@ -848,10 +844,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeExercise => 'Remove exercise';
 
   @override
-  String get supersetLinkNext => 'Superset with next exercise';
+  String get supersetMenu => 'Superset…';
 
   @override
   String get supersetUnlink => 'Leave superset';
+
+  @override
+  String supersetPickerIntro(String name) {
+    return 'Superset: alternate two exercises with no rest between them, resting only after each round. Pick an exercise to pair with \"$name\".';
+  }
+
+  @override
+  String get supersetPickerEmpty => 'Add a second exercise first';
+
+  @override
+  String get supersetEditGroup => 'Edit superset';
 
   @override
   String supersetTitle(String label) {

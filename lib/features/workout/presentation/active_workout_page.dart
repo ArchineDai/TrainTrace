@@ -32,6 +32,7 @@ import 'widgets/numeric_keypad.dart';
 import 'widgets/plate_calculator_sheet.dart';
 import 'widgets/rest_timer_bar.dart';
 import 'widgets/set_row.dart';
+import 'widgets/superset_picker_sheet.dart';
 import 'widgets/workout_target_sheet.dart';
 import 'widgets/workout_exercise_card.dart';
 
@@ -213,23 +214,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                     ),
                   ),
                 // 连续同组的卡片包成一块（左侧竖条 + 组头）；不在组里的卡片照旧。
-                for (final block in supersetBlocks(session.exercises))
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: block.isSuperset
-                        ? _SupersetBlock(
-                            label: st.supersetLabelOf(block.groupId!) ?? '',
-                            tags: [
-                              for (final ex in block.exercises) st.supersetTagOf(ex.id) ?? '',
-                            ],
-                            restSeconds: block.exercises.last.restSeconds ??
-                                AppConstants.defaultRestSeconds,
-                            children: [
-                              for (final ex in block.exercises) _exerciseCard(st, ex, now),
-                            ],
-                          )
-                        : _exerciseCard(st, block.exercises.single, now),
-                  ),
+                // 相邻两块之间放「组成超级组」连接件 —— 它就是超级组功能的提示。
+                ..._blocksWithLinks(st, now),
                 // 追加动作放列表末尾，和编辑模板页同一条规则：练完最后一个动作时
                 // 用户正停在这里，空白训练时它就是页面上的第一个东西。
                 OutlinedButton.icon(
@@ -257,9 +243,36 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     );
   }
 
+  /// 按块渲染动作列表：块之间夹一个连接件，最后一块后面留 10 的间距。
+  List<Widget> _blocksWithLinks(ActiveWorkoutState st, DateTime now) {
+    final blocks = supersetBlocks(st.session.exercises);
+    final out = <Widget>[];
+    for (var i = 0; i < blocks.length; i++) {
+      final block = blocks[i];
+      out.add(
+        block.isSuperset
+            ? _SupersetBlock(
+                label: st.supersetLabelOf(block.groupId!) ?? '',
+                tags: [
+                  for (final ex in block.exercises) st.supersetTagOf(ex.id) ?? '',
+                ],
+                restSeconds: block.exercises.last.restSeconds ?? AppConstants.defaultRestSeconds,
+                onEdit: () => SupersetPickerSheet.show(
+                  context,
+                  workoutExerciseId: block.exercises.first.id,
+                ),
+                children: [
+                  for (final ex in block.exercises) _exerciseCard(st, ex, now),
+                ],
+              )
+            : _exerciseCard(st, block.exercises.single, now),
+      );
+      out.add(const SizedBox(height: 10));
+    }
+    return out;
+  }
+
   Widget _exerciseCard(ActiveWorkoutState st, WorkoutExercise ex, DateTime now) {
-    final list = st.session.exercises;
-    final hasNext = list.isNotEmpty && list.last.id != ex.id;
     return WorkoutExerciseCard(
       key: ValueKey('ex-${ex.id}'),
       exercise: ex,
@@ -284,7 +297,6 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
       onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
       supersetTag: st.supersetTagOf(ex.id),
-      canLinkNext: hasNext,
       measure: ref.watch(exerciseByIdProvider(ex.exerciseId))?.measure ?? ExerciseMeasure.reps,
       runningSetId: st.runningSet?.setId,
       runningElapsed: st.runningSet?.elapsedSeconds(now),
@@ -504,8 +516,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         await _editNote(weId);
       case ExerciseCardAction.viewExercise:
         await context.push(AppRoutes.exerciseDetail(exerciseId));
-      case ExerciseCardAction.linkNext:
-        await _vm.linkWithNext(weId);
+      case ExerciseCardAction.superset:
+        await SupersetPickerSheet.show(context, workoutExerciseId: weId);
       case ExerciseCardAction.unlink:
         await _vm.unlink(weId);
       case ExerciseCardAction.recordBodyWeight:
@@ -589,19 +601,24 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       );
 }
 
-/// 一个超级组：左侧 4dp 橙色竖条，右侧组头（链接图标 + 「超级组 A」+ 交替 / 休息提示）
-/// 与各成员卡片。休息秒数取组里最后一个动作的 —— 计时也只在它完成时才开。
+/// 一个超级组：左侧 4dp 橙色竖条，右侧组头（链接图标 + 「超级组 A」+ 交替 / 休息提示
+/// + 「编辑超级组」按钮）与各成员卡片。休息秒数取组里最后一个动作的 —— 计时也只在它
+/// 完成时才开。
 class _SupersetBlock extends StatelessWidget {
   const _SupersetBlock({
     required this.label,
     required this.tags,
     required this.restSeconds,
+    required this.onEdit,
     required this.children,
   });
 
   final String label;
   final List<String> tags;
   final int restSeconds;
+
+  /// 打开配对弹层（以组内第一个动作为主体），往组里加动作或拆组。
+  final VoidCallback onEdit;
   final List<Widget> children;
 
   @override
@@ -609,7 +626,10 @@ class _SupersetBlock extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final accent = AppTheme.of(context).accentText;
     final l10n = AppLocalizations.of(context);
-    return Row(
+    // ListView 给子项的高度是无界的，Row 的 stretch 在无界高度下会撑成无限高
+    // （表现为下面的卡片都不见了、列表能一直往下滑）。IntrinsicHeight 先量出内容高度。
+    return IntrinsicHeight(
+      child: Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
@@ -626,7 +646,7 @@ class _SupersetBlock extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: 32,
+                height: AppTheme.minTouch,
                 child: Row(
                   children: [
                     Icon(Icons.link, size: 16, color: accent),
@@ -651,6 +671,16 @@ class _SupersetBlock extends StatelessWidget {
                         ),
                       ),
                     ),
+                    IconButton(
+                      tooltip: l10n.supersetEditGroup,
+                      onPressed: onEdit,
+                      icon: Icon(Icons.more_horiz, color: scheme.onSurfaceVariant),
+                      constraints: const BoxConstraints.tightFor(
+                        width: AppTheme.minTouch,
+                        height: AppTheme.minTouch,
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
                   ],
                 ),
               ),
@@ -662,6 +692,7 @@ class _SupersetBlock extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }
