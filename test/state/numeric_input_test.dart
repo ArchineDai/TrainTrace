@@ -53,4 +53,21 @@ void main() {
     expect(NumericInput.parse('22.'), 22.0);
     expect(NumericInput.parse('0.5'), 0.5);
   });
+
+  group('duration 字段（秒，整数，步长 5）', () {
+    test('±5 不带小数，不低于 0', () {
+      expect(NumericInput.step('45', 5, allowDecimal: false), '50');
+      expect(NumericInput.step('', 5, allowDecimal: false), '5');
+      expect(NumericInput.step('3', -5, allowDecimal: false), '0');
+    });
+    test('fresh 时第一位替换继承的秒数，之后追加', () {
+      final first = NumericInput.digit('45', '6', fresh: true);
+      expect(first, '6');
+      expect(NumericInput.digit(first, '0', fresh: false), '60');
+    });
+    test('解析后取整写 durationSeconds', () {
+      expect(NumericInput.parse('60')?.round(), 60);
+      expect(NumericInput.parse('')?.round(), isNull);
+    });
+  });
 }

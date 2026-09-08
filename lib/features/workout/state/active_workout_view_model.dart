@@ -169,15 +169,17 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
 
   // ── 组 ───────────────────────────────────────────────────────
 
-  /// 改重量 / 次数 / RIR。内存即时，写库 debounce。
+  /// 改重量 / 次数 / RIR / 秒数（计时类动作）。内存即时，写库 debounce。
   void editSet(
     String setId, {
     double? weightKg,
     int? reps,
     int? rir,
+    int? durationSeconds,
     bool clearWeight = false,
     bool clearReps = false,
     bool clearRir = false,
+    bool clearDurationSeconds = false,
   }) {
     _mutate((s) => s.mapSet(
           setId,
@@ -185,9 +187,11 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
             weightKg: weightKg,
             reps: reps,
             rir: rir,
+            durationSeconds: durationSeconds,
             clearWeight: clearWeight,
             clearReps: clearReps,
             clearRir: clearRir,
+            clearDurationSeconds: clearDurationSeconds,
           ),
         ));
     final current = state.value?.setById(setId);
@@ -198,10 +202,63 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
           weightKg: current.weightKg,
           reps: current.reps,
           rir: current.rir,
+          durationSeconds: current.durationSeconds,
           clearWeight: current.weightKg == null,
           clearReps: current.reps == null,
           clearRir: current.rir == null,
+          clearDurationSeconds: current.durationSeconds == null,
         ));
+  }
+
+  // ── 组计时（计时类动作的正计时） ─────────────────────────────
+
+  /// 开始给 [setId] 正计时。目标 = 该组此刻已填的秒数（没填就是开放计时）。
+  /// 已有别的组在计时时先按"提前结束"停掉它（记实际秒数、不完成）。
+  ///
+  /// 只改内存态，见 [RunningSet]。到点的判定与振动由页面层每秒 tick 驱动。
+  Future<void> startSetTimer(String setId) async {
+    if (state.value?.runningSet != null) await stopSetTimer(complete: false);
+    final s = state.value;
+    final set = s?.setById(setId);
+    if (s == null || set == null) return;
+    await flushPending();
+    _mutate((st) => st.copyWith(
+          runningSet: RunningSet(
+            setId: setId,
+            startedAt: _clock.now(),
+            targetSeconds: set.durationSeconds,
+          ),
+        ));
+  }
+
+  /// 停止正在计时的组，把实际秒数写进 `durationSeconds`（四舍五入到秒，即时落库）。
+  ///
+  /// - [complete] 为 true（到点）：再走 [toggleComplete] 使其完成，照常开休息计时。
+  ///   页面可能晚于到点才 tick（切走再回来），此时记目标而不是溢出的实际值。
+  /// - [complete] 为 false（✕ 提前结束）：只记实际秒数，组留在未完成。
+  /// - 0 秒即停视为误触：不改秒数、不完成。
+  Future<void> stopSetTimer({required bool complete}) async {
+    final s = state.value;
+    final r = s?.runningSet;
+    if (s == null || r == null) return;
+    // 先同步清掉计时态，页面的下一次 tick 就不会再触发一遍。
+    _mutate((st) => st.copyWith(clearRunningSet: true));
+    final set = s.setById(r.setId);
+    if (set == null) return; // 计时中被删了
+    final ms = _clock.now().difference(r.startedAt).inMilliseconds;
+    var seconds = (ms / 1000).round();
+    if (complete && r.targetSeconds != null && seconds > r.targetSeconds!) {
+      seconds = r.targetSeconds!;
+    }
+    if (seconds <= 0) return;
+    _debounce.remove(r.setId)?.cancel();
+    _pending.remove(r.setId);
+    _mutate((st) => st.mapSet(r.setId, (x) => x.copyWith(durationSeconds: seconds)));
+    await _persist(
+      () => _repo.updateSet(r.setId, durationSeconds: seconds),
+      'set duration',
+    );
+    if (complete && !set.isCompleted) await toggleComplete(r.setId);
   }
 
   /// 完成 / 取消完成。完成时开始休息计时。
@@ -215,6 +272,12 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     final set = s.setById(setId);
     if (ex == null || set == null) return;
     final completing = !set.isCompleted;
+    // 计时类动作没填秒数就没有"做了多少"可记，不能完成；和空组在结束时被清理是同一条规则。
+    if (completing &&
+        set.durationSeconds == null &&
+        await _measureOf(ex) == ExerciseMeasure.seconds) {
+      return;
+    }
     await flushPending();
     final now = _clock.now();
     _mutate((st) => st.mapSet(
@@ -242,16 +305,19 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     if (s == null || ex == null) return null;
     double? w;
     int? r;
+    int? d;
     if (ex.sets.isNotEmpty) {
       w = ex.sets.last.weightKg;
       r = ex.sets.last.reps;
+      d = ex.sets.last.durationSeconds;
     } else {
       final lastSet = s.lastByExercise[ex.id]?.sets.lastOrNull;
       w = lastSet?.weightKg;
       r = lastSet?.reps;
+      d = lastSet?.durationSeconds;
     }
     try {
-      final added = await _repo.addSet(ex.id, weightKg: w, reps: r);
+      final added = await _repo.addSet(ex.id, weightKg: w, reps: r, durationSeconds: d);
       _mutate((st) => st.replaceExercise(
             (st.exerciseById(ex.id) ?? ex).let((e) => e.copyWith(sets: [...e.sets, added])),
           ));
@@ -268,7 +334,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     if (s == null || ex == null) return;
     _debounce.remove(setId)?.cancel();
     _pending.remove(setId);
-    _mutate((st) => st.replaceExercise(
+    _mutate((st) => st.copyWith(clearRunningSet: st.runningSet?.setId == setId).replaceExercise(
           ex.copyWith(sets: ex.sets.where((x) => x.id != setId).toList()),
         ));
     await _persist(() => _repo.deleteSet(setId), 'delete set');
@@ -307,6 +373,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       _pending.remove(set.id);
     }
     _mutate((st) => st.copyWith(
+          clearRunningSet: st.exerciseOfSet(st.runningSet?.setId ?? '')?.id == workoutExerciseId,
           session: st.session.copyWith(
             exercises: st.session.exercises.where((e) => e.id != workoutExerciseId).toList(),
           ),
@@ -524,9 +591,22 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
         setId,
         weightKg: src.weightKg,
         reps: src.reps,
+        durationSeconds: src.durationSeconds,
         clearWeight: src.weightKg == null,
         clearReps: src.reps == null,
+        clearDurationSeconds: src.durationSeconds == null,
       );
+
+  /// 动作的计量方式。训练里的动作快照不带它，按需查一次动作表；查不到按次数处理。
+  Future<ExerciseMeasure> _measureOf(WorkoutExercise ex) async {
+    try {
+      final e = await ref.read(exerciseRepositoryProvider).getById(ex.exerciseId);
+      return e?.measure ?? ExerciseMeasure.reps;
+    } catch (e, st) {
+      swallow(e, 'exercise measure', st);
+      return ExerciseMeasure.reps;
+    }
+  }
 
   // ── 内部 ─────────────────────────────────────────────────────
 
@@ -630,7 +710,12 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       if (!ex.sets[i].isEmpty) continue;
       final src = i < last.sets.length ? last.sets[i] : last.sets.last;
       await _persist(
-        () => _repo.updateSet(ex.sets[i].id, weightKg: src.weightKg, reps: src.reps),
+        () => _repo.updateSet(
+          ex.sets[i].id,
+          weightKg: src.weightKg,
+          reps: src.reps,
+          durationSeconds: src.durationSeconds,
+        ),
         'prefill set',
       );
     }

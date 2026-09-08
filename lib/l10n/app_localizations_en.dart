@@ -357,6 +357,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get unitSeconds => 's';
+
+  @override
+  String get unitMeters => 'm';
+
+  @override
+  String durationValue(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
   String get muscleBack => 'Back';
 
   @override
@@ -753,6 +764,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String targetSecondsMeta(int min, int max) {
+    return 'Target $min–$max s';
+  }
+
+  @override
+  String get timedChip => 'Timed';
+
+  @override
   String get hideRir => 'Hide RIR';
 
   @override
@@ -967,6 +986,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keypadNext => 'Next';
+
+  @override
+  String get keypadStartTimer => 'Start timer';
+
+  @override
+  String get stopSetTimer => 'End early';
+
+  @override
+  String setTimerRunningHint(int seconds) {
+    return 'Timing · vibrates at $seconds s; ✕ ends early and records the actual time';
+  }
+
+  @override
+  String get setTimerRunningHintOpen =>
+      'Timing · ✕ ends and records the actual time';
 
   @override
   String get workoutComplete => 'Workout complete';

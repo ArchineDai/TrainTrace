@@ -5,6 +5,7 @@ import 'package:traintrace/core/db/database_provider.dart';
 import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/exercises/data/exercise_repository.dart';
 import 'package:traintrace/features/measurements/data/body_weight_repository.dart';
+import 'package:traintrace/features/exercises/models/exercise.dart';
 import 'package:traintrace/features/routines/data/routine_repository.dart';
 import 'package:traintrace/features/workout/data/workout_repository.dart';
 import 'package:traintrace/features/workout/models/workout_session.dart';
@@ -525,5 +526,144 @@ void main() {
     final pullup = (await container.read(exerciseRepositoryProvider).getById('ex_pullup'))!;
     await vm.addExercise(pullup);
     expect(container.read(activeWorkoutProvider).value!.session.exercises.last.bodyWeightKg, isNull);
+  });
+
+  // ── 计时类动作（F-5）────────────────────────────────────────
+
+  /// 空白训练 + 平板支撑（seconds），返回它在训练里的动作。
+  Future<WorkoutExercise> startWithPlank() async {
+    await container.read(activeWorkoutProvider.future);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    await vm.start();
+    final plank = (await container.read(exerciseRepositoryProvider).getById('ex_plank'))!;
+    expect(plank.measure, ExerciseMeasure.seconds);
+    await vm.addExercise(plank);
+    return container.read(activeWorkoutProvider).value!.session.exercises.single;
+  }
+
+  test('计时类：editSet(duration) 内存即时，300ms 后落库', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final repo = container.read(workoutRepositoryProvider);
+    final setId = ex.sets[0].id;
+
+    vm.editSet(setId, durationSeconds: 40);
+    vm.editSet(setId, durationSeconds: 45);
+    expect(container.read(activeWorkoutProvider).value!.setById(setId)!.durationSeconds, 45);
+    expect((await repo.getExercise(ex.id))!.sets[0].durationSeconds, isNull);
+
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    expect((await repo.getExercise(ex.id))!.sets[0].durationSeconds, 45);
+
+    vm.editSet(setId, clearDurationSeconds: true);
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    expect((await repo.getExercise(ex.id))!.sets[0].durationSeconds, isNull);
+  });
+
+  test('计时类：没填秒数的组不能完成', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    await vm.toggleComplete(ex.sets[0].id);
+    expect(container.read(activeWorkoutProvider).value!.setById(ex.sets[0].id)!.isCompleted,
+        isFalse);
+    expect(container.read(restTimerProvider).isIdle, isTrue);
+  });
+
+  test('startSetTimer → 37s → stopSetTimer(complete: false)：记 37 秒、未完成、即时落库',
+      () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final setId = ex.sets[0].id;
+    vm.editSet(setId, durationSeconds: 50);
+
+    await vm.startSetTimer(setId);
+    var st = container.read(activeWorkoutProvider).value!;
+    expect(st.runningSet!.setId, setId);
+    expect(st.runningSet!.startedAt, clock.now());
+    expect(st.runningSet!.targetSeconds, 50, reason: '目标 = 开始时已填的秒数');
+    expect(st.runningSet!.elapsedSeconds(clock.now()), 0);
+
+    clock.advance(const Duration(seconds: 37, milliseconds: 300));
+    expect(st.runningSet!.elapsedSeconds(clock.now()), 37);
+    expect(st.runningSet!.isDue(clock.now()), isFalse);
+    await vm.stopSetTimer(complete: false);
+
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.runningSet, isNull);
+    final set = st.setById(setId)!;
+    expect(set.durationSeconds, 37, reason: '四舍五入到秒');
+    expect(set.isCompleted, isFalse);
+    final persisted = await container.read(workoutRepositoryProvider).getExercise(ex.id);
+    expect(persisted!.sets[0].durationSeconds, 37, reason: '停表不 debounce，立刻落库');
+    expect(container.read(restTimerProvider).isIdle, isTrue);
+  });
+
+  test('stopSetTimer(complete: true)：完成并按动作休息时间开计时；超时只记目标', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final setId = ex.sets[0].id;
+    vm.editSet(setId, durationSeconds: 50);
+
+    await vm.startSetTimer(setId);
+    clock.advance(const Duration(seconds: 50));
+    expect(container.read(activeWorkoutProvider).value!.runningSet!.isDue(clock.now()), isTrue);
+    await vm.stopSetTimer(complete: true);
+
+    var st = container.read(activeWorkoutProvider).value!;
+    expect(st.runningSet, isNull);
+    expect(st.setById(setId)!.durationSeconds, 50);
+    expect(st.setById(setId)!.isCompleted, isTrue);
+    expect(container.read(restTimerProvider).remainingSeconds(clock.now()), 60,
+        reason: '平板支撑默认休息 60s');
+
+    // 页面切走再回来，tick 晚到：记目标而不是溢出的实际秒数。
+    final set2 = ex.sets[1].id;
+    vm.editSet(set2, durationSeconds: 30);
+    await vm.startSetTimer(set2);
+    clock.advance(const Duration(seconds: 95));
+    await vm.stopSetTimer(complete: true);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.setById(set2)!.durationSeconds, 30);
+    expect(st.setById(set2)!.isCompleted, isTrue);
+  });
+
+  test('startSetTimer：已有组在计时时先按提前结束停掉它；0 秒即停视为误触', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final a = ex.sets[0].id;
+    final b = ex.sets[1].id;
+    vm.editSet(a, durationSeconds: 60);
+
+    await vm.startSetTimer(a);
+    clock.advance(const Duration(seconds: 12));
+    await vm.startSetTimer(b);
+    var st = container.read(activeWorkoutProvider).value!;
+    expect(st.runningSet!.setId, b);
+    expect(st.runningSet!.targetSeconds, isNull, reason: 'b 没填秒数 → 开放计时');
+    expect(st.setById(a)!.durationSeconds, 12);
+    expect(st.setById(a)!.isCompleted, isFalse);
+
+    await vm.stopSetTimer(complete: false);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.runningSet, isNull);
+    expect(st.setById(b)!.durationSeconds, isNull, reason: '0 秒不改秒数');
+
+    // 计时中把组删了：计时态一起清掉
+    await vm.startSetTimer(a);
+    await vm.deleteSet(a);
+    expect(container.read(activeWorkoutProvider).value!.runningSet, isNull);
+  });
+
+  test('finish：只填过秒数的组算"填过"，不被当空组清掉', () async {
+    final ex = await startWithPlank();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    expect(ex.sets.length, 3);
+    vm.editSet(ex.sets[0].id, durationSeconds: 45);
+    await vm.toggleComplete(ex.sets[0].id);
+    vm.editSet(ex.sets[1].id, durationSeconds: 40); // 填了但没完成
+
+    final done = await vm.finish();
+    expect(done!.exercises.single.sets.map((s) => s.durationSeconds), [45, 40],
+        reason: '第 3 组重量 / 次数 / 秒数全空才被清理');
   });
 }

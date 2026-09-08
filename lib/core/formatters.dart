@@ -64,24 +64,41 @@ abstract final class Formatters {
     return l10n.durationHoursMinutes(m ~/ 60, (m % 60).toString().padLeft(2, '0'));
   }
 
+  /// 正计时 `m:ss`：`0:37` / `1:05`。分钟不补零 —— 和倒计时的 [clock] 区分开，
+  /// 一组计时不会到两位数分钟。
+  static String mmss(int seconds) {
+    final s = seconds < 0 ? 0 : seconds;
+    return '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+  }
+
   /// 一个动作的各组摘要：`20 kg × 12 / 12 / 12`。同重量合并，不同重量逐组列出
   /// （`20 kg × 12 / 22.5 kg × 8`）。数字和 kg 之间一律有空格，和组行、个人记录一致。
   ///
   /// [signed]：自重动作的重量是附加重量，正数前加 `+`（`+5 kg × 8`），负数保留
   /// 原来的负号，0 不加符号。默认关。
+  /// [repsUnit] 给距离类动作用（`20 kg × 40 米 / 40 米`），默认不带单位。
   static String setsSummary(
     List<({double? weightKg, int? reps})> sets, {
     bool signed = false,
+    String repsUnit = '',
   }) {
     String w(double v) => signed && v > 0 ? '+${kg(v)}' : kg(v);
     final done = sets.where((s) => s.reps != null).toList();
     if (done.isEmpty) return '—';
+    final unit = repsUnit.isEmpty ? '' : ' $repsUnit';
     final weights = done.map((s) => s.weightKg).toSet();
     if (weights.length == 1 && weights.first != null) {
-      return '${w(weights.first!)} kg × ${done.map((s) => s.reps).join(' / ')}';
+      return '${w(weights.first!)} kg × ${done.map((s) => '${s.reps}$unit').join(' / ')}';
     }
     return done
-        .map((s) => '${s.weightKg == null ? '?' : w(s.weightKg!)} kg × ${s.reps}')
+        .map((s) => '${s.weightKg == null ? '?' : w(s.weightKg!)} kg × ${s.reps}$unit')
         .join(' / ');
+  }
+
+  /// 计时类动作的各组摘要：`45 秒 / 45 秒 / 40 秒`。没记秒数的组跳过，全空 `—`。
+  static String durationsSummary(List<int?> seconds, AppLocalizations l10n) {
+    final done = seconds.whereType<int>().toList();
+    if (done.isEmpty) return '—';
+    return done.map(l10n.durationValue).join(' / ');
   }
 }

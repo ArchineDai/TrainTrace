@@ -103,6 +103,9 @@
   "emptyWorkoutName": "Empty workout",
   "unitReps": "reps",
   "repsValue": "{reps} reps",
+  "unitSeconds": "s",
+  "unitMeters": "m",
+  "durationValue": "{seconds} s",
 
   "muscleBack": "Back",
   "muscleShoulder": "Shoulders",
@@ -231,6 +234,8 @@
 
   "targetRepsMeta": "Target {min}–{max} reps",
   "restMeta": "{seconds}s rest",
+  "targetSecondsMeta": "Target {min}–{max} s",
+  "timedChip": "Timed",
   "hideRir": "Hide RIR",
   "recordRir": "Record RIR",
   "applyLast": "Copy last time",
@@ -293,6 +298,10 @@
   "undoComplete": "Mark as not done",
   "completeSet": "Complete this set",
   "keypadNext": "Next",
+  "keypadStartTimer": "Start timer",
+  "stopSetTimer": "End early",
+  "setTimerRunningHint": "Timing · vibrates at {seconds} s; ✕ ends early and records the actual time",
+  "setTimerRunningHintOpen": "Timing · ✕ ends and records the actual time",
 
   "workoutComplete": "Workout complete",
   "statDuration": "Duration",

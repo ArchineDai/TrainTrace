@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/formatters.dart';
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../exercises/models/exercise_measure.dart';
 
-/// 一组里可编辑的两个字段。
-enum SetField { weight, reps }
+/// 一组里可编辑的字段。[duration] 只出现在计时类动作（秒数，整数）。
+enum SetField { weight, reps, duration }
 
 /// 训练页的一行：`第N组  [20 kg] [12 次]  ✓`。
+///
+/// 计时类动作（[measure] 为 seconds）是单字段行：`第N组  [45 秒]  ✓`；
+/// 该组正在计时时字段显示 `0:37  / 50 秒`（2px primary 边框）、右侧按钮变 ✕（提前结束）。
+/// 计时中的提示行由父级（[WorkoutExerciseCard]）画在本行下方，见 [SetTimerHint]。
 ///
 /// 无状态：值、聚焦、完成态都由父级传入。父级用每组独立的 provider / entry
 /// 驱动，本行只重建自己。
@@ -24,6 +30,11 @@ class SetRow extends StatelessWidget {
     this.previousHint,
     this.onLongPressWeight,
     this.weightPrefix,
+    this.measure = ExerciseMeasure.reps,
+    this.durationText = '',
+    this.runningElapsed,
+    this.runningTarget,
+    this.onStopTimer,
   });
 
   /// 从 1 开始的组序号。
@@ -31,6 +42,21 @@ class SetRow extends StatelessWidget {
   final String weightText;
   final String repsText;
   final bool isCompleted;
+
+  /// 计量方式：决定字段个数与单位（次 / 米 / 秒）。
+  final ExerciseMeasure measure;
+
+  /// 秒数字段的文本（仅 seconds）。
+  final String durationText;
+
+  /// 本组正在计时时的已过秒数；null = 没在计时。
+  final int? runningElapsed;
+
+  /// 计时目标秒数；开放计时为 null。
+  final int? runningTarget;
+
+  /// ✕：提前结束并记实际秒数。
+  final VoidCallback? onStopTimer;
 
   /// 当前聚焦的字段；null 表示本行没有字段在编辑。
   final SetField? focusedField;
@@ -44,11 +70,13 @@ class SetRow extends StatelessWidget {
   final VoidCallback? onLongPressWeight;
   /// 重量数字前的符号。自重动作传 `'+'`（重量列是附加重量）；空值与负数不加。
   final String? weightPrefix;
+  bool get _running => runningElapsed != null;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
+    final timed = measure == ExerciseMeasure.seconds;
     return Container(
       decoration: BoxDecoration(
         color: isCompleted ? AppTheme.of(context).setDoneSurface : null,
@@ -69,6 +97,20 @@ class SetRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+          if (timed)
+            // 计时类：单字段。计时中显示 0:37 / 50 秒，不可点（用 ✕ 结束）。
+            Expanded(
+              child: _FieldBox(
+                text: _running ? Formatters.mmss(runningElapsed!) : durationText,
+                unit: _running
+                    ? (runningTarget == null ? '' : '/ ${l10n.durationValue(runningTarget!)}')
+                    : l10n.unitSeconds,
+                focused: _running || focusedField == SetField.duration,
+                completed: isCompleted,
+                onTap: _running ? null : () => onTapField(SetField.duration),
+              ),
+            ),
+          if (!timed)
           Expanded(
             child: _FieldBox(
               text: weightText,
@@ -80,11 +122,13 @@ class SetRow extends StatelessWidget {
               onLongPress: onLongPressWeight,
             ),
           ),
+          if (!timed)
           const SizedBox(width: 8),
+          if (!timed)
           Expanded(
             child: _FieldBox(
               text: repsText,
-              unit: l10n.unitReps,
+              unit: measure == ExerciseMeasure.distance ? l10n.unitMeters : l10n.unitReps,
               focused: focusedField == SetField.reps,
               completed: isCompleted,
               onTap: () => onTapField(SetField.reps),
@@ -94,7 +138,17 @@ class SetRow extends StatelessWidget {
           SizedBox(
             width: AppTheme.minTouch,
             height: AppTheme.minTouch,
-            child: isCompleted
+            child: _running
+                ? IconButton.outlined(
+                    onPressed: onStopTimer,
+                    style: IconButton.styleFrom(
+                      foregroundColor: scheme.primary,
+                      side: BorderSide(color: scheme.primary),
+                    ),
+                    icon: const Icon(Icons.close),
+                    tooltip: l10n.stopSetTimer,
+                  )
+                : isCompleted
                 ? IconButton.filled(
                     onPressed: onToggleComplete,
                     style: IconButton.styleFrom(
@@ -111,6 +165,32 @@ class SetRow extends StatelessWidget {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 计时中那组下方的一行提示：「计时中 · 到 50 秒振动提醒，✕ 提前结束并记实际秒数」。
+/// 单独成 widget 由卡片放在 [SetRow] 下面，和 RIR 行同一套摆法。
+class SetTimerHint extends StatelessWidget {
+  const SetTimerHint({super.key, required this.targetSeconds});
+
+  /// 目标秒数；开放计时为 null（不提振动）。
+  final int? targetSeconds;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(44, 0, 8, 4),
+      child: Text(
+        targetSeconds == null
+            ? l10n.setTimerRunningHintOpen
+            : l10n.setTimerRunningHint(targetSeconds!),
+        style: TextStyle(
+          fontSize: AppTextSize.xs,
+          color: AppTheme.of(context).accentText,
+        ),
       ),
     );
   }
@@ -134,7 +214,9 @@ class _FieldBox extends StatelessWidget {
   final String? prefix;
   final bool focused;
   final bool completed;
-  final VoidCallback onTap;
+
+  /// null = 不可点（计时中的字段）。
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   @override

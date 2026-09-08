@@ -4,8 +4,8 @@ import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 
-/// 键盘的语义键。数字与小数点直接给字符。
-enum KeypadAction { backspace, stepDown, stepUp, next, done }
+/// 键盘的语义键。数字与小数点直接给字符。[startTimer] 只在秒模式出现。
+enum KeypadAction { backspace, stepDown, stepUp, next, done, startTimer }
 
 /// 训练页自定义数字键盘。替代系统键盘：不遮挡、不用切输入法、带 ±步长。
 ///
@@ -17,6 +17,9 @@ enum KeypadAction { backspace, stepDown, stepUp, next, done }
 /// 7  8  9  +2.5
 /// .  0  下一项  完成
 /// ```
+///
+/// 秒模式（[secondsMode]，计时类动作）：步长由父级给 5、无小数点键（左下留空），
+/// 「下一项」位换成「开始计时」（回调 [KeypadAction.startTimer]）。
 class NumericKeypad extends StatelessWidget {
   const NumericKeypad({
     super.key,
@@ -26,13 +29,17 @@ class NumericKeypad extends StatelessWidget {
     required this.onAction,
     this.doneLabel,
     this.nextLabel,
+    this.secondsMode = false,
   });
 
-  /// ±键的步长（重量：动作的最小增量；次数：1）。
+  /// ±键的步长（重量：动作的最小增量；次数：1；秒：5）。
   final double step;
   final bool allowDecimal;
   final ValueChanged<String> onDigit;
   final ValueChanged<KeypadAction> onAction;
+
+  /// 计时类动作的秒数字段：见类注释。
+  final bool secondsMode;
 
   /// null 用默认的"完成"。const 默认值取不到 l10n，所以在 build 里回落。
   final String? doneLabel;
@@ -88,11 +95,17 @@ class NumericKeypad extends StatelessWidget {
                     ? _digit('.')
                     : _key(label: '', onTap: null),
                 _digit('0'),
-                _key(
-                  label: nextLabel ?? l10n.keypadNext,
-                  onTap: () => onAction(KeypadAction.next),
-                  tonal: true,
-                ),
+                secondsMode
+                    ? _key(
+                        label: l10n.keypadStartTimer,
+                        onTap: () => onAction(KeypadAction.startTimer),
+                        tonal: true,
+                      )
+                    : _key(
+                        label: nextLabel ?? l10n.keypadNext,
+                        onTap: () => onAction(KeypadAction.next),
+                        tonal: true,
+                      ),
                 _key(
                   label: doneLabel ?? l10n.actionDone,
                   onTap: () => onAction(KeypadAction.done),

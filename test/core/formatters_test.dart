@@ -132,4 +132,34 @@ void main() {
       '5 kg × 8',
     );
   });
+  test('setsSummary 距离类带单位：20 kg × 40 米', () {
+    expect(
+      Formatters.setsSummary(
+        [(weightKg: 20.0, reps: 40), (weightKg: 20.0, reps: 40)],
+        repsUnit: zh.unitMeters,
+      ),
+      '20 kg × 40 米 / 40 米',
+    );
+    expect(
+      Formatters.setsSummary(
+        [(weightKg: 20.0, reps: 40), (weightKg: 24.0, reps: 30)],
+        repsUnit: en.unitMeters,
+      ),
+      '20 kg × 40 m / 24 kg × 30 m',
+    );
+  });
+
+  test('mmss 正计时，分钟不补零', () {
+    expect(Formatters.mmss(0), '0:00');
+    expect(Formatters.mmss(37), '0:37');
+    expect(Formatters.mmss(65), '1:05');
+    expect(Formatters.mmss(-3), '0:00');
+  });
+
+  test('durationsSummary 逐组列秒数，跳过没记的', () {
+    expect(Formatters.durationsSummary([45, 45, 40], zh), '45 秒 / 45 秒 / 40 秒');
+    expect(Formatters.durationsSummary([45, null, 40], en), '45 s / 40 s');
+    expect(Formatters.durationsSummary([null], zh), '—');
+    expect(Formatters.durationsSummary([], zh), '—');
+  });
 }

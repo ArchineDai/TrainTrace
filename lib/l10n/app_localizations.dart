@@ -674,6 +674,24 @@ abstract class AppLocalizations {
   /// **'{reps} 次'**
   String repsValue(String reps);
 
+  /// No description provided for @unitSeconds.
+  ///
+  /// In zh, this message translates to:
+  /// **'秒'**
+  String get unitSeconds;
+
+  /// No description provided for @unitMeters.
+  ///
+  /// In zh, this message translates to:
+  /// **'米'**
+  String get unitMeters;
+
+  /// No description provided for @durationValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'{seconds} 秒'**
+  String durationValue(int seconds);
+
   /// No description provided for @muscleBack.
   ///
   /// In zh, this message translates to:
@@ -1376,6 +1394,18 @@ abstract class AppLocalizations {
   /// **'休息 {seconds}s'**
   String restMeta(int seconds);
 
+  /// No description provided for @targetSecondsMeta.
+  ///
+  /// In zh, this message translates to:
+  /// **'目标 {min}–{max} 秒'**
+  String targetSecondsMeta(int min, int max);
+
+  /// No description provided for @timedChip.
+  ///
+  /// In zh, this message translates to:
+  /// **'计时'**
+  String get timedChip;
+
   /// No description provided for @hideRir.
   ///
   /// In zh, this message translates to:
@@ -1735,6 +1765,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'下一项'**
   String get keypadNext;
+
+  /// No description provided for @keypadStartTimer.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始计时'**
+  String get keypadStartTimer;
+
+  /// No description provided for @stopSetTimer.
+  ///
+  /// In zh, this message translates to:
+  /// **'提前结束'**
+  String get stopSetTimer;
+
+  /// No description provided for @setTimerRunningHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'计时中 · 到 {seconds} 秒振动提醒，✕ 提前结束并记实际秒数'**
+  String setTimerRunningHint(int seconds);
+
+  /// No description provided for @setTimerRunningHintOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'计时中 · ✕ 结束并记实际秒数'**
+  String get setTimerRunningHintOpen;
 
   /// No description provided for @workoutComplete.
   ///

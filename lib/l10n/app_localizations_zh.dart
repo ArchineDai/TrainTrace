@@ -345,6 +345,17 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get unitSeconds => '秒';
+
+  @override
+  String get unitMeters => '米';
+
+  @override
+  String durationValue(int seconds) {
+    return '$seconds 秒';
+  }
+
+  @override
   String get muscleBack => '背';
 
   @override
@@ -732,6 +743,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String targetSecondsMeta(int min, int max) {
+    return '目标 $min–$max 秒';
+  }
+
+  @override
+  String get timedChip => '计时';
+
+  @override
   String get hideRir => '隐藏 RIR';
 
   @override
@@ -939,6 +958,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get keypadNext => '下一项';
+
+  @override
+  String get keypadStartTimer => '开始计时';
+
+  @override
+  String get stopSetTimer => '提前结束';
+
+  @override
+  String setTimerRunningHint(int seconds) {
+    return '计时中 · 到 $seconds 秒振动提醒，✕ 提前结束并记实际秒数';
+  }
+
+  @override
+  String get setTimerRunningHintOpen => '计时中 · ✕ 结束并记实际秒数';
 
   @override
   String get workoutComplete => '训练完成';

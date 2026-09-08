@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -53,6 +54,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   final Set<String> _rirExpanded = {};
   bool _finishing = false;
 
+  /// 组计时的 tick：只在有组在计时时跑（照 [RestTimerBar] 的路子，从 clockProvider
+  /// 重算，不另起全局 provider）。到点 → 振动 + 让 VM 停表完成。
+  Timer? _setTick;
+  int _lastTickSecond = -1;
+
   ActiveWorkoutViewModel get _vm => ref.read(activeWorkoutProvider.notifier);
 
   @override
@@ -78,8 +84,43 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
 
   @override
   void dispose() {
+    _setTick?.cancel();
     unawaited(WakelockPlus.disable().catchError((Object e) => swallow(e, 'wakelock')));
     super.dispose();
+  }
+
+  // ── 组计时 tick ──────────────────────────────────────────────
+
+  /// 与 provider 里的 runningSet 同步：有就开 tick，没有就停。build 里调用。
+  void _syncSetTick(RunningSet? running) {
+    if (running == null) {
+      _setTick?.cancel();
+      _setTick = null;
+      _lastTickSecond = -1;
+      return;
+    }
+    // 250ms 一查：到点判定误差 < 1s，显示只在整秒变化时 setState。
+    _setTick ??= Timer.periodic(const Duration(milliseconds: 250), (_) => _onSetTick());
+  }
+
+  void _onSetTick() {
+    final r = ref.read(activeWorkoutProvider).value?.runningSet;
+    if (r == null) {
+      _syncSetTick(null);
+      return;
+    }
+    final now = ref.read(clockProvider).now();
+    if (r.isDue(now)) {
+      // VM 先同步清掉 runningSet，下一个 tick 不会再进来。振动是 presentation 的事。
+      unawaited(HapticFeedback.vibrate());
+      unawaited(_vm.stopSetTimer(complete: true));
+      return;
+    }
+    final s = r.elapsedSeconds(now);
+    if (s != _lastTickSecond && mounted) {
+      _lastTickSecond = s;
+      setState(() {});
+    }
   }
 
   @override
@@ -103,9 +144,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final scheme = Theme.of(context).colorScheme;
     final focusedEx = _focusSetId == null ? null : st.exerciseOfSet(_focusSetId!);
     final isWeight = _focusField == SetField.weight;
-    final step = focusedEx == null
-        ? 2.5
-        : (ref.watch(exerciseByIdProvider(focusedEx.exerciseId))?.minIncrementKg ?? 2.5);
+    final isDuration = _focusField == SetField.duration;
+    final step = isDuration
+        ? 5.0
+        : focusedEx == null
+            ? 2.5
+            : (ref.watch(exerciseByIdProvider(focusedEx.exerciseId))?.minIncrementKg ?? 2.5);
+    final running = st.runningSet;
+    _syncSetTick(running);
 
     return Scaffold(
       appBar: AppBar(
@@ -197,8 +243,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           const RestTimerBar(),
           if (_focusSetId != null)
             NumericKeypad(
-              step: isWeight ? step : 1,
+              step: isWeight || isDuration ? step : 1,
               allowDecimal: isWeight,
+              secondsMode: isDuration,
               onDigit: _onDigit,
               onAction: _onKeypadAction,
             )
@@ -237,6 +284,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
       supersetTag: st.supersetTagOf(ex.id),
       canLinkNext: hasNext,
+      measure: ref.watch(exerciseByIdProvider(ex.exerciseId))?.measure ?? ExerciseMeasure.reps,
+      runningSetId: st.runningSet?.setId,
+      runningElapsed: st.runningSet?.elapsedSeconds(now),
+      runningTarget: st.runningSet?.targetSeconds,
+      onStopTimer: (_) => _vm.stopSetTimer(complete: false),
       // 板片计算器只对杠铃动作开放；其他器械长按不响应。
       onLongPressWeight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.equipmentType ==
               EquipmentType.barbell
@@ -251,6 +303,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final st = ref.read(activeWorkoutProvider).value;
     final set = st?.setById(setId);
     if (set == null) return;
+    if (st?.runningSet?.setId == setId) return; // 计时中的组用 ✕ 结束，不进编辑
     if (set.isCompleted) _vm.toggleComplete(setId); // 点已完成组的字段 = 解锁
     setState(() {
       _focusSetId = setId;
@@ -261,6 +314,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             ? ''
             : NumericInput.format(set.weightKg!, allowDecimal: true),
         SetField.reps => set.reps?.toString() ?? '',
+        SetField.duration => set.durationSeconds?.toString() ?? '',
       };
     });
   }
@@ -293,7 +347,12 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         final inc = ex == null
             ? 2.5
             : (ref.read(exerciseByIdProvider(ex.exerciseId))?.minIncrementKg ?? 2.5);
-        final delta = (isWeight ? inc : 1.0) * (a == KeypadAction.stepUp ? 1 : -1);
+        final unit = isWeight
+            ? inc
+            : _focusField == SetField.duration
+                ? 5.0
+                : 1.0;
+        final delta = unit * (a == KeypadAction.stepUp ? 1 : -1);
         _apply(NumericInput.step(_editing, delta, allowDecimal: isWeight));
       case KeypadAction.next:
         if (isWeight) {
@@ -303,6 +362,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         }
       case KeypadAction.done:
         _toggleComplete(setId);
+      case KeypadAction.startTimer:
+        // 目标 = 此刻已填的秒数（editSet 已即时写进内存），收起键盘开始正计时。
+        _unfocus();
+        unawaited(_vm.startSetTimer(setId));
     }
   }
 
@@ -316,6 +379,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final v = NumericInput.parse(text);
     if (_focusField == SetField.weight) {
       _vm.editSet(setId, weightKg: v, clearWeight: v == null);
+    } else if (_focusField == SetField.duration) {
+      _vm.editSet(setId, durationSeconds: v?.round(), clearDurationSeconds: v == null);
     } else {
       _vm.editSet(setId, reps: v?.round(), clearReps: v == null);
     }

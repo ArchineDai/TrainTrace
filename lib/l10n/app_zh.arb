@@ -193,6 +193,14 @@
       "reps": { "type": "String" }
     }
   },
+  "unitSeconds": "秒",
+  "unitMeters": "米",
+  "durationValue": "{seconds} 秒",
+  "@durationValue": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
 
   "muscleBack": "背",
   "muscleShoulder": "肩",
@@ -419,6 +427,14 @@
       "seconds": { "type": "int" }
     }
   },
+  "targetSecondsMeta": "目标 {min}–{max} 秒",
+  "@targetSecondsMeta": {
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "timedChip": "计时",
   "hideRir": "隐藏 RIR",
   "recordRir": "记录 RIR",
   "applyLast": "沿用上次",
@@ -548,6 +564,15 @@
   "undoComplete": "取消完成",
   "completeSet": "完成本组",
   "keypadNext": "下一项",
+  "keypadStartTimer": "开始计时",
+  "stopSetTimer": "提前结束",
+  "setTimerRunningHint": "计时中 · 到 {seconds} 秒振动提醒，✕ 提前结束并记实际秒数",
+  "@setTimerRunningHint": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "setTimerRunningHintOpen": "计时中 · ✕ 结束并记实际秒数",
 
   "workoutComplete": "训练完成",
   "statDuration": "时长",

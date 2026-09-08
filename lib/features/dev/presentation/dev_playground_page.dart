@@ -118,6 +118,8 @@ class _DevPlaygroundPageState extends ConsumerState<DevPlaygroundPage> {
           }
         case KeypadAction.done:
           _complete(_focusIndex!, countTap: false);
+        case KeypadAction.startTimer:
+          break; // 练习场没有计时类动作，键盘不会进秒模式
       }
     });
   }

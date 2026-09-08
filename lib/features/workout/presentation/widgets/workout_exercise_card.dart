@@ -4,6 +4,7 @@ import '../../../../core/formatters.dart';
 import '../../../../core/theme/app_text_size.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../exercises/models/exercise_measure.dart';
 import '../../../exercises/presentation/exercise_labels.dart';
 import '../../../history/models/history_models.dart';
 import '../../../suggestion/presentation/suggestion_card.dart';
@@ -63,6 +64,11 @@ class WorkoutExerciseCard extends StatelessWidget {
     this.supersetTag,
     this.canLinkNext = false,
     this.isBodyweight = false,
+    this.measure = ExerciseMeasure.reps,
+    this.runningSetId,
+    this.runningElapsed,
+    this.runningTarget,
+    this.onStopTimer,
   });
 
   final WorkoutExercise exercise;
@@ -73,6 +79,17 @@ class WorkoutExerciseCard extends StatelessWidget {
   /// 菜单里是否给出「与下一动作组成超级组」（不在组里且有下一动作时由页面传 true）。
   final bool canLinkNext;
   final ExercisePerformance? last;
+
+  /// 动作的计量方式：次数 / 秒 / 米。决定组行字段、单位、上次摘要与头部芯片。
+  final ExerciseMeasure measure;
+
+  /// 正在计时的组（计时类动作）；不在本卡片里就传 null。
+  final String? runningSetId;
+  final int? runningElapsed;
+  final int? runningTarget;
+
+  /// ✕ 提前结束计时。
+  final ValueChanged<String>? onStopTimer;
 
   /// 历史里最近一条非空备注；本次已写备注时不显示它。
   final PastExerciseNote? lastNote;
@@ -107,8 +124,11 @@ class WorkoutExerciseCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final colors = AppTheme.of(context);
     final l10n = AppLocalizations.of(context);
+    final timed = measure == ExerciseMeasure.seconds;
     final target = exercise.targetRepMin != null && exercise.targetRepMax != null
-        ? l10n.targetRepsMeta(exercise.targetRepMin!, exercise.targetRepMax!)
+        ? (timed
+            ? l10n.targetSecondsMeta(exercise.targetRepMin!, exercise.targetRepMax!)
+            : l10n.targetRepsMeta(exercise.targetRepMin!, exercise.targetRepMax!))
         : null;
     final rest = exercise.restSeconds == null
         ? null
@@ -169,6 +189,8 @@ class WorkoutExerciseCard extends StatelessWidget {
                     kg: exercise.bodyWeightKg,
                     onTap: () => onAction(ExerciseCardAction.recordBodyWeight),
                   )
+                else if (timed)
+                  const _TimedChip()
                 else
                   _LabelChip(
                     label: exercise.equipmentLabel,
@@ -287,8 +309,19 @@ class WorkoutExerciseCard extends StatelessWidget {
                       ? null
                       : () => onLongPressWeight!(exercise.sets[i].id),
                   weightPrefix: isBodyweight ? '+' : null,
+                  measure: measure,
+                  durationText: _text(exercise.sets[i], SetField.duration),
+                  runningElapsed:
+                      runningSetId == exercise.sets[i].id ? runningElapsed : null,
+                  runningTarget:
+                      runningSetId == exercise.sets[i].id ? runningTarget : null,
+                  onStopTimer: onStopTimer == null
+                      ? null
+                      : () => onStopTimer!(exercise.sets[i].id),
                 ),
               ),
+              if (runningSetId == exercise.sets[i].id && runningElapsed != null)
+                SetTimerHint(targetSeconds: runningTarget),
               if (rirExpanded)
                 _RirRow(
                   value: exercise.sets[i].rir,
@@ -322,10 +355,21 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   /// 上次表现：各组摘要 +（器械标签）。自重动作的重量是附加重量，带 `+`。
   String _lastSummary(AppLocalizations l10n) {
-    final summary = Formatters.setsSummary(
-      [for (final s in last!.sets) (weightKg: s.weightKg, reps: s.reps)],
-      signed: isBodyweight,
-    );
+    final summary = switch (measure) {
+      ExerciseMeasure.seconds => Formatters.durationsSummary(
+          [for (final s in last!.sets) s.durationSeconds],
+          l10n,
+        ),
+      ExerciseMeasure.distance => Formatters.setsSummary(
+          [for (final s in last!.sets) (weightKg: s.weightKg, reps: s.reps)],
+          repsUnit: l10n.unitMeters,
+          signed: isBodyweight,
+        ),
+      ExerciseMeasure.reps => Formatters.setsSummary(
+          [for (final s in last!.sets) (weightKg: s.weightKg, reps: s.reps)],
+          signed: isBodyweight,
+        ),
+    };
     final label = last!.equipmentLabel;
     return label == null ? summary : l10n.nameWithLabel(summary, label);
   }
@@ -356,6 +400,7 @@ class WorkoutExerciseCard extends StatelessWidget {
           ? ''
           : NumericInput.format(set.weightKg!, allowDecimal: true),
       SetField.reps => set.reps?.toString() ?? '',
+      SetField.duration => set.durationSeconds?.toString() ?? '',
     };
   }
 
@@ -557,6 +602,27 @@ class _RirRow extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// 计时类动作的头部芯片：替代器械芯片（平板支撑没有"哪台机器"可选）。不可点。
+class _TimedChip extends StatelessWidget {
+  const _TimedChip();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Chip(
+        avatar: Icon(Icons.timer_outlined, size: 16, color: scheme.onSurfaceVariant),
+        label: Text(
+          AppLocalizations.of(context).timedChip,
+          style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
+        ),
+        visualDensity: VisualDensity.compact,
       ),
     );
   }

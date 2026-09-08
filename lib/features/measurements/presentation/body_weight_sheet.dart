@@ -166,6 +166,9 @@ class _BodyWeightSheetState extends ConsumerState<BodyWeightSheet> {
         Navigator.of(context).pop();
       case KeypadAction.done:
         _save(text);
+      case KeypadAction.startTimer:
+        // 体重弹层不开秒模式，这个键位不会出现。
+        break;
     }
   }
 
