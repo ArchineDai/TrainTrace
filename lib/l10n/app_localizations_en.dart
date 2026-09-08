@@ -252,6 +252,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionMore => 'More';
 
   @override
+  String get actionClose => 'Close';
+
+  @override
   String get actionCustom => 'Custom';
 
   @override
@@ -744,6 +747,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get alsoUpdateDefaults =>
       'Also update this exercise\'s default targets';
+
+  @override
+  String get plateCalculatorTitle => 'Plate loading';
+
+  @override
+  String barbellOption(String kg) {
+    return '$kg kg bar';
+  }
+
+  @override
+  String get availablePlatesLabel => 'Available plates';
+
+  @override
+  String plateNotExact(String target, String achieved) {
+    return 'Can\'t load $target exactly — closest is $achieved';
+  }
+
+  @override
+  String platePerSide(String kg) {
+    return '$kg kg per side';
+  }
+
+  @override
+  String plateTotalFormula(String bar, String perSide) {
+    return 'Bar $bar + 2 × $perSide';
+  }
+
+  @override
+  String plateStepDown(String kg) {
+    return 'Step down $kg';
+  }
+
+  @override
+  String plateStepUp(String kg) {
+    return 'Step up $kg';
+  }
+
+  @override
+  String plateFill(String kg) {
+    return 'Use $kg kg';
+  }
 
   @override
   String get removeExercise => 'Remove exercise';

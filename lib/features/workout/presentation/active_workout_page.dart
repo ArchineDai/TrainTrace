@@ -13,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../../shared/widgets/text_fields_dialog.dart';
 import '../../exercises/data/exercise_repository.dart';
+import '../../exercises/models/exercise.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
@@ -22,6 +23,7 @@ import '../models/numeric_input.dart';
 import '../state/active_workout_view_model.dart';
 import 'widgets/equipment_label_sheet.dart';
 import 'widgets/numeric_keypad.dart';
+import 'widgets/plate_calculator_sheet.dart';
 import 'widgets/rest_timer_bar.dart';
 import 'widgets/set_row.dart';
 import 'widgets/workout_target_sheet.dart';
@@ -183,6 +185,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                       onTapLabel: () => _changeLabel(ex.id, ex.exerciseId, ex.equipmentLabel),
                       onLongPressLabel: () => _showLabelPhoto(ex.exerciseId, ex.equipmentLabel),
                       onAction: (a) => _onCardAction(ex.id, ex.exerciseId, ex.equipmentLabel, a),
+                      // 板片计算器只对杠铃动作开放；其他器械长按不响应。
+                      onLongPressWeight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.equipmentType ==
+                              EquipmentType.barbell
+                          ? _showPlateCalculator
+                          : null,
                     ),
                   ),
                 // 追加动作放列表末尾，和编辑模板页同一条规则：练完最后一个动作时
@@ -354,6 +361,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       return;
     }
     await EquipmentPhotoViewer.show(context, note);
+  }
+
+  /// 长按重量框：打开板片计算器。初值 = 该组已填重量，空则由弹层用杠重。
+  /// 正在编辑这组时先收起键盘，免得"填入"的值被输入中间态盖住。
+  Future<void> _showPlateCalculator(String setId) async {
+    if (_focusSetId == setId) _unfocus();
+    final set = ref.read(activeWorkoutProvider).value?.setById(setId);
+    await PlateCalculatorSheet.show(context, setId: setId, initialKg: set?.weightKg);
   }
 
   Future<void> _onCardAction(

@@ -106,6 +106,7 @@
   "actionResume": "继续",
   "actionStart": "开始",
   "actionMore": "更多",
+  "actionClose": "关闭",
   "actionCustom": "自定义",
   "toastSaved": "已保存",
   "toastDeleted": "已删除",
@@ -406,6 +407,52 @@
   "viewExerciseGuide": "查看动作要领",
   "editWorkoutTargets": "调整目标 / 休息",
   "alsoUpdateDefaults": "同时更新这个动作的默认目标",
+  "plateCalculatorTitle": "配重",
+  "barbellOption": "{kg} kg 杠",
+  "@barbellOption": {
+    "placeholders": {
+      "kg": { "type": "String" }
+    }
+  },
+  "availablePlatesLabel": "手头的片",
+  "plateNotExact": "配不出 {target}，最近可配 {achieved}",
+  "@plateNotExact": {
+    "placeholders": {
+      "target": { "type": "String" },
+      "achieved": { "type": "String" }
+    }
+  },
+  "platePerSide": "每边 {kg} kg",
+  "@platePerSide": {
+    "placeholders": {
+      "kg": { "type": "String" }
+    }
+  },
+  "plateTotalFormula": "杠 {bar} + 2 × {perSide}",
+  "@plateTotalFormula": {
+    "placeholders": {
+      "bar": { "type": "String" },
+      "perSide": { "type": "String" }
+    }
+  },
+  "plateStepDown": "上一档 {kg}",
+  "@plateStepDown": {
+    "placeholders": {
+      "kg": { "type": "String" }
+    }
+  },
+  "plateStepUp": "下一档 {kg}",
+  "@plateStepUp": {
+    "placeholders": {
+      "kg": { "type": "String" }
+    }
+  },
+  "plateFill": "填入 {kg} kg",
+  "@plateFill": {
+    "placeholders": {
+      "kg": { "type": "String" }
+    }
+  },
   "removeExercise": "删除动作",
   "lastTimeNone": "上次：无记录",
   "lastTimeValue": "上次：{summary}",

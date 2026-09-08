@@ -18,6 +18,16 @@ class SettingsRepository {
   static const _kLocale = 'locale';
   static const _kRestReminderPrompted = 'restReminderPrompted';
   static const _kRestReminderEnabled = 'restReminderEnabled';
+  static const _kBarbellWeightKg = 'barbellWeightKg';
+  static const _kAvailablePlatesKg = 'availablePlatesKg';
+
+  /// 板片计算器用的杠重，默认 20。存的是"用户上次选了哪根杠"，不是动作属性。
+  static const double defaultBarbellWeightKg = 20;
+
+  /// 板片计算器认识的全部片规格，也是"手头有哪些片"的默认值（全有）。
+  /// 与 `PlateCalculator.defaultPlates` 同值：settings 不 import workout，
+  /// 两处一致由 `test/data/settings_repository_test.dart` 盯着。
+  static const List<double> defaultPlatesKg = [25, 20, 15, 10, 5, 2.5, 1.25];
 
   Future<ThemeSettings> readThemeSettings() async {
     final rows = await (_db.select(_db.appSettings)
@@ -75,6 +85,47 @@ class SettingsRepository {
 
   Future<void> writeRestReminderEnabled(bool value) =>
       _put(_kRestReminderEnabled, value.toString());
+
+  /// 板片计算器的杠重。库里没有或不是数字时回落 [defaultBarbellWeightKg]。
+  Future<double> readBarbellWeightKg() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_kBarbellWeightKg)))
+        .getSingleOrNull();
+    final parsed = row == null ? null : double.tryParse(row.value);
+    return parsed != null && parsed > 0 ? parsed : defaultBarbellWeightKg;
+  }
+
+  Future<void> writeBarbellWeightKg(double kg) =>
+      _put(_kBarbellWeightKg, kg.toString());
+
+  /// 用户手头有哪些片，从大到小、去重、只认 [defaultPlatesKg] 里的规格。
+  /// 库里没有、解析后一片不剩（垃圾字符串、全是非标准规格）都回落全套 ——
+  /// 空清单会让计算器什么都配不出，不如当作没设过。
+  Future<List<double>> readAvailablePlatesKg() async {
+    final row = await (_db.select(_db.appSettings)
+          ..where((t) => t.key.equals(_kAvailablePlatesKg)))
+        .getSingleOrNull();
+    final parsed = row == null ? const <double>[] : parsePlatesKg(row.value);
+    return parsed.isEmpty ? defaultPlatesKg : parsed;
+  }
+
+  /// 存逗号分隔的数字串。写入前同样规范化，保证读回来的就是写进去的。
+  Future<void> writeAvailablePlatesKg(List<double> plates) =>
+      _put(_kAvailablePlatesKg, normalizePlatesKg(plates).join(','));
+
+  /// `"20,5,2.5"` → `[20, 5, 2.5]`；解析不了的段丢掉。
+  static List<double> parsePlatesKg(String raw) => normalizePlatesKg(
+        raw.split(',').map((s) => double.tryParse(s.trim())).nonNulls,
+      );
+
+  /// 去重、只留 [defaultPlatesKg] 里的规格、从大到小。
+  static List<double> normalizePlatesKg(Iterable<double> plates) {
+    final kept = <double>{
+      for (final p in plates)
+        if (defaultPlatesKg.contains(p)) p,
+    };
+    return kept.toList()..sort((a, b) => b.compareTo(a));
+  }
 
   Future<void> _put(String key, String value) => _db
       .into(_db.appSettings)

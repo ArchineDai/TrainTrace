@@ -524,6 +524,12 @@ abstract class AppLocalizations {
   /// **'更多'**
   String get actionMore;
 
+  /// No description provided for @actionClose.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get actionClose;
+
   /// No description provided for @actionCustom.
   ///
   /// In zh, this message translates to:
@@ -1369,6 +1375,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'同时更新这个动作的默认目标'**
   String get alsoUpdateDefaults;
+
+  /// No description provided for @plateCalculatorTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'配重'**
+  String get plateCalculatorTitle;
+
+  /// No description provided for @barbellOption.
+  ///
+  /// In zh, this message translates to:
+  /// **'{kg} kg 杠'**
+  String barbellOption(String kg);
+
+  /// No description provided for @availablePlatesLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'手头的片'**
+  String get availablePlatesLabel;
+
+  /// No description provided for @plateNotExact.
+  ///
+  /// In zh, this message translates to:
+  /// **'配不出 {target}，最近可配 {achieved}'**
+  String plateNotExact(String target, String achieved);
+
+  /// No description provided for @platePerSide.
+  ///
+  /// In zh, this message translates to:
+  /// **'每边 {kg} kg'**
+  String platePerSide(String kg);
+
+  /// No description provided for @plateTotalFormula.
+  ///
+  /// In zh, this message translates to:
+  /// **'杠 {bar} + 2 × {perSide}'**
+  String plateTotalFormula(String bar, String perSide);
+
+  /// No description provided for @plateStepDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'上一档 {kg}'**
+  String plateStepDown(String kg);
+
+  /// No description provided for @plateStepUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一档 {kg}'**
+  String plateStepUp(String kg);
+
+  /// No description provided for @plateFill.
+  ///
+  /// In zh, this message translates to:
+  /// **'填入 {kg} kg'**
+  String plateFill(String kg);
 
   /// No description provided for @removeExercise.
   ///

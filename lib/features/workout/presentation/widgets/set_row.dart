@@ -22,6 +22,7 @@ class SetRow extends StatelessWidget {
     required this.onTapField,
     required this.onToggleComplete,
     this.previousHint,
+    this.onLongPressWeight,
   });
 
   /// 从 1 开始的组序号。
@@ -37,6 +38,9 @@ class SetRow extends StatelessWidget {
 
   /// 上次同一组的表现，如 "20×12"，值为空时作占位显示。
   final String? previousHint;
+
+  /// 长按重量框（杠铃动作打开板片计算器）。null 不响应长按。
+  final VoidCallback? onLongPressWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +73,7 @@ class SetRow extends StatelessWidget {
               focused: focusedField == SetField.weight,
               completed: isCompleted,
               onTap: () => onTapField(SetField.weight),
+              onLongPress: onLongPressWeight,
             ),
           ),
           const SizedBox(width: 8),
@@ -114,6 +119,7 @@ class _FieldBox extends StatelessWidget {
     required this.focused,
     required this.completed,
     required this.onTap,
+    this.onLongPress,
   });
 
   final String text;
@@ -121,6 +127,7 @@ class _FieldBox extends StatelessWidget {
   final bool focused;
   final bool completed;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +138,7 @@ class _FieldBox extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppTheme.radius),
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(AppTheme.radius),
         child: Container(
           height: AppTheme.minTouch,

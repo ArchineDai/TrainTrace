@@ -49,6 +49,7 @@ class WorkoutExerciseCard extends StatelessWidget {
     required this.onTapLabel,
     this.onLongPressLabel,
     required this.onAction,
+    this.onLongPressWeight,
   });
 
   final WorkoutExercise exercise;
@@ -75,6 +76,9 @@ class WorkoutExerciseCard extends StatelessWidget {
   /// 长按器械标签：看这台机器的照片。
   final VoidCallback? onLongPressLabel;
   final ValueChanged<ExerciseCardAction> onAction;
+
+  /// 长按某组的重量框（杠铃动作开板片计算器）。null 不响应。
+  final ValueChanged<String>? onLongPressWeight;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +235,9 @@ class WorkoutExerciseCard extends StatelessWidget {
                       focusedSetId == exercise.sets[i].id ? focusedField : null,
                   onTapField: (f) => onTapField(exercise.sets[i].id, f),
                   onToggleComplete: () => onToggleComplete(exercise.sets[i].id),
+                  onLongPressWeight: onLongPressWeight == null
+                      ? null
+                      : () => onLongPressWeight!(exercise.sets[i].id),
                 ),
               ),
               if (rirExpanded)

@@ -241,6 +241,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get actionMore => '更多';
 
   @override
+  String get actionClose => '关闭';
+
+  @override
   String get actionCustom => '自定义';
 
   @override
@@ -723,6 +726,47 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get alsoUpdateDefaults => '同时更新这个动作的默认目标';
+
+  @override
+  String get plateCalculatorTitle => '配重';
+
+  @override
+  String barbellOption(String kg) {
+    return '$kg kg 杠';
+  }
+
+  @override
+  String get availablePlatesLabel => '手头的片';
+
+  @override
+  String plateNotExact(String target, String achieved) {
+    return '配不出 $target，最近可配 $achieved';
+  }
+
+  @override
+  String platePerSide(String kg) {
+    return '每边 $kg kg';
+  }
+
+  @override
+  String plateTotalFormula(String bar, String perSide) {
+    return '杠 $bar + 2 × $perSide';
+  }
+
+  @override
+  String plateStepDown(String kg) {
+    return '上一档 $kg';
+  }
+
+  @override
+  String plateStepUp(String kg) {
+    return '下一档 $kg';
+  }
+
+  @override
+  String plateFill(String kg) {
+    return '填入 $kg kg';
+  }
 
   @override
   String get removeExercise => '删除动作';
