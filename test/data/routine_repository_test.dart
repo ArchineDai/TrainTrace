@@ -25,7 +25,7 @@ void main() {
         ['A 拉日', 'B 推日', 'C 腿日', 'D 肩背强化']);
     final a = all.first;
     expect(a.exercises.length, 6);
-    expect(a.exercises.first.exerciseName, '高位下拉');
+    expect(a.exercises.first.exerciseName, '辅助引体向上');
     expect(a.exercises.map((e) => e.sortOrder), [0, 1, 2, 3, 4, 5]);
   });
 

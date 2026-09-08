@@ -24,7 +24,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '5');
+    expect(version.value, '6');
   });
 
   test('种子 v4 → v5：旧三套模板软删、四套新模板插入、自建模板不动、历史不受影响', () async {
@@ -82,20 +82,87 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '5');
+    expect(version.value, '6');
   });
 
-  test('v5 的迁移重跑不会把模板插两遍', () async {
+  test('v5 起的迁移重跑不会把模板插两遍：模板数不变，未删动作行数不变', () async {
     final loader = seedLoader(db, fixedClock());
     await loader.seedIfNeeded();
-    final before = (await db.select(db.routineExercises).get()).length;
+    Future<int> liveItems() async => (await (db.select(db.routineExercises)
+              ..where((t) => t.deletedAt.isNull()))
+            .get())
+        .length;
+    final before = await liveItems();
     await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
         .write(const AppSettingsCompanion(value: Value('4')));
 
     expect(await loader.seedIfNeeded(), isTrue);
 
     expect((await db.select(db.routines).get()).length, 4);
-    expect((await db.select(db.routineExercises).get()).length, before);
+    expect(await liveItems(), before);
+  });
+
+  test('种子 v5 → v6：内置模板动作行按种子整体替换，自建模板与已删内置模板不动', () async {
+    final loader = seedLoader(db, fixedClock());
+    await loader.seedIfNeeded();
+    // 模拟一台 v5 用户机：A 拉日还是 v5 的清单（高位下拉开头），用户建了一套自己的，
+    // 把 D 删了；另外在 B 里手改过一行。
+    Future<void> replaceItems(String routineId, List<String> exIds) async {
+      await (db.delete(db.routineExercises)..where((t) => t.routineId.equals(routineId))).go();
+      for (var i = 0; i < exIds.length; i++) {
+        await db.into(db.routineExercises).insert(RoutineExercisesCompanion.insert(
+              id: 're_${routineId}_$i',
+              routineId: routineId,
+              exerciseId: exIds[i],
+              sortOrder: i,
+              targetRepMin: 10,
+              targetRepMax: 15,
+              restSeconds: 90,
+              updatedAt: 1,
+            ));
+      }
+    }
+    await replaceItems('rt_a_pull', [
+      'ex_lat_pulldown', 'ex_seated_row', 'ex_assisted_pullup',
+      'ex_reverse_pec_deck', 'ex_machine_curl', 'ex_dumbbell_curl',
+    ]);
+    await db.into(db.routines).insert(RoutinesCompanion.insert(
+          id: 'mine', name: '我自己的', createdAt: 1, updatedAt: 1,
+        ));
+    await replaceItems('mine', ['ex_plank']);
+    await (db.update(db.routines)..where((t) => t.id.equals('rt_d_shoulder_back')))
+        .write(const RoutinesCompanion(deletedAt: Value(1)));
+    await (db.update(db.routineExercises)
+          ..where((t) => t.routineId.equals('rt_d_shoulder_back')))
+        .write(const RoutineExercisesCompanion(deletedAt: Value(1)));
+    await (db.update(db.appSettings)..where((t) => t.key.equals('seededVersion')))
+        .write(const AppSettingsCompanion(value: Value('5')));
+
+    expect(await loader.seedIfNeeded(), isTrue);
+
+    Future<List<String>> liveIds(String routineId) async => (await (db.select(db.routineExercises)
+              ..where((t) => t.routineId.equals(routineId) & t.deletedAt.isNull())
+              ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+            .get())
+        .map((r) => r.exerciseId)
+        .toList();
+    expect(await liveIds('rt_a_pull'), [
+      'ex_assisted_pullup', 'ex_lat_pulldown', 'ex_seated_row',
+      'ex_reverse_pec_deck', 'ex_face_pull', 'ex_barbell_curl',
+    ], reason: 'A 拉日按 v6 种子重排');
+    final oldA = await (db.select(db.routineExercises)
+          ..where((t) => t.id.equals('re_rt_a_pull_0')))
+        .getSingle();
+    expect(oldA.deletedAt, isNotNull, reason: 'v5 的动作行软删而不是物理删');
+    expect(await liveIds('mine'), ['ex_plank'], reason: '自建模板不碰');
+    final d = await (db.select(db.routines)..where((t) => t.id.equals('rt_d_shoulder_back')))
+        .getSingle();
+    expect(d.deletedAt, 1, reason: '用户删掉的内置模板不复活');
+    expect(await liveIds('rt_d_shoulder_back'), isEmpty);
+    final version = await (db.select(db.appSettings)
+          ..where((t) => t.key.equals('seededVersion')))
+        .getSingle();
+    expect(version.value, '6');
   });
 
   test('历史记录的组全部标记完成，且完成时间落在训练时长内', () async {
@@ -158,7 +225,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '5');
+    expect(version.value, '6');
   });
 
   test('种子 v3 → v4：补 32 个新动作，没被引用的自定义动作软删、引用过的留着', () async {
@@ -204,7 +271,7 @@ void main() {
     final version = await (db.select(db.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '5');
+    expect(version.value, '6');
   });
 
   test('种子 v2 → v3：v2 之前的记录整表作废，只剩种子的三次和进行中的那次', () async {

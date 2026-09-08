@@ -35,8 +35,8 @@ void main() {
     expect(s.startedAt, clock.now());
     expect(s.exercises.length, 6);
     final first = s.exercises.first;
-    expect(first.exerciseName, '高位下拉');
-    expect(first.targetRepMin, 10);
+    expect(first.exerciseName, '辅助引体向上');
+    expect(first.targetRepMin, 8);
     expect(first.restSeconds, 90);
     expect(first.sets.length, 3);
     expect(first.sets.every((x) => x.isEmpty && !x.isCompleted), isTrue);
@@ -162,7 +162,7 @@ void main() {
     var after = (await repo.getExercise(we.id))!;
     expect(after.equipmentLabel, '黑熊猫 机器A');
     expect(after.targetRepMax, 12);
-    expect(after.targetRepMin, 10, reason: '未传的不变');
+    expect(after.targetRepMin, 8, reason: '未传的不变');
 
     await repo.updateExercise(we.id, clearEquipmentLabel: true);
     after = (await repo.getExercise(we.id))!;

@@ -52,7 +52,7 @@ void main() {
     final st = container.read(activeWorkoutProvider).value!;
     expect(st.session.exercises.length, 6);
 
-    final lat = st.session.exercises[0];
+    final lat = st.session.exercises[1];
     expect(lat.exerciseName, '高位下拉');
     expect(lat.sets.map((s) => s.weightKg), [18.16, 22.7, 18.16], reason: '逐组照抄上次');
     expect(lat.sets.map((s) => s.reps), [12, 12, 12]);
@@ -88,13 +88,13 @@ void main() {
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
     var st = container.read(activeWorkoutProvider).value!;
-    final lat = st.session.exercises[0];
+    final lat = st.session.exercises[1];
 
     vm.editSet(lat.sets[2].id, reps: 10);
     await vm.toggleComplete(lat.sets[2].id);
 
     st = container.read(activeWorkoutProvider).value!;
-    final after = st.session.exercises[0];
+    final after = st.session.exercises[1];
     expect(after.sets.length, 3, reason: '完成最后一组不自动补第 4 组');
     expect(after.sets[2].isCompleted, isTrue);
     expect(after.sets[2].completedAt, clock.now());
@@ -106,20 +106,20 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     final persisted = await container.read(workoutRepositoryProvider).getSession(st.session.id);
     expect(persisted!.restEndsAt, clock.now().add(const Duration(seconds: 90)));
-    expect(persisted.exercises[0].sets[2].reps, 10, reason: '完成前 flush 了 debounce');
+    expect(persisted.exercises[1].sets[2].reps, 10, reason: '完成前 flush 了 debounce');
   });
 
   test('addSet 手动加组：继承最后一组的重量次数', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
-    final lat = container.read(activeWorkoutProvider).value!.session.exercises[0];
+    final lat = container.read(activeWorkoutProvider).value!.session.exercises[1];
 
     vm.editSet(lat.sets[2].id, reps: 10);
     await vm.toggleComplete(lat.sets[2].id);
     await vm.addSet(lat.id);
 
-    final after = container.read(activeWorkoutProvider).value!.session.exercises[0];
+    final after = container.read(activeWorkoutProvider).value!.session.exercises[1];
     expect(after.sets.length, 4);
     expect(after.sets[3].weightKg, 18.16);
     expect(after.sets[3].reps, 10, reason: '继承刚完成那组的次数');
@@ -130,13 +130,13 @@ void main() {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
-    final lat = container.read(activeWorkoutProvider).value!.session.exercises[0];
+    final lat = container.read(activeWorkoutProvider).value!.session.exercises[1];
 
     await vm.toggleComplete(lat.sets[0].id);
-    expect(container.read(activeWorkoutProvider).value!.session.exercises[0].sets.length, 3);
+    expect(container.read(activeWorkoutProvider).value!.session.exercises[1].sets.length, 3);
 
     await vm.toggleComplete(lat.sets[0].id);
-    final s0 = container.read(activeWorkoutProvider).value!.session.exercises[0].sets[0];
+    final s0 = container.read(activeWorkoutProvider).value!.session.exercises[1].sets[0];
     expect(s0.isCompleted, isFalse);
     expect(s0.completedAt, isNull);
     expect(container.read(restTimerProvider).isIdle, isFalse, reason: '取消完成不清计时');
@@ -147,16 +147,16 @@ void main() {
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
     final st = container.read(activeWorkoutProvider).value!;
-    final setId = st.session.exercises[0].sets[0].id;
+    final setId = st.session.exercises[1].sets[0].id;
     final repo = container.read(workoutRepositoryProvider);
 
     vm.editSet(setId, weightKg: 22.5);
     vm.editSet(setId, weightKg: 25);
     expect(container.read(activeWorkoutProvider).value!.setById(setId)!.weightKg, 25);
-    expect((await repo.getExercise(st.session.exercises[0].id))!.sets[0].weightKg, 18.16);
+    expect((await repo.getExercise(st.session.exercises[1].id))!.sets[0].weightKg, 18.16);
 
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    expect((await repo.getExercise(st.session.exercises[0].id))!.sets[0].weightKg, 25);
+    expect((await repo.getExercise(st.session.exercises[1].id))!.sets[0].weightKg, 25);
   });
 
   test('finish：清空组、状态置 null、计时停止、返回已完成 session', () async {
@@ -164,7 +164,7 @@ void main() {
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
     final st = container.read(activeWorkoutProvider).value!;
-    final lat = st.session.exercises[0];
+    final lat = st.session.exercises[1];
     await vm.toggleComplete(lat.sets[0].id);
     await vm.toggleComplete(lat.sets[1].id);
 
@@ -174,7 +174,7 @@ void main() {
     expect(done, isNotNull);
     expect(done!.status, SessionStatus.completed);
     expect(done.endedAt, clock.now());
-    expect(done.exercises[0].sets.length, 3,
+    expect(done.exercises[1].sets.length, 3,
         reason: '预填过的组不算"空组"，保留；只清重量次数都为空的');
     expect(container.read(activeWorkoutProvider).value, isNull);
     expect(container.read(restTimerProvider).isIdle, isTrue);
@@ -201,7 +201,7 @@ void main() {
     await container.read(activeWorkoutProvider.future);
     await startA();
     final vm = container.read(activeWorkoutProvider.notifier);
-    final lat = container.read(activeWorkoutProvider).value!.session.exercises[0];
+    final lat = container.read(activeWorkoutProvider).value!.session.exercises[1];
     await vm.toggleComplete(lat.sets[0].id);
     await Future<void>.delayed(Duration.zero);
     final sessionId = container.read(activeWorkoutProvider).value!.session.id;
@@ -213,8 +213,8 @@ void main() {
     final restored = await container.read(activeWorkoutProvider.future);
     expect(restored, isNotNull);
     expect(restored!.session.id, sessionId);
-    expect(restored.session.exercises[0].sets[0].isCompleted, isTrue);
-    expect(restored.lastByExercise[restored.session.exercises[0].id], isNotNull);
+    expect(restored.session.exercises[1].sets[0].isCompleted, isTrue);
+    expect(restored.lastByExercise[restored.session.exercises[1].id], isNotNull);
 
     await Future<void>.delayed(Duration.zero); // 计时恢复在微任务里
     final timer = container.read(restTimerProvider);
@@ -238,14 +238,14 @@ void main() {
     final routine = await container.read(routineRepositoryProvider).getById('rt_a_pull');
     await vm.start(routine: routine);
     var st = container.read(activeWorkoutProvider).value!;
-    final lat = st.session.exercises[0];
+    final lat = st.session.exercises[1];
     // 先把预填改掉，再沿用上次
     vm.editSet(lat.sets[0].id, weightKg: 30, reps: 5);
     await vm.deleteSet(lat.sets[2].id);
     await vm.applyLastPerformance(lat.id);
 
     st = container.read(activeWorkoutProvider).value!;
-    final after = st.session.exercises[0];
+    final after = st.session.exercises[1];
     expect(after.sets.length, 3, reason: '上次 3 组，删掉一组后补回');
     expect(after.sets.map((s) => s.weightKg), [18.16, 22.7, 18.16],
         reason: '补回的那组也要照抄上次第 3 组，而不是继承前一组');
@@ -258,7 +258,7 @@ void main() {
     final routine = await container.read(routineRepositoryProvider).getById('rt_a_pull');
     await vm.start(routine: routine);
     var st = container.read(activeWorkoutProvider).value!;
-    final lat = st.session.exercises[0];
+    final lat = st.session.exercises[1];
     // 上次高位下拉是 18.16 / 22.7 / 18.16。第 1 组按别的重量练完，再点沿用上次。
     vm.editSet(lat.sets[0].id, weightKg: 30, reps: 5);
     await vm.toggleComplete(lat.sets[0].id);
