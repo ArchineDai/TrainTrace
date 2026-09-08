@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 import 'package:traintrace/core/db/database_provider.dart';
 import 'package:traintrace/core/time/clock.dart';
+import 'package:traintrace/features/exercises/data/exercise_repository.dart';
+import 'package:traintrace/features/measurements/data/body_weight_repository.dart';
 import 'package:traintrace/features/routines/data/routine_repository.dart';
 import 'package:traintrace/features/workout/data/workout_repository.dart';
 import 'package:traintrace/features/workout/models/workout_session.dart';
@@ -470,5 +472,58 @@ void main() {
     expect(vm.isStale, isFalse);
     clock.advance(const Duration(hours: 13));
     expect(vm.isStale, isTrue);
+  });
+
+  test('start：自重动作带上最新体重快照，非自重为 null；容量按快照算', () async {
+    await container.read(activeWorkoutProvider.future);
+    await container.read(bodyWeightRepositoryProvider).add(72);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final routine = await container.read(routineRepositoryProvider).getById('rt_c_legs_core');
+    await vm.start(routine: routine);
+
+    var st = container.read(activeWorkoutProvider).value!;
+    final crunch = st.session.exercises.firstWhere((e) => e.exerciseId == 'ex_crunch');
+    expect(crunch.bodyWeightKg, 72);
+    expect(
+      st.session.exercises.where((e) => e.exerciseId != 'ex_crunch' && e.exerciseId != 'ex_plank').map((e) => e.bodyWeightKg),
+      everyElement(isNull),
+      reason: '器械动作不打体重快照',
+    );
+    final persisted = await container.read(workoutRepositoryProvider).getExercise(crunch.id);
+    expect(persisted!.bodyWeightKg, 72, reason: '快照落库，进程被杀后还在');
+
+    // 附加 5 kg × 10：容量 = (72 + 5) × 10。
+    vm.editSet(crunch.sets[0].id, weightKg: 5, reps: 10);
+    await vm.toggleComplete(crunch.sets[0].id);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.exerciseById(crunch.id)!.volumeKg, (72 + 5) * 10);
+    expect(st.session.totalVolumeKg, (72 + 5) * 10);
+
+    // 训练中追加自重动作也带快照。
+    final pullup = (await container.read(exerciseRepositoryProvider).getById('ex_pullup'))!;
+    await vm.addExercise(pullup);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.session.exercises.last.exerciseId, 'ex_pullup');
+    expect(st.session.exercises.last.bodyWeightKg, 72);
+  });
+
+  test('start：没记过体重时自重动作的快照为 null，容量只算附加重量', () async {
+    await container.read(activeWorkoutProvider.future);
+    final vm = container.read(activeWorkoutProvider.notifier);
+    final routine = await container.read(routineRepositoryProvider).getById('rt_c_legs_core');
+    await vm.start(routine: routine);
+
+    var st = container.read(activeWorkoutProvider).value!;
+    final crunch = st.session.exercises.firstWhere((e) => e.exerciseId == 'ex_crunch');
+    expect(crunch.bodyWeightKg, isNull);
+
+    vm.editSet(crunch.sets[0].id, weightKg: 5, reps: 10);
+    await vm.toggleComplete(crunch.sets[0].id);
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.exerciseById(crunch.id)!.volumeKg, 5 * 10);
+
+    final pullup = (await container.read(exerciseRepositoryProvider).getById('ex_pullup'))!;
+    await vm.addExercise(pullup);
+    expect(container.read(activeWorkoutProvider).value!.session.exercises.last.bodyWeightKg, isNull);
   });
 }

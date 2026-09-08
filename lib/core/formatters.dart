@@ -66,15 +66,22 @@ abstract final class Formatters {
 
   /// 一个动作的各组摘要：`20 kg × 12 / 12 / 12`。同重量合并，不同重量逐组列出
   /// （`20 kg × 12 / 22.5 kg × 8`）。数字和 kg 之间一律有空格，和组行、个人记录一致。
-  static String setsSummary(List<({double? weightKg, int? reps})> sets) {
+  ///
+  /// [signed]：自重动作的重量是附加重量，正数前加 `+`（`+5 kg × 8`），负数保留
+  /// 原来的负号，0 不加符号。默认关。
+  static String setsSummary(
+    List<({double? weightKg, int? reps})> sets, {
+    bool signed = false,
+  }) {
+    String w(double v) => signed && v > 0 ? '+${kg(v)}' : kg(v);
     final done = sets.where((s) => s.reps != null).toList();
     if (done.isEmpty) return '—';
     final weights = done.map((s) => s.weightKg).toSet();
     if (weights.length == 1 && weights.first != null) {
-      return '${kg(weights.first!)} kg × ${done.map((s) => s.reps).join(' / ')}';
+      return '${w(weights.first!)} kg × ${done.map((s) => s.reps).join(' / ')}';
     }
     return done
-        .map((s) => '${s.weightKg == null ? '?' : kg(s.weightKg!)} kg × ${s.reps}')
+        .map((s) => '${s.weightKg == null ? '?' : w(s.weightKg!)} kg × ${s.reps}')
         .join(' / ');
   }
 }

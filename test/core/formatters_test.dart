@@ -106,4 +106,30 @@ void main() {
     );
     expect(Formatters.setsSummary([(weightKg: 20.0, reps: null)]), '—');
   });
+
+  test('setsSummary signed：自重动作的附加重量正数带 +，负数保留负号，0 不带', () {
+    expect(
+      Formatters.setsSummary(
+        [(weightKg: 5.0, reps: 8), (weightKg: 5.0, reps: 6)],
+        signed: true,
+      ),
+      '+5 kg × 8 / 6',
+    );
+    expect(
+      Formatters.setsSummary(
+        [(weightKg: 5.0, reps: 8), (weightKg: -10.0, reps: 10), (weightKg: 0.0, reps: 12)],
+        signed: true,
+      ),
+      '+5 kg × 8 / -10 kg × 10 / 0 kg × 12',
+    );
+    expect(
+      Formatters.setsSummary([(weightKg: null, reps: 12), (weightKg: 2.5, reps: 8)], signed: true),
+      '? kg × 12 / +2.5 kg × 8',
+    );
+    // 默认行为不变。
+    expect(
+      Formatters.setsSummary([(weightKg: 5.0, reps: 8)]),
+      '5 kg × 8',
+    );
+  });
 }

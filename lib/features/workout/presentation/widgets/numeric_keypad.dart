@@ -25,6 +25,7 @@ class NumericKeypad extends StatelessWidget {
     required this.onDigit,
     required this.onAction,
     this.doneLabel,
+    this.nextLabel,
   });
 
   /// ±键的步长（重量：动作的最小增量；次数：1）。
@@ -35,6 +36,9 @@ class NumericKeypad extends StatelessWidget {
 
   /// null 用默认的"完成"。const 默认值取不到 l10n，所以在 build 里回落。
   final String? doneLabel;
+
+  /// null 用默认的"下一项"。体重弹层里这一位是"跳过"。
+  final String? nextLabel;
 
   String get _stepLabel =>
       step == step.roundToDouble() ? step.round().toString() : step.toString();
@@ -85,7 +89,7 @@ class NumericKeypad extends StatelessWidget {
                     : _key(label: '', onTap: null),
                 _digit('0'),
                 _key(
-                  label: l10n.keypadNext,
+                  label: nextLabel ?? l10n.keypadNext,
                   onTap: () => onAction(KeypadAction.next),
                   tonal: true,
                 ),

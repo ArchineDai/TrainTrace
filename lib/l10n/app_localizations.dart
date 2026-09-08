@@ -200,6 +200,48 @@ abstract class AppLocalizations {
   /// **'训练'**
   String get settingsTraining;
 
+  /// No description provided for @bodyWeightSetting.
+  ///
+  /// In zh, this message translates to:
+  /// **'体重'**
+  String get bodyWeightSetting;
+
+  /// No description provided for @bodyWeightSettingValue.
+  ///
+  /// In zh, this message translates to:
+  /// **'{kg} kg · {date}'**
+  String bodyWeightSettingValue(String kg, String date);
+
+  /// No description provided for @bodyWeightNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没记录'**
+  String get bodyWeightNone;
+
+  /// No description provided for @bodyWeightSheetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日体重'**
+  String get bodyWeightSheetTitle;
+
+  /// No description provided for @bodyWeightLast.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次 {kg} kg · {date}'**
+  String bodyWeightLast(String kg, String date);
+
+  /// No description provided for @bodyWeightSheetHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'自重动作的容量按这个数算。每周称一次就够，不填就沿用上次。'**
+  String get bodyWeightSheetHint;
+
+  /// No description provided for @bodyWeightSkip.
+  ///
+  /// In zh, this message translates to:
+  /// **'跳过'**
+  String get bodyWeightSkip;
+
   /// No description provided for @settingsData.
   ///
   /// In zh, this message translates to:
@@ -1501,6 +1543,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'器械'**
   String get equipmentChipDefault;
+
+  /// No description provided for @bodyweightChip.
+  ///
+  /// In zh, this message translates to:
+  /// **'自重 {kg} kg'**
+  String bodyweightChip(String kg);
+
+  /// No description provided for @bodyweightChipNoRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'自重 · 记体重'**
+  String get bodyweightChipNoRecord;
+
+  /// No description provided for @bodyweightVolumeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'容量按 {body} + {added} = {total} kg 计'**
+  String bodyweightVolumeHint(String body, String added, String total);
+
+  /// No description provided for @bodyweightVolumeHintPlain.
+  ///
+  /// In zh, this message translates to:
+  /// **'容量按体重 {body} kg 计'**
+  String bodyweightVolumeHintPlain(String body);
+
+  /// No description provided for @bodyweightNoWeightHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'记体重后容量才算自重'**
+  String get bodyweightNoWeightHint;
 
   /// No description provided for @equipmentLabelHint.
   ///

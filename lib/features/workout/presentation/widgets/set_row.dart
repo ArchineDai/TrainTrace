@@ -23,6 +23,7 @@ class SetRow extends StatelessWidget {
     required this.onToggleComplete,
     this.previousHint,
     this.onLongPressWeight,
+    this.weightPrefix,
   });
 
   /// 从 1 开始的组序号。
@@ -41,6 +42,8 @@ class SetRow extends StatelessWidget {
 
   /// 长按重量框（杠铃动作打开板片计算器）。null 不响应长按。
   final VoidCallback? onLongPressWeight;
+  /// 重量数字前的符号。自重动作传 `'+'`（重量列是附加重量）；空值与负数不加。
+  final String? weightPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +73,7 @@ class SetRow extends StatelessWidget {
             child: _FieldBox(
               text: weightText,
               unit: 'kg',
+              prefix: weightPrefix,
               focused: focusedField == SetField.weight,
               completed: isCompleted,
               onTap: () => onTapField(SetField.weight),
@@ -120,10 +124,14 @@ class _FieldBox extends StatelessWidget {
     required this.completed,
     required this.onTap,
     this.onLongPress,
+    this.prefix,
   });
 
   final String text;
   final String unit;
+
+  /// 数字前的小号符号（自重动作的 `+`）。空值与负数不显示。
+  final String? prefix;
   final bool focused;
   final bool completed;
   final VoidCallback onTap;
@@ -155,6 +163,14 @@ class _FieldBox extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
+              if (prefix != null && !empty && !text.startsWith('-'))
+                Text(
+                  prefix!,
+                  style: TextStyle(
+                    fontSize: AppTextSize.sm,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               Text(
                 empty ? '—' : text,
                 style: TextStyle(

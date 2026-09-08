@@ -32,6 +32,9 @@ enum ExerciseCardAction {
   /// 退出所在的超级组。
   unlink,
   remove,
+
+  /// 自重动作点体重芯片：记今日体重（[BodyWeightSheet]）。
+  recordBodyWeight,
 }
 
 /// 训练页里一个动作的卡片：头部（名称 / 器械标签 / 目标）、上次表现、各组、添加一组。
@@ -59,6 +62,7 @@ class WorkoutExerciseCard extends StatelessWidget {
     this.onLongPressWeight,
     this.supersetTag,
     this.canLinkNext = false,
+    this.isBodyweight = false,
   });
 
   final WorkoutExercise exercise;
@@ -94,6 +98,9 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   /// 长按某组的重量框（杠铃动作开板片计算器）。null 不响应。
   final ValueChanged<String>? onLongPressWeight;
+  /// 自重动作（`Exercise.isBodyweight`）：器械芯片换成体重芯片，重量列是附加重量
+  /// （前面带 `+`），组下方说明容量怎么算。页面按 exerciseId 查动作后传入。
+  final bool isBodyweight;
 
   @override
   Widget build(BuildContext context) {
@@ -157,11 +164,17 @@ class WorkoutExerciseCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                _LabelChip(
-                  label: exercise.equipmentLabel,
-                  onTap: onTapLabel,
-                  onLongPress: onLongPressLabel,
-                ),
+                if (isBodyweight)
+                  _BodyWeightChip(
+                    kg: exercise.bodyWeightKg,
+                    onTap: () => onAction(ExerciseCardAction.recordBodyWeight),
+                  )
+                else
+                  _LabelChip(
+                    label: exercise.equipmentLabel,
+                    onTap: onTapLabel,
+                    onLongPress: onLongPressLabel,
+                  ),
                 PopupMenuButton<ExerciseCardAction>(
                   tooltip: l10n.actionMore,
                   onSelected: onAction,
@@ -273,6 +286,7 @@ class WorkoutExerciseCard extends StatelessWidget {
                   onLongPressWeight: onLongPressWeight == null
                       ? null
                       : () => onLongPressWeight!(exercise.sets[i].id),
+                  weightPrefix: isBodyweight ? '+' : null,
                 ),
               ),
               if (rirExpanded)
@@ -282,6 +296,17 @@ class WorkoutExerciseCard extends StatelessWidget {
                 ),
               const SizedBox(height: 4),
             ],
+            if (isBodyweight)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+                child: Text(
+                  _bodyweightHint(l10n),
+                  style: TextStyle(
+                    fontSize: AppTextSize.xs,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             TextButton.icon(
               onPressed: onAddSet,
               icon: const Icon(Icons.add),
@@ -295,13 +320,33 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   bool get _hasNote => exercise.note != null && exercise.note!.trim().isNotEmpty;
 
-  /// 上次表现：各组摘要 +（器械标签）。
+  /// 上次表现：各组摘要 +（器械标签）。自重动作的重量是附加重量，带 `+`。
   String _lastSummary(AppLocalizations l10n) {
-    final summary = Formatters.setsSummary([
-      for (final s in last!.sets) (weightKg: s.weightKg, reps: s.reps),
-    ]);
+    final summary = Formatters.setsSummary(
+      [for (final s in last!.sets) (weightKg: s.weightKg, reps: s.reps)],
+      signed: isBodyweight,
+    );
     final label = last!.equipmentLabel;
     return label == null ? summary : l10n.nameWithLabel(summary, label);
+  }
+
+  /// 自重动作的容量说明。有体重快照时写明「72 + 5 = 77 kg」，附加重量取最后一组
+  /// 填了的值；各组都没填附加重量就只写体重；没有快照提示先去记体重。
+  String _bodyweightHint(AppLocalizations l10n) {
+    final body = exercise.bodyWeightKg;
+    if (body == null) return l10n.bodyweightNoWeightHint;
+    double? added;
+    for (final s in exercise.sets) {
+      if (s.weightKg != null) added = s.weightKg;
+    }
+    if (added == null || added == 0) {
+      return l10n.bodyweightVolumeHintPlain(Formatters.kg(body));
+    }
+    return l10n.bodyweightVolumeHint(
+      Formatters.kg(body),
+      Formatters.kg(added),
+      Formatters.kg(body + added),
+    );
   }
 
   String _text(WorkoutSet set, SetField field) {
@@ -437,6 +482,44 @@ class _LabelChip extends StatelessWidget {
           onPressed: onTap,
           visualDensity: VisualDensity.compact,
         ),
+      ),
+    );
+  }
+}
+
+/// 自重动作的体重芯片，替代器械芯片。有体重记录显示「自重 72 kg」，没有就提示去记；
+/// 点击打开体重弹层。primaryContainer 底让它和灰底的器械芯片一眼可分。
+class _BodyWeightChip extends StatelessWidget {
+  const _BodyWeightChip({required this.kg, required this.onTap});
+
+  final double? kg;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: ActionChip(
+        avatar: Icon(
+          Icons.monitor_weight_outlined,
+          size: 16,
+          color: scheme.onPrimaryContainer,
+        ),
+        label: Text(
+          kg == null
+              ? l10n.bodyweightChipNoRecord
+              : l10n.bodyweightChip(Formatters.kg(kg!)),
+          style: TextStyle(
+            fontSize: AppTextSize.xs,
+            color: scheme.onPrimaryContainer,
+          ),
+        ),
+        backgroundColor: scheme.primaryContainer,
+        side: BorderSide.none,
+        onPressed: onTap,
+        visualDensity: VisualDensity.compact,
       ),
     );
   }

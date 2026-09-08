@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/formatters.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/time/clock.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
+import '../../measurements/presentation/body_weight_sheet.dart';
+import '../../measurements/state/body_weight_view_model.dart';
 import '../models/rest_reminder_state.dart';
 import '../models/theme_settings.dart';
 import '../state/locale_settings_view_model.dart';
@@ -32,6 +36,8 @@ class SettingsPage extends ConsumerWidget {
       localeSettingsProvider.select((s) => s.value?.selected),
     );
     final reminder = ref.watch(restReminderProvider).value;
+    final bodyWeight = ref.watch(latestBodyWeightProvider).value;
+    final now = ref.read(clockProvider).now();
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
@@ -98,6 +104,22 @@ class SettingsPage extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _openReminderGuide(context, ref),
             ),
+          // 体重：自重动作的容量按它算。和训练卡片的体重芯片开同一个弹层。
+          ListTile(
+            minTileHeight: AppTheme.minTouch,
+            leading: const Icon(Icons.monitor_weight_outlined),
+            title: Text(l10n.bodyWeightSetting),
+            subtitle: Text(
+              bodyWeight == null
+                  ? l10n.bodyWeightNone
+                  : l10n.bodyWeightSettingValue(
+                      Formatters.kg(bodyWeight.weightKg),
+                      Formatters.relativeDay(bodyWeight.measuredAt, now, l10n),
+                    ),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => BodyWeightSheet.show(context),
+          ),
           _SectionHeader(l10n.settingsGeneral),
           ListTile(
             minTileHeight: AppTheme.minTouch,

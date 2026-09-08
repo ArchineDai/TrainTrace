@@ -18,6 +18,7 @@ import '../../exercises/models/exercise.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/presentation/widgets/equipment_note_photo.dart';
 import '../../exercises/state/exercise_list_view_model.dart';
+import '../../measurements/presentation/body_weight_sheet.dart';
 import '../../settings/presentation/widgets/rest_reminder_guide_sheet.dart';
 import '../../settings/state/rest_reminder_view_model.dart';
 import '../models/active_workout_state.dart';
@@ -217,6 +218,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       exercise: ex,
       last: st.lastByExercise[ex.id],
       lastNote: st.lastNoteByExercise[ex.id],
+      isBodyweight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.isBodyweight ?? false,
       now: now,
       focusedSetId: _focusSetId,
       focusedField: _focusField,
@@ -421,6 +423,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         await _vm.linkWithNext(weId);
       case ExerciseCardAction.unlink:
         await _vm.unlink(weId);
+      case ExerciseCardAction.recordBodyWeight:
+        await BodyWeightSheet.show(context);
       case ExerciseCardAction.remove:
         final st = ref.read(activeWorkoutProvider).value;
         final ex = st?.exerciseById(weId);

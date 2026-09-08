@@ -9,6 +9,7 @@ import '../../exercises/data/exercise_repository.dart';
 import '../../exercises/models/exercise.dart';
 import '../../history/data/history_repository.dart';
 import '../../history/models/history_models.dart';
+import '../../measurements/data/body_weight_repository.dart';
 import '../../routines/models/routine.dart';
 import '../data/workout_repository.dart';
 import '../models/active_workout_state.dart';
@@ -27,6 +28,7 @@ import 'rest_timer_view_model.dart';
 class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
   WorkoutRepository get _repo => ref.read(workoutRepositoryProvider);
   HistoryRepository get _history => ref.read(historyRepositoryProvider);
+  BodyWeightRepository get _bodyWeight => ref.read(bodyWeightRepositoryProvider);
   Clock get _clock => ref.read(clockProvider);
   RestTimerViewModel get _timer => ref.read(restTimerProvider.notifier);
 
@@ -81,6 +83,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     for (final ex in session.exercises) {
       await _prefillFromLast(ex, last[ex.id]);
     }
+    await _snapshotBodyWeight(session);
     session = (await _repo.getSession(session.id))!;
     await _timer.skip();
     state = AsyncData(ActiveWorkoutState(
@@ -118,6 +121,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     for (final ex in session.exercises) {
       await _prefillFromLast(ex, last[ex.id]);
     }
+    await _snapshotBodyWeight(session);
     session = (await _repo.getSession(session.id))!;
     await _timer.skip();
     state = AsyncData(ActiveWorkoutState(
@@ -277,6 +281,10 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     if (s == null) return;
     try {
       var we = await _repo.addExercise(s.session.id, exercise);
+      if (exercise.isBodyweight) {
+        final kg = (await _bodyWeight.latest())?.weightKg;
+        if (kg != null) await _repo.updateExercise(we.id, bodyWeightKg: kg);
+      }
       final last = await _lastFor(we, s.session.id);
       final lastNote = await _lastNoteFor(we, s.session.id);
       await _prefillFromLast(we, last);
@@ -461,6 +469,23 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     );
   }
 
+  /// 记了新体重：进行中训练里所有自重动作的体重快照刷成 [kg]，写库 + 改缓存。
+  /// 非自重动作不动。"是不是自重"看 `Exercise.isBodyweight`，不靠名字猜。
+  Future<void> refreshBodyWeightSnapshots(double kg) async {
+    final s = state.value;
+    if (s == null) return;
+    for (final ex in s.session.exercises) {
+      if (ex.bodyWeightKg == kg || !await _isBodyweight(ex.exerciseId)) continue;
+      _mutate((st) => st.replaceExercise(
+            (st.exerciseById(ex.id) ?? ex).copyWith(bodyWeightKg: kg),
+          ));
+      await _persist(
+        () => _repo.updateExercise(ex.id, bodyWeightKg: kg),
+        'refresh body weight snapshot',
+      );
+    }
+  }
+
   /// "沿用上次"：把上次各组的重量次数填进本动作未完成的组，组数不够就补。
   Future<void> applyLastPerformance(String workoutExerciseId) async {
     final s = state.value;
@@ -607,6 +632,24 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       await _persist(
         () => _repo.updateSet(ex.sets[i].id, weightKg: src.weightKg, reps: src.reps),
         'prefill set',
+      );
+    }
+  }
+
+  Future<bool> _isBodyweight(String exerciseId) async =>
+      (await ref.read(exerciseRepositoryProvider).getById(exerciseId))?.isBodyweight ??
+      false;
+
+  /// 开始训练时给自重动作打体重快照：取最近一次称重，没记过就留 null
+  /// （卡片会提示"记体重后容量才算自重"）。只写库，调用方随后重新读 session。
+  Future<void> _snapshotBodyWeight(WorkoutSession session) async {
+    final kg = (await _bodyWeight.latest())?.weightKg;
+    if (kg == null) return;
+    for (final ex in session.exercises) {
+      if (!await _isBodyweight(ex.exerciseId)) continue;
+      await _persist(
+        () => _repo.updateExercise(ex.id, bodyWeightKg: kg),
+        'body weight snapshot',
       );
     }
   }

@@ -20,6 +20,25 @@
   "language": "语言",
   "followSystemLanguage": "跟随系统",
   "settingsTraining": "训练",
+  "bodyWeightSetting": "体重",
+  "bodyWeightSettingValue": "{kg} kg · {date}",
+  "@bodyWeightSettingValue": {
+    "placeholders": {
+      "kg": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "bodyWeightNone": "还没记录",
+  "bodyWeightSheetTitle": "今日体重",
+  "bodyWeightLast": "上次 {kg} kg · {date}",
+  "@bodyWeightLast": {
+    "placeholders": {
+      "kg": { "type": "String" },
+      "date": { "type": "String" }
+    }
+  },
+  "bodyWeightSheetHint": "自重动作的容量按这个数算。每周称一次就够，不填就沿用上次。",
+  "bodyWeightSkip": "跳过",
   "settingsData": "数据",
   "backupTitle": "备份与恢复",
   "backupSettingsSubtitle": "备份到文件，卸载重装或换手机后恢复",
@@ -482,6 +501,24 @@
   },
   "addSet": "添加一组",
   "equipmentChipDefault": "器械",
+  "bodyweightChip": "自重 {kg} kg",
+  "@bodyweightChip": {
+    "placeholders": { "kg": { "type": "String" } }
+  },
+  "bodyweightChipNoRecord": "自重 · 记体重",
+  "bodyweightVolumeHint": "容量按 {body} + {added} = {total} kg 计",
+  "@bodyweightVolumeHint": {
+    "placeholders": {
+      "body": { "type": "String" },
+      "added": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "bodyweightVolumeHintPlain": "容量按体重 {body} kg 计",
+  "@bodyweightVolumeHintPlain": {
+    "placeholders": { "body": { "type": "String" } }
+  },
+  "bodyweightNoWeightHint": "记体重后容量才算自重",
   "equipmentLabelHint": "不同健身房、不同机器的重量不可比。上次表现与建议按标签分开算。",
   "noEquipmentDistinction": "不区分器械",
   "newLabel": "新建标签",

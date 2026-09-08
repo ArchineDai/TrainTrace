@@ -61,6 +61,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTraining => '训练';
 
   @override
+  String get bodyWeightSetting => '体重';
+
+  @override
+  String bodyWeightSettingValue(String kg, String date) {
+    return '$kg kg · $date';
+  }
+
+  @override
+  String get bodyWeightNone => '还没记录';
+
+  @override
+  String get bodyWeightSheetTitle => '今日体重';
+
+  @override
+  String bodyWeightLast(String kg, String date) {
+    return '上次 $kg kg · $date';
+  }
+
+  @override
+  String get bodyWeightSheetHint => '自重动作的容量按这个数算。每周称一次就够，不填就沿用上次。';
+
+  @override
+  String get bodyWeightSkip => '跳过';
+
+  @override
   String get settingsData => '数据';
 
   @override
@@ -811,6 +836,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get equipmentChipDefault => '器械';
+
+  @override
+  String bodyweightChip(String kg) {
+    return '自重 $kg kg';
+  }
+
+  @override
+  String get bodyweightChipNoRecord => '自重 · 记体重';
+
+  @override
+  String bodyweightVolumeHint(String body, String added, String total) {
+    return '容量按 $body + $added = $total kg 计';
+  }
+
+  @override
+  String bodyweightVolumeHintPlain(String body) {
+    return '容量按体重 $body kg 计';
+  }
+
+  @override
+  String get bodyweightNoWeightHint => '记体重后容量才算自重';
 
   @override
   String get equipmentLabelHint => '不同健身房、不同机器的重量不可比。上次表现与建议按标签分开算。';

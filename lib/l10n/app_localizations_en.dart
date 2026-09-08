@@ -63,6 +63,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTraining => 'Training';
 
   @override
+  String get bodyWeightSetting => 'Body weight';
+
+  @override
+  String bodyWeightSettingValue(String kg, String date) {
+    return '$kg kg · $date';
+  }
+
+  @override
+  String get bodyWeightNone => 'Not recorded yet';
+
+  @override
+  String get bodyWeightSheetTitle => 'Today\'s body weight';
+
+  @override
+  String bodyWeightLast(String kg, String date) {
+    return 'Last $kg kg · $date';
+  }
+
+  @override
+  String get bodyWeightSheetHint =>
+      'Volume for bodyweight exercises uses this number. Once a week is enough; leave it and the last value carries over.';
+
+  @override
+  String get bodyWeightSkip => 'Skip';
+
+  @override
   String get settingsData => 'Data';
 
   @override
@@ -832,6 +858,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get equipmentChipDefault => 'Equipment';
+
+  @override
+  String bodyweightChip(String kg) {
+    return 'Bodyweight $kg kg';
+  }
+
+  @override
+  String get bodyweightChipNoRecord => 'Bodyweight · log weight';
+
+  @override
+  String bodyweightVolumeHint(String body, String added, String total) {
+    return 'Volume counts $body + $added = $total kg';
+  }
+
+  @override
+  String bodyweightVolumeHintPlain(String body) {
+    return 'Volume counts body weight $body kg';
+  }
+
+  @override
+  String get bodyweightNoWeightHint =>
+      'Log your body weight to count it in volume';
 
   @override
   String get equipmentLabelHint =>
