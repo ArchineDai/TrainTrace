@@ -263,6 +263,62 @@ class HistoryRepository {
     );
   }
 
+  /// 估算 1RM 趋势：每次已完成训练一个点，取该动作所有已完成正式组 Epley 1RM
+  /// 的最大值，按训练开始时间升序。不分器械标签。
+  ///
+  /// 热身 / 递减组、没配重（weightKg 为 null）或没记次数的组不算；一次训练里
+  /// 这个动作一组合格的都没有就没有这个点。[since]：只看开始时间不早于它的训练。
+  Future<List<OneRmPoint>> oneRmSeries(String exerciseId, {DateTime? since}) async {
+    final we = _db.workoutExercises;
+    final ws = _db.workoutSessions;
+    var where = we.exerciseId.equals(exerciseId) &
+        we.deletedAt.isNull() &
+        ws.status.equals(SessionStatus.completed.name) &
+        ws.deletedAt.isNull();
+    if (since != null) {
+      where = where & ws.startedAt.isBiggerOrEqualValue(since.millisecondsSinceEpoch);
+    }
+    final rows = await (_db.select(we).join([
+      innerJoin(ws, ws.id.equalsExp(we.sessionId)),
+    ])
+          ..where(where)
+          ..orderBy([OrderingTerm.asc(ws.startedAt)]))
+        .get();
+    if (rows.isEmpty) return const [];
+
+    final exToSession = <String, String>{};
+    for (final r in rows) {
+      exToSession[r.readTable(we).id] = r.readTable(ws).id;
+    }
+    final sets = await (_db.select(_db.workoutSets)
+          ..where((t) =>
+              t.workoutExerciseId.isIn(exToSession.keys.toList()) &
+              t.isCompleted.equals(true) &
+              t.setType.equals(SetType.working.name) &
+              t.weightKg.isNotNull() &
+              t.reps.isNotNull()))
+        .get();
+    final maxBySession = <String, double>{};
+    for (final s in sets) {
+      final sid = exToSession[s.workoutExerciseId];
+      if (sid == null) continue;
+      final rm = estimateOneRm(s.weightKg!, s.reps!);
+      final cur = maxBySession[sid];
+      if (cur == null || rm > cur) maxBySession[sid] = rm;
+    }
+    // rows 已按开始时间升序；同一训练里这个动作出现多次也只出一个点。
+    final seen = <String>{};
+    return [
+      for (final r in rows)
+        if (seen.add(r.readTable(ws).id) && maxBySession.containsKey(r.readTable(ws).id))
+          OneRmPoint(
+            sessionId: r.readTable(ws).id,
+            startedAt: DateTime.fromMillisecondsSinceEpoch(r.readTable(ws).startedAt),
+            oneRmKg: maxBySession[r.readTable(ws).id]!,
+          ),
+    ];
+  }
+
   /// Epley 公式。reps = 1 时就是重量本身。
   static double estimateOneRm(double weightKg, int reps) =>
       reps <= 1 ? weightKg : weightKg * (1 + reps / 30);

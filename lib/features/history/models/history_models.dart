@@ -121,3 +121,22 @@ class PersonalRecords {
   /// 这时 `isEmpty` 为 false，展示侧取 `maxWeightKg!` 就炸。
   bool get isEmpty => maxWeightKg == null;
 }
+
+/// 估算 1RM 趋势的一个点：一次训练里该动作所有已完成正式组 Epley 1RM 的最大值。
+class OneRmPoint {
+  const OneRmPoint({
+    required this.sessionId,
+    required this.startedAt,
+    required this.oneRmKg,
+  });
+
+  final String sessionId;
+  final DateTime startedAt;
+  final double oneRmKg;
+
+  @override
+  bool operator ==(Object other) => other is OneRmPoint && other.sessionId == sessionId;
+
+  @override
+  int get hashCode => sessionId.hashCode;
+}

@@ -548,6 +548,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prEstimatedOneRm => 'Est. 1RM';
 
   @override
+  String get oneRmTrend => 'Est. 1RM trend';
+
+  @override
+  String get oneRmRangeFourWeeks => '4 wk';
+
+  @override
+  String get oneRmRangeThreeMonths => '3 mo';
+
+  @override
+  String get oneRmRangeAll => 'All';
+
+  @override
+  String get oneRmTrendEmpty =>
+      'A few more sessions and the trend shows up here';
+
+  @override
+  String oneRmTrendMeta(String since, int count) {
+    return '$since · $count sessions · Epley estimate';
+  }
+
+  @override
+  String get oneRmSinceFourWeeks => 'vs 4 weeks ago';
+
+  @override
+  String get oneRmSinceThreeMonths => 'vs 3 months ago';
+
+  @override
+  String get oneRmSinceAll => 'vs first record';
+
+  @override
   String get recentRecords => 'Recent';
 
   @override

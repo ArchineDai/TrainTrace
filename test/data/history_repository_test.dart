@@ -4,6 +4,7 @@ import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/exercises/data/exercise_repository.dart';
 import 'package:traintrace/features/history/data/history_repository.dart';
 import 'package:traintrace/features/workout/data/workout_repository.dart';
+import 'package:traintrace/features/workout/models/workout_session.dart';
 
 import 'test_db.dart';
 
@@ -230,6 +231,88 @@ void main() {
     await workouts.deleteSession('seed_session_1_20260830');
     expect((await history.getSummaries()).length, 1);
     expect(await history.lastPerformance('ex_lat_pulldown'), isNull);
+  });
+
+  test('oneRmSeries：种子里高位下拉两次训练各一个点，升序，取当次最大 Epley', () async {
+    final series = await history.oneRmSeries('ex_lat_pulldown');
+    expect(series.map((p) => p.sessionId),
+        ['seed_session_1_20260830', 'seed_session_3_20260903']);
+    // 8/30：20×12 ×3 → 20 × (1 + 12/30) = 28
+    expect(series[0].oneRmKg, closeTo(28, 1e-9));
+    // 库里存 epoch 毫秒，读回是本地时间；按时刻比，不按时区表示比。
+    expect(
+      series[0].startedAt.isAtSameMomentAs(DateTime.parse('2026-08-30T18:30:00+08:00')),
+      isTrue,
+    );
+    // 9/3：18.16×12 / 22.7×12 / 18.16×12 → 取 22.7 那组 = 31.78
+    expect(series[1].oneRmKg, closeTo(22.7 * 1.4, 1e-9));
+    expect(series[1].startedAt.isAfter(series[0].startedAt), isTrue);
+  });
+
+  test('oneRmSeries：排除热身组、无配重组、未完成组、进行中与已删训练；since 过滤', () async {
+    final lat = (await exercises.getById('ex_lat_pulldown'))!;
+
+    // 9/5 第三次：正式组 25×10 → 33.33；热身 40×5（更高，不能算）；只记次数的组；没勾完成的 30×12。
+    clock.advance(const Duration(days: 1));
+    final third = await workouts.startSession();
+    final we = await workouts.addExercise(third.id, lat, setCount: 1);
+    await workouts.updateSet(we.sets[0].id, weightKg: 25, reps: 10);
+    await workouts.setCompleted(we.sets[0].id, true);
+    final warm = await workouts.addSet(we.id, weightKg: 40, reps: 5, setType: SetType.warmup);
+    await workouts.setCompleted(warm.id, true);
+    final noWeight = await workouts.addSet(we.id, reps: 12);
+    await workouts.setCompleted(noWeight.id, true);
+    await workouts.addSet(we.id, weightKg: 30, reps: 12); // 填了没完成
+    await workouts.finishSession(third.id);
+
+    // 9/6 只有热身组完成的一次 → 没有点
+    clock.advance(const Duration(days: 1));
+    final warmOnly = await workouts.startSession();
+    final we2 = await workouts.addExercise(warmOnly.id, lat, setCount: 1);
+    final w2 = await workouts.addSet(we2.id, weightKg: 10, reps: 15, setType: SetType.warmup);
+    await workouts.setCompleted(w2.id, true);
+    await workouts.finishSession(warmOnly.id);
+
+    // 9/7 完成后删掉 → 没有点
+    clock.advance(const Duration(days: 1));
+    final deleted = await workouts.startSession();
+    final we3 = await workouts.addExercise(deleted.id, lat, setCount: 1);
+    await workouts.updateSet(we3.sets[0].id, weightKg: 60, reps: 10);
+    await workouts.setCompleted(we3.sets[0].id, true);
+    await workouts.finishSession(deleted.id);
+    await workouts.deleteSession(deleted.id);
+
+    // 9/8 进行中 → 没有点
+    clock.advance(const Duration(days: 1));
+    final inProgress = await workouts.startSession();
+    final we4 = await workouts.addExercise(inProgress.id, lat, setCount: 1);
+    await workouts.updateSet(we4.sets[0].id, weightKg: 50, reps: 10);
+    await workouts.setCompleted(we4.sets[0].id, true);
+
+    final series = await history.oneRmSeries('ex_lat_pulldown');
+    expect(series.map((p) => p.sessionId),
+        ['seed_session_1_20260830', 'seed_session_3_20260903', third.id]);
+    expect(series.map((p) => p.oneRmKg).toList(), [
+      closeTo(28, 1e-9),
+      closeTo(31.78, 1e-9),
+      closeTo(25 * (1 + 10 / 30), 1e-9),
+    ]);
+    expect(series.last.startedAt, DateTime(2026, 9, 5, 18));
+
+    final recent = await history.oneRmSeries(
+      'ex_lat_pulldown',
+      since: DateTime(2026, 9, 1),
+    );
+    expect(recent.map((p) => p.sessionId), ['seed_session_3_20260903', third.id]);
+
+    final exact = await history.oneRmSeries(
+      'ex_lat_pulldown',
+      since: DateTime(2026, 9, 5, 18),
+    );
+    expect(exact.map((p) => p.sessionId), [third.id], reason: 'since 含等于');
+
+    expect(await history.oneRmSeries('ex_pec_deck'), isEmpty, reason: '无配重动作没有点');
+    expect(await history.oneRmSeries('ex_plank'), isEmpty);
   });
 
   test('estimateOneRm：1 次即重量本身', () {

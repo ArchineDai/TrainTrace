@@ -532,6 +532,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prEstimatedOneRm => '估算 1RM';
 
   @override
+  String get oneRmTrend => '估算 1RM 趋势';
+
+  @override
+  String get oneRmRangeFourWeeks => '4 周';
+
+  @override
+  String get oneRmRangeThreeMonths => '3 个月';
+
+  @override
+  String get oneRmRangeAll => '全部';
+
+  @override
+  String get oneRmTrendEmpty => '再练几次就有趋势了';
+
+  @override
+  String oneRmTrendMeta(String since, int count) {
+    return '$since · $count 次训练 · Epley 公式估算';
+  }
+
+  @override
+  String get oneRmSinceFourWeeks => '较 4 周前';
+
+  @override
+  String get oneRmSinceThreeMonths => '较 3 个月前';
+
+  @override
+  String get oneRmSinceAll => '较最早记录';
+
+  @override
   String get recentRecords => '最近记录';
 
   @override

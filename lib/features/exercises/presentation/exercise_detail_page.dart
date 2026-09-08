@@ -18,6 +18,7 @@ import 'exercise_labels.dart';
 import 'widgets/equipment_note_photo.dart';
 import 'widgets/exercise_defaults_sheet.dart';
 import 'widgets/exercise_guide_section.dart';
+import 'widgets/one_rm_trend_section.dart';
 
 /// 动作详情：目标与增量、个人记录、最近记录、场馆 / 器械备注。
 /// 工作重量建议卡片随 Phase 5 加在头部下方。
@@ -120,6 +121,12 @@ class ExerciseDetailPage extends ConsumerWidget {
                   ],
                 ),
               const SizedBox(height: 20),
+
+              // ── 估算 1RM 趋势：没记录时整段不出（含底部间距）──
+              OneRmTrendSection(
+                exerciseId: exerciseId,
+                title: _section(context, l10n.oneRmTrend),
+              ),
             ],
           ),
 

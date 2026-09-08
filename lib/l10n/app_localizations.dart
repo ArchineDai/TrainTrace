@@ -1022,6 +1022,60 @@ abstract class AppLocalizations {
   /// **'估算 1RM'**
   String get prEstimatedOneRm;
 
+  /// No description provided for @oneRmTrend.
+  ///
+  /// In zh, this message translates to:
+  /// **'估算 1RM 趋势'**
+  String get oneRmTrend;
+
+  /// No description provided for @oneRmRangeFourWeeks.
+  ///
+  /// In zh, this message translates to:
+  /// **'4 周'**
+  String get oneRmRangeFourWeeks;
+
+  /// No description provided for @oneRmRangeThreeMonths.
+  ///
+  /// In zh, this message translates to:
+  /// **'3 个月'**
+  String get oneRmRangeThreeMonths;
+
+  /// No description provided for @oneRmRangeAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get oneRmRangeAll;
+
+  /// No description provided for @oneRmTrendEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'再练几次就有趋势了'**
+  String get oneRmTrendEmpty;
+
+  /// 趋势图下方涨幅数字后面的说明。since 是 oneRmSince* 之一
+  ///
+  /// In zh, this message translates to:
+  /// **'{since} · {count} 次训练 · Epley 公式估算'**
+  String oneRmTrendMeta(String since, int count);
+
+  /// No description provided for @oneRmSinceFourWeeks.
+  ///
+  /// In zh, this message translates to:
+  /// **'较 4 周前'**
+  String get oneRmSinceFourWeeks;
+
+  /// No description provided for @oneRmSinceThreeMonths.
+  ///
+  /// In zh, this message translates to:
+  /// **'较 3 个月前'**
+  String get oneRmSinceThreeMonths;
+
+  /// No description provided for @oneRmSinceAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'较最早记录'**
+  String get oneRmSinceAll;
+
   /// No description provided for @recentRecords.
   ///
   /// In zh, this message translates to:

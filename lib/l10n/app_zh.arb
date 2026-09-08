@@ -296,6 +296,22 @@
   "prMaxWeight": "最大重量",
   "prMaxSetVolume": "单组容量",
   "prEstimatedOneRm": "估算 1RM",
+  "oneRmTrend": "估算 1RM 趋势",
+  "oneRmRangeFourWeeks": "4 周",
+  "oneRmRangeThreeMonths": "3 个月",
+  "oneRmRangeAll": "全部",
+  "oneRmTrendEmpty": "再练几次就有趋势了",
+  "oneRmTrendMeta": "{since} · {count} 次训练 · Epley 公式估算",
+  "@oneRmTrendMeta": {
+    "description": "趋势图下方涨幅数字后面的说明。since 是 oneRmSince* 之一",
+    "placeholders": {
+      "since": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "oneRmSinceFourWeeks": "较 4 周前",
+  "oneRmSinceThreeMonths": "较 3 个月前",
+  "oneRmSinceAll": "较最早记录",
   "recentRecords": "最近记录",
   "equipmentNotesSection": "场馆 / 器械备注",
   "equipmentNotesEmpty": "同一动作在不同健身房、不同机器上的合适重量不可比，记在这里。",
