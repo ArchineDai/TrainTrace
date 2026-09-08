@@ -78,6 +78,23 @@ model 用枚举，表用 `text()`。
   不按元素查询。需要按元素查的建子表。
 - 文件类数据（器械照片）只在库里存**相对 app 文档目录的路径**，绝对路径由
   `EquipmentPhotoStore`（`features/exercises/data/`）解析；iOS 沙盒绝对路径每次安装会变。
+- **容量只有一个算法入口**：`WorkoutSet.volumeOf(weightKg, reps, bodyWeightKg)`。有体重快照
+  （`WorkoutExercise.bodyWeightKg`，自重动作开始训练时从 `body_weights` 最新一条抄来）时
+  容量 = (体重 + 附加重量) × 次数；没快照按 weight × reps。
+  `WorkoutSession.totalVolumeKg` 与 `HistoryRepository` 的摘要聚合都走它，不要在别处再写一遍乘法。
+- **辅助自重动作**（`Exercise.isAssisted`，如辅助引体向上机，照 Strong / Hevy 的 Assisted Bodyweight 类型）：
+  用户填的是辅助重量（正数），**库里 `weight_kg` 存负数**（−10 = 辅助 10 kg）。这样 `volumeOf` 不用分支，
+  CSV / 历史摘要自然显示 `-10 kg`，建议引擎"加 2.5 kg"对它就是辅助变少，方向也对。取负与取绝对值只在
+  `active_workout_page.dart` 键盘 ↔ `editSet` 那一条通路上做，其他层看到的永远是负数。
+  `isAssisted` 为 true 的动作 `isBodyweight` 必为 true（Repository 写入时强制）。
+- **动作计量方式** `Exercise.measure`（`ExerciseMeasure { reps, seconds, distance }`）：
+  seconds 类动作把秒数记在 `workout_sets.duration_seconds`，distance 类**复用 `reps` 列存米数**，
+  不再加列。`WorkoutSet.isEmpty` 把 `durationSeconds` 也算作"填过"，结束训练清空组时同样。
+- 板片计算器的杠重与"手头有哪些片"都在 `app_settings`（`barbellWeightKg` / `availablePlatesKg`，逗号分隔），
+  `SettingsRepository` 自己定义一份 `defaultPlatesKg`，与 `PlateCalculator.defaultPlates` 同值由测试盯着，
+  不反向 import workout（settings/data → workout/models 会成环）。
+- 超级组只是 `workout_exercises.superset_group` 上的一个组号：同组动作共享组号，组必须在列表里连续，
+  不连续或只剩一个成员就解散（纯函数 `normalizeSupersets`）。模板层没有超级组，它只存在于训练进行中与历史里。
 
 ## State
 
@@ -90,6 +107,14 @@ model 用枚举，表用 `text()`。
 `AsyncNotifier<ActiveWorkoutState?>`，`null` 表示当前没有进行中的训练。
 每个 mutation：先改内存 state，再 `await repo.xxx()` 写库；写库失败 `swallow` 并保留内存态
 （下一次 mutation 会再写）。`build()` 从库里恢复 `inProgress` session。
+
+计时类动作的组计时 `ActiveWorkoutState.runningSet` 和休息计时同一套规则：**只存开始时间戳与目标秒数**
+（`workout_sessions.running_set_*` 三列），已过秒数恢复时用 `clockProvider` 重算。`build()` 只在那组还存在且未完成时还原，
+否则清掉三列；恢复后页面 tick 发现已到点即振动并自动完成，接电话回来那组算完成。
+
+自重动作的体重快照 `WorkoutExercise.bodyWeightKg` 在 `start` / `startFromSession` / `addExercise` 时从
+`BodyWeightRepository.latest()` 抄一次；训练中在体重弹层改了体重，`BodyWeightController.record` 会回头调
+`refreshBodyWeightSnapshots` 把进行中训练里的自重动作一起更新。
 
 ### 时间
 
@@ -111,3 +136,17 @@ model 用枚举，表用 `text()`。
 - 改表结构时**不用改备份代码**：dump 与 restore 都走 `allTables` / `$columns`。只有一种情况要动：
   新列 NOT NULL 且无默认值 —— 那样老备份插不进去，而这也是 SQLite `ALTER TABLE ADD COLUMN` 本身不允许的。
 - 照片文件不在备份里（backlog D-13）。
+- 备份里**缺整张表**（比如 v2 备份没有 `body_weights`）：备份的 `schemaVersion` 比当前老就当空表；
+  同版本缺表仍拒绝，那说明文件被改过。
+
+## CSV 导出（`features/backup/data/csv_export_repository.dart`）
+
+- 一行一组。只导 completed 且未软删的训练、未软删的动作、已完成的组；按训练开始时间、动作 sort_order、set_index 升序。
+- 两种格式：**TrainTrace 全字段**（表头固定英文 snake_case，含 RIR、器械标签、场馆、备注；`exercise_order` /
+  `set_index` 从 1 起，给人看）与 **Hevy 兼容**（照 Hevy 官方导出表头，`set_index` 从 0 起，RIR → RPE 按 10 − RIR，
+  下限 6；warmup → `warmup`、working → `normal`、drop → `dropset`）。表头不进 ARB：它是机器契约，跟界面语言变会让
+  用户的 Excel 公式失效。
+- `encodeCsv` 自己转义（含逗号 / 引号 / 换行的字段包双引号，引号翻倍），**CRLF + UTF-8 BOM**，否则 Windows 上 Excel / WPS
+  打开中文乱码。落盘与备份同一套 `FilePicker.saveFile`。
+- TrainTrace 格式末尾三列 `duration_seconds` / `body_weight_kg` / `superset_group` 对应计时组、自重快照、超级组组号；
+  Hevy 格式的 `superset_id` 与 `duration_seconds` 也由它们填。**加列只往表头末尾加**，用户已有的 Excel 公式按列名引用才不会断。

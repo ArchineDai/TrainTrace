@@ -37,13 +37,20 @@ lib/
 │   │   ├─ models/numeric_input.dart      自定义键盘的编辑规则（fresh 替换、±步长）
 │   │   ├─ data/workout_repository.dart   开始 / 改组 / 完成 / 结束（清空组）/ 放弃，写穿入口
 │   │   ├─ state/rest_timer_view_model.dart  restTimerProvider + restTimerRemainingProvider
-│   │   └─ presentation/widgets/         numeric_keypad / set_row / rest_timer_bar
+│   │   ├─ models/plate_calculator.dart   杠铃配重纯函数（每边片清单、最近可配值、上一档 / 下一档）
+│   │   ├─ models/superset.dart           超级组的连续性归一化、A1 / A2 标记、组尾判定（纯函数）
+│   │   ├─ models/active_workout_state.dart  内存态 + RunningSet（组计时，不落库）
+│   │   └─ presentation/widgets/         numeric_keypad / set_row / rest_timer_bar / plate_calculator_sheet（杠铃动作长按重量框）
 │   ├─ history/
-│   │   ├─ models/history_models.dart     SessionSummary / ExercisePerformance / PersonalRecords
-│   │   └─ data/history_repository.dart   摘要聚合、上次表现（按器械标签分组）、PR / Epley 1RM
-│   ├─ backup/                            BackupRepository（全表 JSON dump / 整体替换恢复）+ BackupController（file_picker SAF）+ 备份页；
-│   │                                      它依赖 workout 与 settings 两边的 ViewModel（恢复后 invalidate），所以不放进 settings
-│   ├─ settings/                          ThemeSettings + SettingsRepository + 主题 / 语言两个 ViewModel + 设置页（数据分组进备份页）
+│   │   ├─ models/history_models.dart     SessionSummary / ExercisePerformance / PastExerciseNote / PersonalRecords / OneRmPoint
+│   │   ├─ models/one_rm_trend.dart       1RM 趋势的区间过滤 / 涨幅 / 坐标轴纯函数
+│   │   ├─ data/history_repository.dart   摘要聚合、上次表现与上次备注（按器械标签分组）、PR / Epley 1RM、1RM 序列
+│   │   └─ state/one_rm_series_provider.dart
+│   ├─ measurements/                      体重：BodyWeightRepository / BodyWeightEntry + latestBodyWeightProvider / BodyWeightController
+│   │                                      + BodyWeightSheet（训练卡片体重芯片与设置页"体重"行共用）
+│   ├─ backup/                            BackupRepository（全表 JSON dump / 整体替换恢复）+ CsvExportRepository（一行一组，TrainTrace / Hevy 两种表头）
+│   │                                      + 两个 Controller（file_picker SAF）+ 备份页；它依赖 workout 与 settings 两边的 ViewModel（恢复后 invalidate），所以不放进 settings
+│   ├─ settings/                          ThemeSettings + SettingsRepository（主题 / 语言 / 提醒 / 杠重）+ 各 ViewModel + 设置页（数据分组进备份页）
 │   ├─ dev/presentation/dev_playground_page.dart  Phase 0 验证页，仅 debug 注册（backlog D-6）
 │   └─ home / routines / history           占位页
 ├─ services/
