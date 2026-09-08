@@ -61,6 +61,7 @@ class WorkoutExerciseCard extends StatelessWidget {
     this.onLongPressLabel,
     required this.onAction,
     this.onLongPressWeight,
+    this.onTapPlateCalculator,
     this.supersetTag,
     this.canLinkNext = false,
     this.isBodyweight = false,
@@ -116,6 +117,9 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   /// 长按某组的重量框（杠铃动作开板片计算器）。null 不响应。
   final ValueChanged<String>? onLongPressWeight;
+
+  /// 点某组重量框右侧的计算器图标（杠铃动作的可见入口）。null 不画图标。
+  final ValueChanged<String>? onTapPlateCalculator;
   /// 自重动作（`Exercise.isBodyweight`）：器械芯片换成体重芯片，重量列是附加重量
   /// （前面带 `+`），组下方说明容量怎么算。页面按 exerciseId 查动作后传入。
   final bool isBodyweight;
@@ -317,6 +321,9 @@ class WorkoutExerciseCard extends StatelessWidget {
                   onLongPressWeight: onLongPressWeight == null
                       ? null
                       : () => onLongPressWeight!(exercise.sets[i].id),
+                  onTapPlateCalculator: onTapPlateCalculator == null
+                      ? null
+                      : () => onTapPlateCalculator!(exercise.sets[i].id),
                   weightPrefix: _weightPrefix,
                   measure: measure,
                   durationText: _text(exercise.sets[i], SetField.duration),

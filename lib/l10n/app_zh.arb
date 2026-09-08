@@ -443,6 +443,8 @@
   "editWorkoutTargets": "调整目标 / 休息",
   "alsoUpdateDefaults": "同时更新这个动作的默认目标",
   "plateCalculatorTitle": "配重",
+  "plateCalculatorTooltip": "配重计算",
+  "platesToggle": "设置手头的片",
   "barbellOption": "{kg} kg 杠",
   "@barbellOption": {
     "placeholders": {
@@ -450,6 +452,7 @@
     }
   },
   "availablePlatesLabel": "手头的片",
+  "availablePlatesHint": "手头的片 · 勾掉没有的",
   "plateNotExact": "配不出 {target}，最近可配 {achieved}",
   "@plateNotExact": {
     "placeholders": {

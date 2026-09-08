@@ -775,12 +775,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get plateCalculatorTitle => '配重';
 
   @override
+  String get plateCalculatorTooltip => '配重计算';
+
+  @override
+  String get platesToggle => '设置手头的片';
+
+  @override
   String barbellOption(String kg) {
     return '$kg kg 杠';
   }
 
   @override
   String get availablePlatesLabel => '手头的片';
+
+  @override
+  String get availablePlatesHint => '手头的片 · 勾掉没有的';
 
   @override
   String plateNotExact(String target, String achieved) {

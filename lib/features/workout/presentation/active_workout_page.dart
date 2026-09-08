@@ -290,8 +290,12 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       runningElapsed: st.runningSet?.elapsedSeconds(now),
       runningTarget: st.runningSet?.targetSeconds,
       onStopTimer: (_) => _vm.stopSetTimer(complete: false),
-      // 板片计算器只对杠铃动作开放；其他器械长按不响应。
+      // 板片计算器只对杠铃动作开放；其他器械长按不响应、也不画图标。
       onLongPressWeight: ref.watch(exerciseByIdProvider(ex.exerciseId))?.equipmentType ==
+              EquipmentType.barbell
+          ? _showPlateCalculator
+          : null,
+      onTapPlateCalculator: ref.watch(exerciseByIdProvider(ex.exerciseId))?.equipmentType ==
               EquipmentType.barbell
           ? _showPlateCalculator
           : null,
@@ -470,7 +474,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     await EquipmentPhotoViewer.show(context, note);
   }
 
-  /// 长按重量框：打开板片计算器。初值 = 该组已填重量，空则由弹层用杠重。
+  /// 点重量框右侧的计算器图标或长按重量框：打开板片计算器。
+  /// 初值 = 该组已填重量，空则由弹层用杠重。
   /// 正在编辑这组时先收起键盘，免得"填入"的值被输入中间态盖住。
   Future<void> _showPlateCalculator(String setId) async {
     if (_focusSetId == setId) _unfocus();

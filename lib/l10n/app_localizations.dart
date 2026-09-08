@@ -1454,6 +1454,18 @@ abstract class AppLocalizations {
   /// **'配重'**
   String get plateCalculatorTitle;
 
+  /// No description provided for @plateCalculatorTooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'配重计算'**
+  String get plateCalculatorTooltip;
+
+  /// No description provided for @platesToggle.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置手头的片'**
+  String get platesToggle;
+
   /// No description provided for @barbellOption.
   ///
   /// In zh, this message translates to:
@@ -1465,6 +1477,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'手头的片'**
   String get availablePlatesLabel;
+
+  /// No description provided for @availablePlatesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'手头的片 · 勾掉没有的'**
+  String get availablePlatesHint;
 
   /// No description provided for @plateNotExact.
   ///

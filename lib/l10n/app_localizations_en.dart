@@ -797,12 +797,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plateCalculatorTitle => 'Plate loading';
 
   @override
+  String get plateCalculatorTooltip => 'Plate calculator';
+
+  @override
+  String get platesToggle => 'Set available plates';
+
+  @override
   String barbellOption(String kg) {
     return '$kg kg bar';
   }
 
   @override
   String get availablePlatesLabel => 'Available plates';
+
+  @override
+  String get availablePlatesHint =>
+      'Available plates · untick the ones you don\'t have';
 
   @override
   String plateNotExact(String target, String achieved) {

@@ -29,6 +29,7 @@ class SetRow extends StatelessWidget {
     required this.onToggleComplete,
     this.previousHint,
     this.onLongPressWeight,
+    this.onTapPlateCalculator,
     this.weightPrefix,
     this.measure = ExerciseMeasure.reps,
     this.durationText = '',
@@ -68,6 +69,10 @@ class SetRow extends StatelessWidget {
 
   /// 长按重量框（杠铃动作打开板片计算器）。null 不响应长按。
   final VoidCallback? onLongPressWeight;
+
+  /// 重量框右侧的计算器图标（杠铃动作的可见入口）。null 不画图标；
+  /// 已完成的组输入已锁，也不画。
+  final VoidCallback? onTapPlateCalculator;
   /// 重量数字前的符号。自重动作传 `'+'`（重量列是附加重量），辅助自重传 `'−'`
   /// （U+2212，[weightText] 由父级给绝对值）；空值与以 ASCII `-` 开头的文本不加。
   final String? weightPrefix;
@@ -121,6 +126,8 @@ class SetRow extends StatelessWidget {
               completed: isCompleted,
               onTap: () => onTapField(SetField.weight),
               onLongPress: onLongPressWeight,
+              onTapTrailingIcon: isCompleted ? null : onTapPlateCalculator,
+              trailingIconTooltip: l10n.plateCalculatorTooltip,
             ),
           ),
           if (!timed)
@@ -205,11 +212,20 @@ class _FieldBox extends StatelessWidget {
     required this.completed,
     required this.onTap,
     this.onLongPress,
+    this.onTapTrailingIcon,
+    this.trailingIconTooltip,
     this.prefix,
   });
 
+  /// 右侧内嵌的计算器图标：24 大小，可点区 48 高 × 40 宽。null 不画。
+  static const double _trailingWidth = 40;
+
   final String text;
   final String unit;
+
+  /// 非 null 时在框右侧画计算器图标并响应点击（杠铃动作开板片计算器）。
+  final VoidCallback? onTapTrailingIcon;
+  final String? trailingIconTooltip;
 
   /// 数字前的小号符号（自重动作的 `+`、辅助自重的 `−`）。空值与以 ASCII `-`
   /// 开头的负数文本不显示 —— 父级传的 `−` 是 U+2212，不会被这条判断吃掉。
@@ -225,6 +241,7 @@ class _FieldBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final empty = text.isEmpty;
+    final hasTrailing = onTapTrailingIcon != null;
     return Material(
       color: completed ? Colors.transparent : scheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(AppTheme.radius),
@@ -242,7 +259,41 @@ class _FieldBox extends StatelessWidget {
             ),
           ),
           alignment: Alignment.center,
-          child: Row(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Padding(
+                // 有图标时数字在剩余区域居中，别被图标压着。
+                padding: EdgeInsets.only(right: hasTrailing ? _trailingWidth - 8 : 0),
+                child: _content(scheme, empty),
+              ),
+              if (hasTrailing)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: _trailingWidth,
+                  child: Tooltip(
+                    message: trailingIconTooltip ?? '',
+                    child: InkWell(
+                      onTap: onTapTrailingIcon,
+                      borderRadius: BorderRadius.circular(AppTheme.radius),
+                      child: Icon(
+                        Icons.calculate_outlined,
+                        size: 24,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _content(ColorScheme scheme, bool empty) => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -272,9 +323,5 @@ class _FieldBox extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
+          );
 }
