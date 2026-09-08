@@ -6,6 +6,7 @@ class ActiveWorkoutState {
   const ActiveWorkoutState({
     required this.session,
     this.lastByExercise = const {},
+    this.lastNoteByExercise = const {},
   });
 
   final WorkoutSession session;
@@ -13,13 +14,19 @@ class ActiveWorkoutState {
   /// 每个训练动作（key = workoutExerciseId）对应的"上次表现"，没有则为 null。
   final Map<String, ExercisePerformance?> lastByExercise;
 
+  /// 每个训练动作对应的"上次备注"（历史里最近一条非空的），没有则为 null。
+  /// 与 [lastByExercise] 分开存：上次那场没写备注不代表没有可回显的。
+  final Map<String, PastExerciseNote?> lastNoteByExercise;
+
   ActiveWorkoutState copyWith({
     WorkoutSession? session,
     Map<String, ExercisePerformance?>? lastByExercise,
+    Map<String, PastExerciseNote?>? lastNoteByExercise,
   }) =>
       ActiveWorkoutState(
         session: session ?? this.session,
         lastByExercise: lastByExercise ?? this.lastByExercise,
+        lastNoteByExercise: lastNoteByExercise ?? this.lastNoteByExercise,
       );
 
   WorkoutExercise? exerciseById(String workoutExerciseId) {

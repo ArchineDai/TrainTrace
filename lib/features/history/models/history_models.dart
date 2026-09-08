@@ -73,6 +73,24 @@ class ExercisePerformance {
   int get hashCode => workoutExerciseId.hashCode;
 }
 
+/// 某动作历史上最近一条非空备注。训练卡片"上次备注"回显的数据单元。
+///
+/// 独立于 [ExercisePerformance]：备注（座椅档位、把手位置）通常几周才写一次，
+/// 上次那场没写不代表没有可回显的 —— 要的是"最近一条写了的"，不是"上次那场的"。
+class PastExerciseNote {
+  const PastExerciseNote({
+    required this.text,
+    required this.startedAt,
+    this.equipmentLabel,
+  });
+
+  final String text;
+
+  /// 写下这条备注的那次训练的开始时间。
+  final DateTime startedAt;
+  final String? equipmentLabel;
+}
+
 /// 个人记录。全部只统计已完成的正式组。
 class PersonalRecords {
   const PersonalRecords({

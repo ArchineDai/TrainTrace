@@ -20,6 +20,9 @@ enum ExerciseCardAction {
 
   /// 训练中调整目标次数 / 休息（[WorkoutTargetSheet]）。
   editTargets,
+
+  /// 本次动作备注（座椅档位、把手位置这类下次要看的话）。
+  editNote,
   viewExercise,
   remove,
 }
@@ -32,6 +35,8 @@ class WorkoutExerciseCard extends StatelessWidget {
     super.key,
     required this.exercise,
     required this.last,
+    this.lastNote,
+    required this.now,
     required this.focusedSetId,
     required this.focusedField,
     required this.editingText,
@@ -48,6 +53,12 @@ class WorkoutExerciseCard extends StatelessWidget {
 
   final WorkoutExercise exercise;
   final ExercisePerformance? last;
+
+  /// 历史里最近一条非空备注；本次已写备注时不显示它。
+  final PastExerciseNote? lastNote;
+
+  /// 用来把上次备注的日期写成"昨天 / 9月5日"。经 clockProvider 取，页面传入。
+  final DateTime now;
   final String? focusedSetId;
   final SetField? focusedField;
 
@@ -144,6 +155,10 @@ class WorkoutExerciseCard extends StatelessWidget {
                       child: Text(l10n.editWorkoutTargets),
                     ),
                     PopupMenuItem(
+                      value: ExerciseCardAction.editNote,
+                      child: Text(_hasNote ? l10n.editNote : l10n.addNote),
+                    ),
+                    PopupMenuItem(
                       value: ExerciseCardAction.viewExercise,
                       child: Text(l10n.viewExerciseGuide),
                     ),
@@ -172,6 +187,22 @@ class WorkoutExerciseCard extends StatelessWidget {
                 ),
               ),
             ),
+            // ── 备注：本次写了显示本次；没写就回显历史最近一条 ──────────
+            if (_hasNote || lastNote != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: _NoteBlock(
+                  label: _hasNote
+                      ? l10n.thisTimeNote
+                      : l10n.lastNoteLabel(
+                          Formatters.relativeDay(lastNote!.startedAt, now, l10n),
+                        ),
+                  text: _hasNote ? exercise.note! : lastNote!.text,
+                  // 回显上次时给一个"本次备注"的入口；本次已写就点整块编辑。
+                  action: _hasNote ? null : l10n.thisTimeNote,
+                  onTap: () => onAction(ExerciseCardAction.editNote),
+                ),
+              ),
             // ── 建议（一行）：按当前器械标签与本次目标区间算 ────────
             if (last != null)
               Padding(
@@ -220,6 +251,8 @@ class WorkoutExerciseCard extends StatelessWidget {
     );
   }
 
+  bool get _hasNote => exercise.note != null && exercise.note!.trim().isNotEmpty;
+
   /// 上次表现：各组摘要 +（器械标签）。
   String _lastSummary(AppLocalizations l10n) {
     final summary = Formatters.setsSummary([
@@ -255,6 +288,79 @@ class WorkoutExerciseCard extends StatelessWidget {
         child: Icon(Icons.delete_outline, color: colors.danger),
       ),
       child: child,
+    );
+  }
+}
+
+/// 备注块：灰底、左侧备注图标、小字标签 + 正文，右侧可选的橙色文字动作。整块可点。
+/// 用 surfaceContainerHigh 而不是卡片色，让它在卡片里读成一个独立的物件。
+class _NoteBlock extends StatelessWidget {
+  const _NoteBlock({
+    required this.label,
+    required this.text,
+    required this.onTap,
+    this.action,
+  });
+
+  final String label;
+  final String text;
+  final String? action;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(AppTheme.radius),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.sticky_note_2_outlined,
+                  size: 16,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(text, style: TextStyle(fontSize: AppTextSize.sm, height: 1.4)),
+                  ],
+                ),
+              ),
+              if (action != null) ...[
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    action!,
+                    style: TextStyle(
+                      fontSize: AppTextSize.xs,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.of(context).accentText,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

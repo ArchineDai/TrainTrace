@@ -669,6 +669,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String lastNoteLabel(String date) {
+    return 'Last note · $date';
+  }
+
+  @override
+  String get thisTimeNote => 'Note for today';
+
+  @override
+  String get hintExerciseNote => 'e.g. Seat 4, handles at mid';
+
+  @override
   String get addSet => 'Add set';
 
   @override

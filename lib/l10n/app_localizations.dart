@@ -1244,6 +1244,24 @@ abstract class AppLocalizations {
   /// **'上次：{summary}'**
   String lastTimeValue(String summary);
 
+  /// No description provided for @lastNoteLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'上次备注 · {date}'**
+  String lastNoteLabel(String date);
+
+  /// No description provided for @thisTimeNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'本次备注'**
+  String get thisTimeNote;
+
+  /// No description provided for @hintExerciseNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'如：座椅第 4 档，把手中位'**
+  String get hintExerciseNote;
+
   /// No description provided for @addSet.
   ///
   /// In zh, this message translates to:

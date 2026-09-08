@@ -315,6 +315,46 @@ void main() {
     expect(st.session.exercises[4].targetRepMax, 15);
   });
 
+  test('setExerciseNote：即时写库、去空白、清空即删；下次开始回显上次备注', () async {
+    await container.read(activeWorkoutProvider.future);
+    await startA();
+    final vm = container.read(activeWorkoutProvider.notifier);
+    var st = container.read(activeWorkoutProvider).value!;
+    final lat = st.session.exercises[1];
+    expect(
+      st.lastNoteByExercise[lat.id]!.text,
+      '22.7kg 最后出现代偿',
+      reason: '种子里 9/3 那次的备注',
+    );
+
+    await vm.setExerciseNote(lat.id, '  座椅第 4 档  ');
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.exerciseById(lat.id)!.note, '座椅第 4 档');
+    final row = await (db.select(db.workoutExercises)..where((t) => t.id.equals(lat.id))).getSingle();
+    expect(row.note, '座椅第 4 档', reason: '不 debounce，立刻落库');
+
+    // 完成一组再结束，让这次训练进历史
+    await vm.toggleComplete(lat.sets[0].id);
+    await vm.finish();
+
+    // 下一次同模板：高位下拉的"上次备注"回显出来
+    clock.advance(const Duration(days: 2));
+    await startA();
+    st = container.read(activeWorkoutProvider).value!;
+    final lat2 = st.session.exercises[1];
+    expect(lat2.note, isNull, reason: '本次备注不自动复制，只回显');
+    expect(st.lastNoteByExercise[lat2.id]!.text, '座椅第 4 档');
+    expect(st.lastNoteByExercise[lat2.id]!.startedAt, isNotNull);
+
+    // 写了再清空 → 内存与库都为 null
+    await vm.setExerciseNote(lat2.id, '临时');
+    await vm.setExerciseNote(lat2.id, '   ');
+    st = container.read(activeWorkoutProvider).value!;
+    expect(st.exerciseById(lat2.id)!.note, isNull);
+    final row2 = await (db.select(db.workoutExercises)..where((t) => t.id.equals(lat2.id))).getSingle();
+    expect(row2.note, isNull);
+  });
+
   test('isStale：开始超过 12 小时', () async {
     await container.read(activeWorkoutProvider.future);
     await startA();

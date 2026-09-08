@@ -11,6 +11,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
+import '../../../shared/widgets/text_fields_dialog.dart';
 import '../../exercises/data/exercise_repository.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../exercises/presentation/widgets/equipment_note_photo.dart';
@@ -78,6 +79,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   Widget build(BuildContext context) {
     final st = ref.watch(activeWorkoutProvider).value;
     final l10n = AppLocalizations.of(context);
+    final now = ref.read(clockProvider).now();
     if (st == null) {
       // 结束 / 放弃后 provider 变 null；页面若还在栈上就退出。
       return Scaffold(
@@ -164,6 +166,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                       key: ValueKey('ex-${ex.id}'),
                       exercise: ex,
                       last: st.lastByExercise[ex.id],
+                      lastNote: st.lastNoteByExercise[ex.id],
+                      now: now,
                       focusedSetId: _focusSetId,
                       focusedField: _focusField,
                       editingText: _editing,
@@ -307,6 +311,33 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     );
   }
 
+  /// 本次动作备注。当前没写时用上次的文本预填：座椅档位这种备注每次都一样，
+  /// 一次确认即沿用；要改就在预填的基础上改。清空保存即删掉本次备注。
+  Future<void> _editNote(String weId) async {
+    final l10n = AppLocalizations.of(context);
+    final st = ref.read(activeWorkoutProvider).value;
+    final ex = st?.exerciseById(weId);
+    if (ex == null) return;
+    final current = ex.note?.trim() ?? '';
+    final initial = current.isNotEmpty ? current : (st!.lastNoteByExercise[weId]?.text ?? '');
+    final texts = await showTextFieldsDialog(
+      context,
+      title: l10n.thisTimeNote,
+      confirmLabel: l10n.actionSave,
+      fields: [
+        DialogField(
+          label: l10n.fieldNote,
+          hint: l10n.hintExerciseNote,
+          initial: initial,
+          maxLines: 3,
+          autofocus: true,
+        ),
+      ],
+    );
+    if (texts == null || !mounted) return;
+    await _vm.setExerciseNote(weId, texts[0]);
+  }
+
   /// 长按器械标签：看这台机器的照片；没拍过就提示去详情页拍。
   Future<void> _showLabelPhoto(String exerciseId, String? label) async {
     final l10n = AppLocalizations.of(context);
@@ -342,6 +373,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         await _changeLabel(weId, exerciseId, label);
       case ExerciseCardAction.editTargets:
         await WorkoutTargetSheet.show(context, weId);
+      case ExerciseCardAction.editNote:
+        await _editNote(weId);
       case ExerciseCardAction.viewExercise:
         await context.push(AppRoutes.exerciseDetail(exerciseId));
       case ExerciseCardAction.remove:

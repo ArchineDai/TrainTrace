@@ -11,6 +11,7 @@ class DialogField {
     this.keyboardType,
     this.autofocus = false,
     this.suffixText,
+    this.maxLines = 1,
   });
 
   final String label;
@@ -19,6 +20,9 @@ class DialogField {
   final TextInputType? keyboardType;
   final bool autofocus;
   final String? suffixText;
+
+  /// 多行输入（备注）。默认单行，回车即确认的行为不变。
+  final int maxLines;
 }
 
 /// 弹一个带若干 `TextField` 的确认对话框。确认返回各字段文本（与 [fields] 同序），
@@ -92,6 +96,7 @@ class _TextFieldsDialogState extends State<_TextFieldsDialog> {
           controller: _controllers[i],
           autofocus: widget.fields[i].autofocus,
           keyboardType: widget.fields[i].keyboardType,
+          maxLines: widget.fields[i].maxLines,
           decoration: InputDecoration(
             labelText: widget.fields[i].label,
             hintText: widget.fields[i].hint,

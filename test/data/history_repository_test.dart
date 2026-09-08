@@ -109,6 +109,62 @@ void main() {
     expect((await history.recentPerformances('ex_lat_pulldown')).length, 3);
   });
 
+  test('lastNote：取最近一条非空备注，按标签匹配，排除进行中与当前训练', () async {
+    final lat = (await exercises.getById('ex_lat_pulldown'))!;
+    expect(
+      (await history.lastNote('ex_lat_pulldown'))!.text,
+      '22.7kg 最后出现代偿',
+      reason: '种子里 9/3 那次的备注，比 8/30 的"重量合适"新',
+    );
+
+    // 第一次：写了备注并完成
+    clock.advance(const Duration(days: 1));
+    final s1 = await workouts.startSession();
+    final we1 = await workouts.addExercise(s1.id, lat, setCount: 1);
+    await workouts.updateExercise(we1.id, note: '座椅第 4 档');
+    await workouts.updateSet(we1.sets[0].id, weightKg: 20, reps: 12);
+    await workouts.setCompleted(we1.sets[0].id, true);
+    await workouts.finishSession(s1.id);
+
+    // 第二次：没写备注。回显的应仍是第一次那条，而不是"上次那场没写"
+    clock.advance(const Duration(days: 2));
+    final s2 = await workouts.startSession();
+    final we2 = await workouts.addExercise(s2.id, lat, setCount: 1);
+    await workouts.updateSet(we2.sets[0].id, weightKg: 20, reps: 12);
+    await workouts.setCompleted(we2.sets[0].id, true);
+    await workouts.finishSession(s2.id);
+
+    final note = await history.lastNote('ex_lat_pulldown');
+    expect(note, isNotNull);
+    expect(note!.text, '座椅第 4 档');
+    expect(note.startedAt, s1.startedAt);
+    expect(note.equipmentLabel, isNull);
+
+    // 进行中的训练写了备注不算；当前训练自己也要排除
+    clock.advance(const Duration(days: 1));
+    final s3 = await workouts.startSession();
+    final we3 = await workouts.addExercise(s3.id, lat, equipmentLabel: '机器B', setCount: 1);
+    await workouts.updateExercise(we3.id, note: '进行中的备注');
+    expect((await history.lastNote('ex_lat_pulldown', anyEquipment: true))!.text, '座椅第 4 档');
+    expect(
+      (await history.lastNote('ex_lat_pulldown', excludeSessionId: s3.id))!.text,
+      '座椅第 4 档',
+    );
+
+    // 标签不匹配就没有；忽略标签才回落
+    expect(await history.lastNote('ex_lat_pulldown', equipmentLabel: '机器B'), isNull);
+
+    // 清成空串视为没写
+    await workouts.finishSession(s3.id);
+    await workouts.updateExercise(we3.id, note: '');
+    expect(await history.lastNote('ex_lat_pulldown', equipmentLabel: '机器B'), isNull);
+    await workouts.updateExercise(we3.id, note: '把手中位');
+    expect((await history.lastNote('ex_lat_pulldown', equipmentLabel: '机器B'))!.text, '把手中位');
+    // clearNote 真的清成 null
+    await workouts.updateExercise(we3.id, clearNote: true);
+    expect(await history.lastNote('ex_lat_pulldown', equipmentLabel: '机器B'), isNull);
+  });
+
   test('personalRecords：最大重量、单组容量、Epley 1RM、次数', () async {
     final pr = await history.personalRecords('ex_lat_pulldown');
     expect(pr.sessionCount, 2);

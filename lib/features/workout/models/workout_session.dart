@@ -143,6 +143,7 @@ class WorkoutExercise {
     String? note,
     List<WorkoutSet>? sets,
     bool clearEquipmentLabel = false,
+    bool clearNote = false,
   }) {
     return WorkoutExercise(
       id: id,
@@ -156,7 +157,7 @@ class WorkoutExercise {
       targetRepMin: targetRepMin ?? this.targetRepMin,
       targetRepMax: targetRepMax ?? this.targetRepMax,
       restSeconds: restSeconds ?? this.restSeconds,
-      note: note ?? this.note,
+      note: clearNote ? null : (note ?? this.note),
       sets: sets ?? this.sets,
     );
   }

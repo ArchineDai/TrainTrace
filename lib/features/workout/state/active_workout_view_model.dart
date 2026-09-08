@@ -52,6 +52,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     final session = await _repo.getInProgress();
     if (session == null) return null;
     final last = await _loadLast(session);
+    final notes = await _loadLastNotes(session);
     // 恢复计时：只有终点时间戳，剩余由 clock 重算。不能在 build 的同步阶段改
     // 别的 provider，所以推到微任务。
     final restSeconds = _currentRestSeconds(session);
@@ -59,7 +60,11 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
           session.restEndsAt?.millisecondsSinceEpoch,
           totalSeconds: restSeconds,
         ));
-    return ActiveWorkoutState(session: session, lastByExercise: last);
+    return ActiveWorkoutState(
+      session: session,
+      lastByExercise: last,
+      lastNoteByExercise: notes,
+    );
   }
 
   // ── 会话 ─────────────────────────────────────────────────────
@@ -77,7 +82,11 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     }
     session = (await _repo.getSession(session.id))!;
     await _timer.skip();
-    state = AsyncData(ActiveWorkoutState(session: session, lastByExercise: last));
+    state = AsyncData(ActiveWorkoutState(
+      session: session,
+      lastByExercise: last,
+      lastNoteByExercise: await _loadLastNotes(session),
+    ));
   }
 
   /// "再练一次"：照一次历史训练的动作、器械标签、目标、休息重新开始。
@@ -109,7 +118,11 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     }
     session = (await _repo.getSession(session.id))!;
     await _timer.skip();
-    state = AsyncData(ActiveWorkoutState(session: session, lastByExercise: last));
+    state = AsyncData(ActiveWorkoutState(
+      session: session,
+      lastByExercise: last,
+      lastNoteByExercise: await _loadLastNotes(session),
+    ));
   }
 
   /// 结束训练，返回已完成的 session（总结页用）。
@@ -259,11 +272,13 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
     try {
       var we = await _repo.addExercise(s.session.id, exercise);
       final last = await _lastFor(we, s.session.id);
+      final lastNote = await _lastNoteFor(we, s.session.id);
       await _prefillFromLast(we, last);
       we = (await _repo.getExercise(we.id))!;
       _mutate((st) => st.copyWith(
             session: st.session.copyWith(exercises: [...st.session.exercises, we]),
             lastByExercise: {...st.lastByExercise, we.id: last},
+            lastNoteByExercise: {...st.lastNoteByExercise, we.id: lastNote},
           ));
     } catch (e, st) {
       swallow(e, 'add exercise', st);
@@ -333,10 +348,32 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       final updated = state.value?.exerciseById(workoutExerciseId);
       if (updated == null) return;
       final last = await _lastFor(updated, s.session.id);
+      final lastNote = await _lastNoteFor(updated, s.session.id);
       _mutate((st) => st.copyWith(
             lastByExercise: {...st.lastByExercise, workoutExerciseId: last},
+            lastNoteByExercise: {...st.lastNoteByExercise, workoutExerciseId: lastNote},
           ));
     }
+  }
+
+  /// 本次动作备注。空白视为清掉。即时写库，不 debounce：对话框确认一次写一次。
+  Future<void> setExerciseNote(String workoutExerciseId, String? note) async {
+    final s = state.value;
+    final ex = s?.exerciseById(workoutExerciseId);
+    if (s == null || ex == null) return;
+    final text = note?.trim() ?? '';
+    final clear = text.isEmpty;
+    _mutate((st) => st.replaceExercise(
+          ex.copyWith(note: clear ? null : text, clearNote: clear),
+        ));
+    await _persist(
+      () => _repo.updateExercise(
+        workoutExerciseId,
+        note: clear ? null : text,
+        clearNote: clear,
+      ),
+      'update exercise note',
+    );
   }
 
   /// "沿用上次"：把上次各组的重量次数填进本动作未完成的组，组数不够就补。
@@ -437,6 +474,29 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
       map[ex.id] = await _lastFor(ex, session.id);
     }
     return map;
+  }
+
+  Future<Map<String, PastExerciseNote?>> _loadLastNotes(WorkoutSession session) async {
+    final map = <String, PastExerciseNote?>{};
+    for (final ex in session.exercises) {
+      map[ex.id] = await _lastNoteFor(ex, session.id);
+    }
+    return map;
+  }
+
+  /// 上次备注的匹配规则与 [_lastFor] 一致：先按标签，没标签再不分器械。
+  Future<PastExerciseNote?> _lastNoteFor(WorkoutExercise ex, String sessionId) async {
+    final exact = await _history.lastNote(
+      ex.exerciseId,
+      equipmentLabel: ex.equipmentLabel,
+      excludeSessionId: sessionId,
+    );
+    if (exact != null || ex.equipmentLabel != null) return exact;
+    return _history.lastNote(
+      ex.exerciseId,
+      anyEquipment: true,
+      excludeSessionId: sessionId,
+    );
   }
 
   /// 先按当前器械标签找；没标签又找不到时退回"不分器械"的最近一次。

@@ -372,6 +372,12 @@
   "removeExercise": "删除动作",
   "lastTimeNone": "上次：无记录",
   "lastTimeValue": "上次：{summary}",
+  "lastNoteLabel": "上次备注 · {date}",
+  "@lastNoteLabel": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "thisTimeNote": "本次备注",
+  "hintExerciseNote": "如：座椅第 4 档，把手中位",
   "@lastTimeValue": {
     "placeholders": {
       "summary": { "type": "String" }

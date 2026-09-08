@@ -652,6 +652,17 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String lastNoteLabel(String date) {
+    return '上次备注 · $date';
+  }
+
+  @override
+  String get thisTimeNote => '本次备注';
+
+  @override
+  String get hintExerciseNote => '如：座椅第 4 档，把手中位';
+
+  @override
   String get addSet => '添加一组';
 
   @override

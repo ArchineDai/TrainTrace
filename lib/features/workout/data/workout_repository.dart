@@ -250,6 +250,7 @@ class WorkoutRepository {
     int? targetRepMax,
     int? restSeconds,
     String? note,
+    bool clearNote = false,
   }) =>
       (_db.update(_db.workoutExercises)..where((t) => t.id.equals(id))).write(
         WorkoutExercisesCompanion(
@@ -259,7 +260,7 @@ class WorkoutRepository {
           targetRepMin: Value.absentIfNull(targetRepMin),
           targetRepMax: Value.absentIfNull(targetRepMax),
           restSeconds: Value.absentIfNull(restSeconds),
-          note: Value.absentIfNull(note),
+          note: clearNote ? const Value(null) : Value.absentIfNull(note),
           updatedAt: Value(_clock.nowMs()),
         ),
       );

@@ -155,6 +155,49 @@ class HistoryRepository {
     return list.isEmpty ? null : list.first;
   }
 
+  /// 该动作最近一条非空的动作备注（只看已完成、未删除的训练）。
+  ///
+  /// 标签匹配规则同 [recentPerformances]：默认按 [equipmentLabel] 精确匹配，
+  /// [anyEquipment] 忽略标签。空串视为没写。
+  Future<PastExerciseNote?> lastNote(
+    String exerciseId, {
+    String? equipmentLabel,
+    bool anyEquipment = false,
+    String? excludeSessionId,
+  }) async {
+    final we = _db.workoutExercises;
+    final ws = _db.workoutSessions;
+    var where = we.exerciseId.equals(exerciseId) &
+        we.deletedAt.isNull() &
+        we.note.isNotNull() &
+        we.note.equals('').not() &
+        ws.status.equals(SessionStatus.completed.name) &
+        ws.deletedAt.isNull();
+    if (!anyEquipment) {
+      where = where &
+          (equipmentLabel == null
+              ? we.equipmentLabel.isNull()
+              : we.equipmentLabel.equals(equipmentLabel));
+    }
+    if (excludeSessionId != null) {
+      where = where & ws.id.equals(excludeSessionId).not();
+    }
+    final row = await (_db.select(we).join([
+      innerJoin(ws, ws.id.equalsExp(we.sessionId)),
+    ])
+          ..where(where)
+          ..orderBy([OrderingTerm.desc(ws.startedAt)])
+          ..limit(1))
+        .getSingleOrNull();
+    if (row == null) return null;
+    final e = row.readTable(we);
+    return PastExerciseNote(
+      text: e.note!,
+      startedAt: DateTime.fromMillisecondsSinceEpoch(row.readTable(ws).startedAt),
+      equipmentLabel: e.equipmentLabel,
+    );
+  }
+
   /// 该动作在历史里用过的器械标签（去重，最近用的在前）。null 标签不计。
   Future<List<String>> equipmentLabelsUsed(String exerciseId) async {
     final we = _db.workoutExercises;
