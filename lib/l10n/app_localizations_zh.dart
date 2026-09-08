@@ -121,6 +121,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backupFailed => '操作失败，请重试';
 
   @override
+  String get csvExportSection => '导出表格';
+
+  @override
+  String get csvExportTitle => '导出 CSV';
+
+  @override
+  String get csvExportSubtitle => '一行一组，Excel / WPS 直接打开';
+
+  @override
+  String get csvExportFormat => '格式';
+
+  @override
+  String get csvExportFormatTraintrace => 'TrainTrace 表格';
+
+  @override
+  String get csvExportFormatHevy => 'Hevy 兼容';
+
+  @override
+  String get csvExportFormatTraintraceHint => 'TrainTrace 表格含 RIR、器械标签、场馆和备注。';
+
+  @override
+  String get csvExportFormatHevyHint => 'Hevy 兼容格式可直接导入 Hevy / Strong。';
+
+  @override
+  String get csvExportRange => '范围';
+
+  @override
+  String get csvExportRangeAll => '全部';
+
+  @override
+  String get csvExportRangeThisYear => '今年';
+
+  @override
+  String get csvExportRangeLast3Months => '近 3 个月';
+
+  @override
+  String csvExportCount(int sessions, int sets) {
+    final intl.NumberFormat sessionsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String sessionsString = sessionsNumberFormat.format(sessions);
+    final intl.NumberFormat setsNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String setsString = setsNumberFormat.format(sets);
+
+    return '$sessionsString 次训练 · $setsString 组';
+  }
+
+  @override
+  String get csvExportAction => '导出 CSV';
+
+  @override
+  String get csvExportDone => '表格已保存';
+
+  @override
   String get restReminderSetting => '休息结束提醒';
 
   @override

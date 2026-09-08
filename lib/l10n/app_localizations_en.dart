@@ -127,6 +127,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupFailed => 'Something went wrong, please try again';
 
   @override
+  String get csvExportSection => 'Export spreadsheet';
+
+  @override
+  String get csvExportTitle => 'Export CSV';
+
+  @override
+  String get csvExportSubtitle =>
+      'One row per set; opens directly in Excel or WPS';
+
+  @override
+  String get csvExportFormat => 'Format';
+
+  @override
+  String get csvExportFormatTraintrace => 'TrainTrace table';
+
+  @override
+  String get csvExportFormatHevy => 'Hevy compatible';
+
+  @override
+  String get csvExportFormatTraintraceHint =>
+      'The TrainTrace table includes RIR, equipment labels, gym and notes.';
+
+  @override
+  String get csvExportFormatHevyHint =>
+      'The Hevy-compatible format can be imported straight into Hevy or Strong.';
+
+  @override
+  String get csvExportRange => 'Range';
+
+  @override
+  String get csvExportRangeAll => 'All';
+
+  @override
+  String get csvExportRangeThisYear => 'This year';
+
+  @override
+  String get csvExportRangeLast3Months => 'Last 3 months';
+
+  @override
+  String csvExportCount(int sessions, int sets) {
+    final intl.NumberFormat sessionsNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String sessionsString = sessionsNumberFormat.format(sessions);
+    final intl.NumberFormat setsNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String setsString = setsNumberFormat.format(sets);
+
+    return '$sessionsString workouts · $setsString sets';
+  }
+
+  @override
+  String get csvExportAction => 'Export CSV';
+
+  @override
+  String get csvExportDone => 'Spreadsheet saved';
+
+  @override
   String get restReminderSetting => 'Rest reminder';
 
   @override

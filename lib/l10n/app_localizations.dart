@@ -308,6 +308,96 @@ abstract class AppLocalizations {
   /// **'操作失败，请重试'**
   String get backupFailed;
 
+  /// No description provided for @csvExportSection.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出表格'**
+  String get csvExportSection;
+
+  /// No description provided for @csvExportTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出 CSV'**
+  String get csvExportTitle;
+
+  /// No description provided for @csvExportSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'一行一组，Excel / WPS 直接打开'**
+  String get csvExportSubtitle;
+
+  /// No description provided for @csvExportFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'格式'**
+  String get csvExportFormat;
+
+  /// No description provided for @csvExportFormatTraintrace.
+  ///
+  /// In zh, this message translates to:
+  /// **'TrainTrace 表格'**
+  String get csvExportFormatTraintrace;
+
+  /// No description provided for @csvExportFormatHevy.
+  ///
+  /// In zh, this message translates to:
+  /// **'Hevy 兼容'**
+  String get csvExportFormatHevy;
+
+  /// No description provided for @csvExportFormatTraintraceHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'TrainTrace 表格含 RIR、器械标签、场馆和备注。'**
+  String get csvExportFormatTraintraceHint;
+
+  /// No description provided for @csvExportFormatHevyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'Hevy 兼容格式可直接导入 Hevy / Strong。'**
+  String get csvExportFormatHevyHint;
+
+  /// No description provided for @csvExportRange.
+  ///
+  /// In zh, this message translates to:
+  /// **'范围'**
+  String get csvExportRange;
+
+  /// No description provided for @csvExportRangeAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get csvExportRangeAll;
+
+  /// No description provided for @csvExportRangeThisYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'今年'**
+  String get csvExportRangeThisYear;
+
+  /// No description provided for @csvExportRangeLast3Months.
+  ///
+  /// In zh, this message translates to:
+  /// **'近 3 个月'**
+  String get csvExportRangeLast3Months;
+
+  /// No description provided for @csvExportCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{sessions} 次训练 · {sets} 组'**
+  String csvExportCount(int sessions, int sets);
+
+  /// No description provided for @csvExportAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出 CSV'**
+  String get csvExportAction;
+
+  /// No description provided for @csvExportDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'表格已保存'**
+  String get csvExportDone;
+
   /// No description provided for @restReminderSetting.
   ///
   /// In zh, this message translates to:

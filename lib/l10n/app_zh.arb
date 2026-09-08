@@ -56,6 +56,27 @@
   "backupInvalidFile": "这不是 TrainTrace 的备份文件",
   "backupTooNew": "这份备份来自更新版本的 App，请先升级再恢复",
   "backupFailed": "操作失败，请重试",
+  "csvExportSection": "导出表格",
+  "csvExportTitle": "导出 CSV",
+  "csvExportSubtitle": "一行一组，Excel / WPS 直接打开",
+  "csvExportFormat": "格式",
+  "csvExportFormatTraintrace": "TrainTrace 表格",
+  "csvExportFormatHevy": "Hevy 兼容",
+  "csvExportFormatTraintraceHint": "TrainTrace 表格含 RIR、器械标签、场馆和备注。",
+  "csvExportFormatHevyHint": "Hevy 兼容格式可直接导入 Hevy / Strong。",
+  "csvExportRange": "范围",
+  "csvExportRangeAll": "全部",
+  "csvExportRangeThisYear": "今年",
+  "csvExportRangeLast3Months": "近 3 个月",
+  "csvExportCount": "{sessions} 次训练 · {sets} 组",
+  "@csvExportCount": {
+    "placeholders": {
+      "sessions": { "type": "int", "format": "decimalPattern" },
+      "sets": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "csvExportAction": "导出 CSV",
+  "csvExportDone": "表格已保存",
   "restReminderSetting": "休息结束提醒",
   "restReminderStatusOn": "已开启",
   "restReminderStatusNoNotifications": "未允许通知，休息结束不会提醒",
