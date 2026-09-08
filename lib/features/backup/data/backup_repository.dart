@@ -163,10 +163,15 @@ class BackupRepository {
             throw BackupFormatException('table ${e.key} has a non-object row'),
       ];
     }
+    // 缺表：同版本备份缺表是文件坏了；老备份缺的是它那个 schema 还没有的表
+    //（如 v3 加的 body_weights），按空表恢复。
     for (final table in _db.allTables) {
-      if (!tables.containsKey(table.actualTableName)) {
-        throw BackupFormatException('missing table ${table.actualTableName}');
+      if (tables.containsKey(table.actualTableName)) continue;
+      if (schema < _db.schemaVersion) {
+        tables[table.actualTableName] = const [];
+        continue;
       }
+      throw BackupFormatException('missing table ${table.actualTableName}');
     }
 
     final routines = tables['routines']!;

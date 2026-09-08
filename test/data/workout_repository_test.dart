@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/exercises/data/exercise_repository.dart';
+import 'package:traintrace/features/exercises/models/exercise.dart';
 import 'package:traintrace/features/routines/data/routine_repository.dart';
 import 'package:traintrace/features/workout/data/workout_repository.dart';
 import 'package:traintrace/features/workout/models/workout_session.dart';
@@ -167,6 +168,130 @@ void main() {
     await repo.updateExercise(we.id, clearEquipmentLabel: true);
     after = (await repo.getExercise(we.id))!;
     expect(after.equipmentLabel, isNull);
+  });
+
+  test('updateExercise：supersetGroup 能写能读，clearSupersetGroup 清空', () async {
+    final s = await startA();
+    final a = s.exercises[0];
+    final b = s.exercises[1];
+    expect(a.supersetGroup, isNull);
+    expect(a.isInSuperset, isFalse);
+
+    await repo.updateExercise(a.id, supersetGroup: 1);
+    await repo.updateExercise(b.id, supersetGroup: 1, targetRepMax: 12);
+    var after = (await repo.getSession(s.id))!;
+    expect(after.exercises[0].supersetGroup, 1);
+    expect(after.exercises[1].supersetGroup, 1);
+    expect(after.exercises[1].targetRepMax, 12, reason: '其它字段照常一起改');
+    expect(after.exercises[0].isInSuperset, isTrue);
+
+    await repo.updateExercise(a.id, note: '不动组号');
+    expect((await repo.getExercise(a.id))!.supersetGroup, 1, reason: '传 null 不改');
+
+    await repo.updateExercise(a.id, clearSupersetGroup: true);
+    after = (await repo.getSession(s.id))!;
+    expect(after.exercises[0].supersetGroup, isNull);
+    expect(after.exercises[1].supersetGroup, 1, reason: '只清自己的');
+  });
+
+  test('addExercise 可带 supersetGroup（"再练一次"拷贝用）', () async {
+    final s = await repo.startSession();
+    final pushup = (await exercises.getById('ex_pushup'))!;
+    final we = await repo.addExercise(s.id, pushup, setCount: 1, supersetGroup: 2);
+    expect(we.supersetGroup, 2);
+    expect(we.bodyWeightKg, isNull, reason: '体重快照由调用方另写');
+  });
+
+  test('updateExercise：bodyWeightKg 能写能读能清，容量按体重快照算', () async {
+    final s = await repo.startSession();
+    final pullup = (await exercises.getById('ex_pullup'))!;
+    expect(pullup.isBodyweight, isTrue);
+    final we = await repo.addExercise(s.id, pullup, setCount: 2);
+
+    // 没有体重快照：只算附加重量，附加为空则 0。
+    await repo.updateSet(we.sets[0].id, reps: 8);
+    await repo.setCompleted(we.sets[0].id, true);
+    await repo.updateSet(we.sets[1].id, weightKg: 5, reps: 6);
+    await repo.setCompleted(we.sets[1].id, true);
+    var after = (await repo.getExercise(we.id))!;
+    expect(after.bodyWeightKg, isNull);
+    expect(after.volumeKg, 30, reason: '0 + 5×6');
+
+    // 记体重 70：(70 + 0)×8 + (70 + 5)×6。
+    await repo.updateExercise(we.id, bodyWeightKg: 70);
+    after = (await repo.getExercise(we.id))!;
+    expect(after.bodyWeightKg, 70);
+    expect(after.volumeKg, 560 + 450);
+    expect((await repo.getSession(s.id))!.totalVolumeKg, 1010);
+
+    // 辅助引体填负数：(70 − 20)×8。
+    await repo.updateSet(we.sets[0].id, weightKg: -20);
+    after = (await repo.getExercise(we.id))!;
+    expect(after.sets[0].volumeKgWith(70), 400);
+    expect(after.sets[0].volumeKg, -160, reason: '不带体重的口径只算附加重量');
+
+    await repo.updateExercise(we.id, clearBodyWeightKg: true);
+    after = (await repo.getExercise(we.id))!;
+    expect(after.bodyWeightKg, isNull);
+    expect(after.volumeKg, -160 + 30);
+  });
+
+  test('updateSet：durationSeconds 能写能读能清，有秒数就不算空组', () async {
+    final s = await repo.startSession();
+    final plank = (await exercises.getById('ex_plank'))!;
+    expect(plank.measure, ExerciseMeasure.seconds);
+    final we = await repo.addExercise(s.id, plank, setCount: 2);
+    expect(we.sets[0].isEmpty, isTrue);
+
+    await repo.updateSet(we.sets[0].id, durationSeconds: 45);
+    var after = (await repo.getExercise(we.id))!;
+    expect(after.sets[0].durationSeconds, 45);
+    expect(after.sets[0].isEmpty, isFalse, reason: '只填了秒数也算填过');
+    expect(after.sets[0].volumeKg, 0, reason: '计时组不算容量');
+
+    await repo.updateSet(we.sets[0].id, rir: 1);
+    expect((await repo.getExercise(we.id))!.sets[0].durationSeconds, 45,
+        reason: '传 null 不改');
+
+    await repo.updateSet(we.sets[0].id, clearDurationSeconds: true);
+    after = (await repo.getExercise(we.id))!;
+    expect(after.sets[0].durationSeconds, isNull);
+    expect(after.sets[0].rir, 1, reason: 'clearDurationSeconds 不影响其它字段');
+
+    final added = await repo.addSet(we.id, durationSeconds: 60);
+    expect(added.durationSeconds, 60);
+    expect(added.setIndex, 2);
+  });
+
+  test('finishSession：只填了秒数、未完成的组不算空组，保留', () async {
+    final s = await repo.startSession();
+    final plank = (await exercises.getById('ex_plank'))!;
+    final we = await repo.addExercise(s.id, plank, setCount: 3);
+    await repo.updateSet(we.sets[0].id, durationSeconds: 40);
+    await repo.setCompleted(we.sets[0].id, true);
+    await repo.updateSet(we.sets[1].id, durationSeconds: 30); // 填了没完成
+
+    final done = await repo.finishSession(s.id);
+    expect(done.exercises.single.sets.length, 2, reason: '第 3 组空且未完成被清');
+    expect(done.exercises.single.sets.map((x) => x.durationSeconds), [40, 30]);
+  });
+
+  test('WorkoutSet.copyWith：durationSeconds 与 clearDurationSeconds', () {
+    const set = WorkoutSet(id: 'x', workoutExerciseId: 'we', setIndex: 0);
+    final withDuration = set.copyWith(durationSeconds: 50);
+    expect(withDuration.durationSeconds, 50);
+    expect(withDuration.copyWith(rir: 2).durationSeconds, 50);
+    expect(withDuration.copyWith(clearDurationSeconds: true).durationSeconds, isNull);
+  });
+
+  test('WorkoutSet.volumeOf：容量算法的三条规则', () {
+    expect(WorkoutSet.volumeOf(weightKg: 20, reps: null), 0);
+    expect(WorkoutSet.volumeOf(weightKg: null, reps: 10), 0);
+    expect(WorkoutSet.volumeOf(weightKg: 20, reps: 10), 200);
+    expect(WorkoutSet.volumeOf(weightKg: null, reps: 10, bodyWeightKg: 70), 700);
+    expect(WorkoutSet.volumeOf(weightKg: 5, reps: 10, bodyWeightKg: 70), 750);
+    expect(WorkoutSet.volumeOf(weightKg: -20, reps: 10, bodyWeightKg: 70), 500);
+    expect(WorkoutSet.volumeOf(weightKg: 5, reps: null, bodyWeightKg: 70), 0);
   });
 
   test('getInProgress 有多个时取最新的', () async {

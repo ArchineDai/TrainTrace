@@ -78,7 +78,7 @@ void main() {
     expect(weights, contains(18.16), reason: 'REAL 列不丢精度');
     expect(summary.routineCount, 3);
     expect(summary.sessionCount, 3);
-    expect(summary.seededVersion, 6);
+    expect(summary.seededVersion, 7);
   });
 
   test('恢复是整体替换：目标库里多出来的东西会没掉', () async {
@@ -148,7 +148,7 @@ void main() {
     final version = await (fresh.select(fresh.appSettings)
           ..where((t) => t.key.equals('seededVersion')))
         .getSingle();
-    expect(version.value, '6', reason: '恢复后跑了 v5 → v6');
+    expect(version.value, '7', reason: '恢复后跑了 v5 → v7');
   });
 
   test('inspect 拒绝：非 JSON / 别的 App / 更新的 schema / 缺表', () async {
@@ -180,6 +180,28 @@ void main() {
     expect(summary.routineCount, 4);
     expect(summary.sessionCount, 3);
     expect(summary.exportedAt, clock.now());
+  });
+
+  test('老 schema 的备份缺新表（body_weights）按空表恢复；同版本缺表仍拒绝', () async {
+    final exported = jsonDecode(await repo.exportJson()) as Map<String, dynamic>;
+    final tables = Map<String, dynamic>.from(exported['tables'] as Map)
+      ..remove('body_weights');
+    final old = Map<String, dynamic>.from(exported)
+      ..['schemaVersion'] = db.schemaVersion - 1
+      ..['tables'] = tables;
+
+    final fresh = memoryDb();
+    addTearDown(fresh.close);
+    await repoFor(fresh).restore(jsonEncode(old));
+
+    expect(await count(fresh, fresh.bodyWeights), 0);
+    expect(await count(fresh, fresh.exercises), 48);
+
+    final sameVersion = Map<String, dynamic>.from(exported)..['tables'] = tables;
+    expect(
+      () => repo.inspect(jsonEncode(sameVersion)),
+      throwsA(isA<BackupFormatException>()),
+    );
   });
 
   test('备份里多出来的未知列被忽略，不会让恢复失败', () async {

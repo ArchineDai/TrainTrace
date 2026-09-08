@@ -42,6 +42,14 @@ class WorkoutExercises extends Table with UuidPrimaryKey, SyncColumns {
   IntColumn get targetRepMax => integer().nullable()();
   IntColumn get restSeconds => integer().nullable()();
   TextColumn get note => text().nullable()();
+
+  /// 超级组编号（schema v3）。同一 session 里同组号的动作交替进行，
+  /// 组内不计休息。null = 不在任何超级组里。
+  IntColumn get supersetGroup => integer().nullable()();
+
+  /// 自重动作在这次训练时的体重快照（schema v3）。
+  /// 容量 = (body_weight_kg + weight_kg) × reps；没有快照就只算附加重量。
+  RealColumn get bodyWeightKg => real().nullable()();
 }
 
 /// 一组。不带同步三列，随父动作整体同步。
@@ -59,4 +67,7 @@ class WorkoutSets extends Table with UuidPrimaryKey {
   IntColumn get rir => integer().nullable()();
   BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
   IntColumn get completedAt => integer().nullable()();
+
+  /// 计时类动作（`exercises.measure = seconds`）的实际秒数（schema v3）。
+  IntColumn get durationSeconds => integer().nullable()();
 }

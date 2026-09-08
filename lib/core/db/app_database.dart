@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
 import 'tables/app_settings.dart';
+import 'tables/body_weights.dart';
 import 'tables/exercises.dart';
 import 'tables/routines.dart';
 import 'tables/string_list_converter.dart';
@@ -26,6 +27,7 @@ part 'app_database.g.dart';
     WorkoutSessions,
     WorkoutExercises,
     WorkoutSets,
+    BodyWeights,
     AppSettings,
   ],
 )
@@ -36,9 +38,11 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openOnDevice() => driftDatabase(name: 'traintrace');
 
   /// v1 首版；v2 动作加 cues / common_mistakes / equipment_variants，
-  /// 器械备注加 photo_path。
+  /// 器械备注加 photo_path；v3 超级组 / 体重与自重 / 计时类动作：
+  /// 动作加 measure、is_bodyweight，训练动作加 superset_group、body_weight_kg，
+  /// 组加 duration_seconds，新表 body_weights。
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -50,6 +54,15 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(exercises, exercises.equipmentVariants);
             await m.addColumn(
                 exerciseEquipmentNotes, exerciseEquipmentNotes.photoPath);
+          }
+          if (from < 3) {
+            await m.addColumn(exercises, exercises.measure);
+            await m.addColumn(exercises, exercises.isBodyweight);
+            await m.addColumn(workoutExercises, workoutExercises.supersetGroup);
+            await m.addColumn(workoutExercises, workoutExercises.bodyWeightKg);
+            await m.addColumn(workoutSets, workoutSets.durationSeconds);
+            await m.createTable(bodyWeights);
+            await m.createIndex(idxBodyWeightsMeasured);
           }
         },
         beforeOpen: (details) async {

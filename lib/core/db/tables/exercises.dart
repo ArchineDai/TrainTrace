@@ -30,6 +30,14 @@ class Exercises extends Table with UuidPrimaryKey, SyncColumns {
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
   IntColumn get createdAt => integer()();
 
+  /// 计量方式（schema v3）：reps / seconds / distance。
+  /// distance 类复用 `workout_sets.reps` 存米数，不另加列。
+  TextColumn get measure => text().withDefault(const Constant('reps'))();
+
+  /// 自重动作（schema v3）：训练时记体重快照，重量列变"附加重量"。
+  BoolColumn get isBodyweight =>
+      boolean().withDefault(const Constant(false))();
+
   // ── 新手向内容（schema v2）。JSON 数组文本，内置动作由种子填，自定义动作为空。──
 
   /// 动作要领，3–5 条。

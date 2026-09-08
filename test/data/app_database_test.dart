@@ -29,6 +29,61 @@ void main() {
     expect(row.defaultRepMax, 15);
   });
 
+  test('schema v3：动作 measure 默认 reps、is_bodyweight 默认 false', () async {
+    expect(db.schemaVersion, 3);
+    await db.into(db.exercises).insert(exercise('ex1'));
+    final row = await db.select(db.exercises).getSingle();
+    expect(row.measure, 'reps');
+    expect(row.isBodyweight, isFalse);
+  });
+
+  test('schema v3：训练动作与组的新列默认为空', () async {
+    await db.into(db.exercises).insert(exercise('ex1'));
+    await db.into(db.workoutSessions).insert(WorkoutSessionsCompanion.insert(
+          id: 's1',
+          startedAt: 1000,
+          status: 'inProgress',
+          updatedAt: 1000,
+        ));
+    await db.into(db.workoutExercises).insert(WorkoutExercisesCompanion.insert(
+          id: 'we1',
+          sessionId: 's1',
+          exerciseId: 'ex1',
+          sortOrder: 0,
+          updatedAt: 1000,
+        ));
+    await db.into(db.workoutSets).insert(WorkoutSetsCompanion.insert(
+          id: 'set1',
+          workoutExerciseId: 'we1',
+          setIndex: 0,
+        ));
+    final we = await db.select(db.workoutExercises).getSingle();
+    expect(we.supersetGroup, isNull);
+    expect(we.bodyWeightKg, isNull);
+    final set = await db.select(db.workoutSets).getSingle();
+    expect(set.durationSeconds, isNull);
+  });
+
+  test('schema v3：body_weights 带同步三列，weight_kg / measured_at 非空', () async {
+    await db.into(db.bodyWeights).insert(BodyWeightsCompanion.insert(
+          id: 'bw1',
+          weightKg: 72.5,
+          measuredAt: 1000,
+          updatedAt: 1000,
+        ));
+    final row = await db.select(db.bodyWeights).getSingle();
+    expect(row.weightKg, 72.5);
+    expect(row.measuredAt, 1000);
+    expect(row.syncStatus, 'local');
+    expect(row.deletedAt, isNull);
+    expect(
+      () => db.customStatement(
+          "INSERT INTO body_weights (id, measured_at, updated_at) VALUES ('bw2', 1, 1)"),
+      throwsA(isA<SqliteException>()),
+      reason: 'weight_kg NOT NULL',
+    );
+  });
+
   test('外键已开启：删模板级联删模板动作', () async {
     await db.into(db.exercises).insert(exercise('ex1'));
     await db.into(db.routines).insert(RoutinesCompanion.insert(

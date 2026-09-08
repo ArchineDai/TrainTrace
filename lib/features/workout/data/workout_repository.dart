@@ -149,6 +149,7 @@ class WorkoutRepository {
                   t.workoutExerciseId.isIn(exIds) &
                   t.weightKg.isNull() &
                   t.reps.isNull() &
+                  t.durationSeconds.isNull() &
                   t.isCompleted.equals(false)))
             .go();
         await (_db.update(_db.workoutExercises)..where((t) => t.id.isIn(exIds)))
@@ -192,6 +193,10 @@ class WorkoutRepository {
   // ── 动作 ─────────────────────────────────────────────────────
 
   /// 训练中追加动作，排到末尾。
+  ///
+  /// [supersetGroup] 给"再练一次"拷贝原训练的超级组编号；训练中新加的动作
+  /// 先不入组，之后经 [updateExercise] 设。体重快照同理，由调用方在
+  /// 加完动作后写 `bodyWeightKg`。
   Future<WorkoutExercise> addExercise(
     String sessionId,
     Exercise exercise, {
@@ -200,6 +205,7 @@ class WorkoutRepository {
     int? targetRepMin,
     int? targetRepMax,
     int? restSeconds,
+    int? supersetGroup,
   }) async {
     final now = _clock.nowMs();
     final maxOrder = await (_db.selectOnly(_db.workoutExercises)
@@ -216,6 +222,7 @@ class WorkoutRepository {
           targetRepMin: targetRepMin ?? exercise.defaultRepMin,
           targetRepMax: targetRepMax ?? exercise.defaultRepMax,
           restSeconds: restSeconds ?? exercise.defaultRestSeconds,
+          supersetGroup: supersetGroup,
           now: now,
         ));
     await _touchSession(sessionId, now);
@@ -242,6 +249,7 @@ class WorkoutRepository {
     );
   }
 
+  /// 改标签 / 目标 / 备注 / 超级组 / 体重快照。传 null 不改，`clear*` 显式清空。
   Future<void> updateExercise(
     String id, {
     String? equipmentLabel,
@@ -251,6 +259,10 @@ class WorkoutRepository {
     int? restSeconds,
     String? note,
     bool clearNote = false,
+    int? supersetGroup,
+    bool clearSupersetGroup = false,
+    double? bodyWeightKg,
+    bool clearBodyWeightKg = false,
   }) =>
       (_db.update(_db.workoutExercises)..where((t) => t.id.equals(id))).write(
         WorkoutExercisesCompanion(
@@ -261,6 +273,12 @@ class WorkoutRepository {
           targetRepMax: Value.absentIfNull(targetRepMax),
           restSeconds: Value.absentIfNull(restSeconds),
           note: clearNote ? const Value(null) : Value.absentIfNull(note),
+          supersetGroup: clearSupersetGroup
+              ? const Value(null)
+              : Value.absentIfNull(supersetGroup),
+          bodyWeightKg: clearBodyWeightKg
+              ? const Value(null)
+              : Value.absentIfNull(bodyWeightKg),
           updatedAt: Value(_clock.nowMs()),
         ),
       );
@@ -293,6 +311,7 @@ class WorkoutRepository {
     String workoutExerciseId, {
     double? weightKg,
     int? reps,
+    int? durationSeconds,
     SetType setType = SetType.working,
   }) async {
     final now = _clock.nowMs();
@@ -309,6 +328,7 @@ class WorkoutRepository {
           setType: Value(setType.name),
           weightKg: Value(weightKg),
           reps: Value(reps),
+          durationSeconds: Value(durationSeconds),
         ));
     await _touchExercise(workoutExerciseId, now);
     return toSetModel(await (_db.select(_db.workoutSets)
@@ -316,21 +336,26 @@ class WorkoutRepository {
         .getSingle());
   }
 
-  /// 改重量 / 次数 / RIR。传 null 不改，`clear*` 显式清空。
+  /// 改重量 / 次数 / RIR / 秒数。传 null 不改，`clear*` 显式清空。
   Future<void> updateSet(
     String setId, {
     double? weightKg,
     int? reps,
     int? rir,
+    int? durationSeconds,
     bool clearWeight = false,
     bool clearReps = false,
     bool clearRir = false,
+    bool clearDurationSeconds = false,
   }) async {
     await (_db.update(_db.workoutSets)..where((t) => t.id.equals(setId))).write(
       WorkoutSetsCompanion(
         weightKg: clearWeight ? const Value(null) : Value.absentIfNull(weightKg),
         reps: clearReps ? const Value(null) : Value.absentIfNull(reps),
         rir: clearRir ? const Value(null) : Value.absentIfNull(rir),
+        durationSeconds: clearDurationSeconds
+            ? const Value(null)
+            : Value.absentIfNull(durationSeconds),
       ),
     );
     await _touchExerciseOfSet(setId);
@@ -364,6 +389,7 @@ class WorkoutRepository {
     int? targetRepMin,
     int? targetRepMax,
     int? restSeconds,
+    int? supersetGroup,
     required int now,
   }) async {
     final id = newId();
@@ -376,6 +402,7 @@ class WorkoutRepository {
           targetRepMin: Value(targetRepMin),
           targetRepMax: Value(targetRepMax),
           restSeconds: Value(restSeconds),
+          supersetGroup: Value(supersetGroup),
           updatedAt: now,
         ));
     for (var i = 0; i < setCount; i++) {
@@ -422,6 +449,8 @@ class WorkoutRepository {
         targetRepMax: r.targetRepMax,
         restSeconds: r.restSeconds,
         note: r.note,
+        supersetGroup: r.supersetGroup,
+        bodyWeightKg: r.bodyWeightKg,
         sets: sets,
       );
 
@@ -436,6 +465,7 @@ class WorkoutRepository {
         rir: r.rir,
         isCompleted: r.isCompleted,
         completedAt: _dt(r.completedAt),
+        durationSeconds: r.durationSeconds,
       );
 }
 

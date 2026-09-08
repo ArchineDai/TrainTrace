@@ -31,8 +31,9 @@ class SeedLoader {
   /// v4 动作库从 16 个补到 48 个，同时下线自定义动作入口；
   /// v5 模板从"部位三分"改为"拉 / 推 / 腿腹 / 肩背强化"四套；
   /// v6 起内置模板以种子为准，每次升级把四套的动作清单同步成种子里的样子
-  ///（A 拉日改为辅助引体开头、加绳索面拉、杠铃弯举收尾）。
-  static const seedVersion = 6;
+  ///（A 拉日改为辅助引体开头、加绳索面拉、杠铃弯举收尾）；
+  /// v7 给内置动作补 measure（平板 / 侧平板为 seconds）与 isBodyweight（自重动作）。
+  static const seedVersion = 7;
 
   /// v4 及之前的三套内置模板 id，v5 迁移时软删。
   static const _v4RoutineIds = [
@@ -215,6 +216,25 @@ class SeedLoader {
     if (from < 4) await _expandExercisesAndRetireCustom();
     if (from < 5) await _reseedRoutines();
     if (from < 6) await _syncSeedRoutines();
+    if (from < 7) await _fillExerciseMeasures();
+  }
+
+  /// v6 → v7：给已存在的内置动作写入计量方式与自重标记。
+  /// 只按 id 更新已有行，不碰用户改过的目标，不复活已删动作。
+  Future<void> _fillExerciseMeasures() async {
+    final exercises = _list(await _read(exercisesAsset));
+    final now = _clock.nowMs();
+    await _db.transaction(() async {
+      for (final e in exercises) {
+        await (_db.update(_db.exercises)
+              ..where((t) => t.id.equals(e['id'] as String)))
+            .write(ExercisesCompanion(
+          measure: Value(_measure(e['measure'])),
+          isBodyweight: Value(e['isBodyweight'] == true),
+          updatedAt: Value(now),
+        ));
+      }
+    });
   }
 
   /// v6 起的常规同步：内置模板的动作清单以种子为准。
@@ -337,6 +357,8 @@ class SeedLoader {
         cues: Value(_strings(e['cues'])),
         commonMistakes: Value(_strings(e['commonMistakes'])),
         equipmentVariants: Value(_strings(e['equipmentVariants'])),
+        measure: Value(_measure(e['measure'])),
+        isBodyweight: Value(e['isBodyweight'] == true),
         createdAt: now,
         updatedAt: now,
       );
@@ -397,6 +419,10 @@ class SeedLoader {
   /// 种子里写错的值退回 working，不静默造出库里读不出的类型。
   static String _setType(Object? v) =>
       const {'warmup', 'working', 'drop'}.contains(v) ? v as String : 'working';
+
+  /// 计量方式白名单（同 `ExerciseMeasure`）。缺省与写错都退回 reps。
+  static String _measure(Object? v) =>
+      const {'reps', 'seconds', 'distance'}.contains(v) ? v as String : 'reps';
 
   static List<String> _strings(Object? v) =>
       v == null ? const [] : (v as List).cast<String>();

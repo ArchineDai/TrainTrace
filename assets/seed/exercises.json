@@ -265,7 +265,7 @@
     ]
   },
   {
-    "id": "ex_crunch", "nameZh": "卷腹", "nameEn": "Crunch", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "id": "ex_crunch", "nameZh": "卷腹", "nameEn": "Crunch", "muscleGroup": "core", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 15, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
     "cues": [
       "仰卧屈膝，脚踩地，双手交叉胸前或轻扶耳侧",
@@ -284,7 +284,7 @@
     ]
   },
   {
-    "id": "ex_plank", "nameZh": "平板支撑", "nameEn": "Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "id": "ex_plank", "nameZh": "平板支撑", "nameEn": "Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight", "isBodyweight": true, "measure": "seconds",
     "defaultRepMin": 30, "defaultRepMax": 60, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
     "cues": [
       "肘撑在肩膀正下方，前臂平放地面",
@@ -303,7 +303,7 @@
     ]
   },
   {
-    "id": "ex_pullup", "nameZh": "引体向上", "nameEn": "Pull-up", "muscleGroup": "back", "equipmentType": "bodyweight",
+    "id": "ex_pullup", "nameZh": "引体向上", "nameEn": "Pull-up", "muscleGroup": "back", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 5, "defaultRepMax": 10, "defaultRestSeconds": 120, "minIncrementKg": 2.5,
     "cues": [
       "双手比肩略宽正握单杠，身体悬垂，肩胛先下沉别耸起",
@@ -397,7 +397,7 @@
     ]
   },
   {
-    "id": "ex_back_extension", "nameZh": "山羊挺身", "nameEn": "Back Extension", "muscleGroup": "back", "equipmentType": "bodyweight",
+    "id": "ex_back_extension", "nameZh": "山羊挺身", "nameEn": "Back Extension", "muscleGroup": "back", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 12, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
     "cues": [
       "调整垫子高度到髋骨顶部，脚跟卡稳后方挡板",
@@ -586,7 +586,7 @@
     ]
   },
   {
-    "id": "ex_pushup", "nameZh": "俯卧撑", "nameEn": "Push-up", "muscleGroup": "chest", "equipmentType": "bodyweight",
+    "id": "ex_pushup", "nameZh": "俯卧撑", "nameEn": "Push-up", "muscleGroup": "chest", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 8, "defaultRepMax": 20, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
     "cues": [
       "双手比肩略宽撑地，手在胸部两侧下方，身体一条直线",
@@ -605,7 +605,7 @@
     ]
   },
   {
-    "id": "ex_dip", "nameZh": "双杠臂屈伸", "nameEn": "Dip", "muscleGroup": "chest", "equipmentType": "bodyweight",
+    "id": "ex_dip", "nameZh": "双杠臂屈伸", "nameEn": "Dip", "muscleGroup": "chest", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 6, "defaultRepMax": 12, "defaultRestSeconds": 90, "minIncrementKg": 2.5,
     "cues": [
       "双手撑在双杠上，手臂伸直，肩膀下沉别耸",
@@ -829,7 +829,7 @@
     ]
   },
   {
-    "id": "ex_hanging_leg_raise", "nameZh": "悬垂举腿", "nameEn": "Hanging Leg Raise", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "id": "ex_hanging_leg_raise", "nameZh": "悬垂举腿", "nameEn": "Hanging Leg Raise", "muscleGroup": "core", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 8, "defaultRepMax": 15, "defaultRestSeconds": 60, "minIncrementKg": 2.5,
     "cues": [
       "双手悬垂在单杠或用肘撑在举腿架上，肩膀下沉",
@@ -866,7 +866,7 @@
     ]
   },
   {
-    "id": "ex_russian_twist", "nameZh": "俄罗斯转体", "nameEn": "Russian Twist", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "id": "ex_russian_twist", "nameZh": "俄罗斯转体", "nameEn": "Russian Twist", "muscleGroup": "core", "equipmentType": "bodyweight", "isBodyweight": true,
     "defaultRepMin": 20, "defaultRepMax": 30, "defaultRestSeconds": 45, "minIncrementKg": 2.5,
     "cues": [
       "坐在垫子上，膝盖微屈，上身后仰约 45°，脚可着地或抬起",
@@ -884,7 +884,7 @@
     ]
   },
   {
-    "id": "ex_side_plank", "nameZh": "侧平板支撑", "nameEn": "Side Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight",
+    "id": "ex_side_plank", "nameZh": "侧平板支撑", "nameEn": "Side Plank (sec)", "muscleGroup": "core", "equipmentType": "bodyweight", "isBodyweight": true, "measure": "seconds",
     "defaultRepMin": 20, "defaultRepMax": 45, "defaultRestSeconds": 45, "minIncrementKg": 2.5,
     "cues": [
       "侧躺，肘撑在肩膀正下方，双脚叠放或前后错开",

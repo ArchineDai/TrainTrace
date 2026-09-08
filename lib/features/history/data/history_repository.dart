@@ -46,6 +46,8 @@ class HistoryRepository {
             .get();
 
     final exToSession = {for (final e in exercises) e.id: e.sessionId};
+    // 自重动作的体重快照：容量算法与 WorkoutSession.totalVolumeKg 同一套。
+    final exToBodyWeight = {for (final e in exercises) e.id: e.bodyWeightKg};
     final exCount = <String, int>{};
     for (final e in exercises) {
       exCount[e.sessionId] = (exCount[e.sessionId] ?? 0) + 1;
@@ -56,7 +58,9 @@ class HistoryRepository {
       final sid = exToSession[s.workoutExerciseId];
       if (sid == null) continue;
       setCount[sid] = (setCount[sid] ?? 0) + 1;
-      volume[sid] = (volume[sid] ?? 0) + WorkoutRepository.toSetModel(s).volumeKg;
+      volume[sid] = (volume[sid] ?? 0) +
+          WorkoutRepository.toSetModel(s)
+              .volumeKgWith(exToBodyWeight[s.workoutExerciseId]);
     }
     return [
       for (final s in sessions)

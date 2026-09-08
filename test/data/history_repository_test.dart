@@ -49,6 +49,37 @@ void main() {
     expect(third.totalVolumeKg, closeTo(90 + 396 + 708.24 + 648 + 90 + 288, 1e-6));
   });
 
+  test('摘要容量：自重动作按体重快照算，没有快照只算附加重量，与 totalVolumeKg 同口径', () async {
+    clock.advance(const Duration(days: 1));
+    final s = await workouts.startSession();
+    final pullup = (await exercises.getById('ex_pullup'))!;
+    final withBw = await workouts.addExercise(s.id, pullup, setCount: 2);
+    await workouts.updateExercise(withBw.id, bodyWeightKg: 70);
+    await workouts.updateSet(withBw.sets[0].id, reps: 8);
+    await workouts.setCompleted(withBw.sets[0].id, true);
+    await workouts.updateSet(withBw.sets[1].id, weightKg: -20, reps: 10);
+    await workouts.setCompleted(withBw.sets[1].id, true);
+
+    final pushup = (await exercises.getById('ex_pushup'))!;
+    final noBw = await workouts.addExercise(s.id, pushup, setCount: 1);
+    await workouts.updateSet(noBw.sets[0].id, reps: 20);
+    await workouts.setCompleted(noBw.sets[0].id, true);
+
+    final plank = (await exercises.getById('ex_plank'))!;
+    final timed = await workouts.addExercise(s.id, plank, setCount: 1);
+    await workouts.updateSet(timed.sets[0].id, durationSeconds: 60);
+    await workouts.setCompleted(timed.sets[0].id, true);
+
+    final done = await workouts.finishSession(s.id);
+    // 引体 (70+0)×8 + (70−20)×10 = 1060；俯卧撑无快照无附加 = 0；平板计时 = 0。
+    expect(done.totalVolumeKg, 1060);
+
+    final summary = (await history.getSummaries()).firstWhere((x) => x.id == s.id);
+    expect(summary.totalVolumeKg, done.totalVolumeKg);
+    expect(summary.setCount, 4);
+    expect(summary.exerciseCount, 3);
+  });
+
   test('lastPerformance：默认按器械标签分组，null 标签只匹配未标注的记录', () async {
     final seedLast = await history.lastPerformance('ex_lat_pulldown');
     expect(seedLast, isNotNull);

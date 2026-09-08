@@ -1,3 +1,7 @@
+import 'exercise_measure.dart';
+
+export 'exercise_measure.dart';
+
 /// 肌群。存库时用 [name]，读回时不认识的值回落到 [other]。
 ///
 /// 展示名在 presentation 层（`presentation/exercise_labels.dart` 的
@@ -50,6 +54,8 @@ class Exercise {
     this.cues = const [],
     this.commonMistakes = const [],
     this.equipmentVariants = const [],
+    this.measure = ExerciseMeasure.reps,
+    this.isBodyweight = false,
   });
 
   final String id;
@@ -75,6 +81,12 @@ class Exercise {
   /// 健身房里做这个动作通常用的机器 / 器械形态，帮新手认机器。
   final List<String> equipmentVariants;
 
+  /// 计量方式：次数 / 秒数 / 米数。决定组行怎么输入、容量怎么算。
+  final ExerciseMeasure measure;
+
+  /// 自重动作：训练时记体重快照，重量列变"附加重量"（辅助引体填负数）。
+  final bool isBodyweight;
+
   Exercise copyWith({
     String? nameZh,
     String? nameEn,
@@ -84,6 +96,8 @@ class Exercise {
     int? defaultRepMax,
     int? defaultRestSeconds,
     double? minIncrementKg,
+    ExerciseMeasure? measure,
+    bool? isBodyweight,
   }) {
     return Exercise(
       id: id,
@@ -100,6 +114,8 @@ class Exercise {
       cues: cues,
       commonMistakes: commonMistakes,
       equipmentVariants: equipmentVariants,
+      measure: measure ?? this.measure,
+      isBodyweight: isBodyweight ?? this.isBodyweight,
     );
   }
 

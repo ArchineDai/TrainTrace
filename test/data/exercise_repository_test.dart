@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 import 'package:traintrace/core/time/clock.dart';
@@ -85,12 +86,57 @@ void main() {
           nameZh: '怪动作',
           muscleGroup: 'neck',
           equipmentType: 'kettlebell',
+          measure: const Value('furlongs'),
           createdAt: 1,
           updatedAt: 1,
         ));
     final e = (await repo.getById('weird'))!;
     expect(e.muscleGroup, MuscleGroup.other);
     expect(e.equipmentType, EquipmentType.machine);
+    expect(e.measure, ExerciseMeasure.reps);
+    expect(e.isBodyweight, isFalse);
+  });
+
+  test('种子里的 measure / isBodyweight 映射到 model', () async {
+    final plank = (await repo.getById('ex_plank'))!;
+    expect(plank.measure, ExerciseMeasure.seconds);
+    expect(plank.isBodyweight, isTrue);
+
+    final sidePlank = (await repo.getById('ex_side_plank'))!;
+    expect(sidePlank.measure, ExerciseMeasure.seconds);
+
+    final pushup = (await repo.getById('ex_pushup'))!;
+    expect(pushup.measure, ExerciseMeasure.reps);
+    expect(pushup.isBodyweight, isTrue);
+
+    final lat = (await repo.getById('ex_lat_pulldown'))!;
+    expect(lat.measure, ExerciseMeasure.reps);
+    expect(lat.isBodyweight, isFalse);
+
+    final all = await repo.getAll();
+    expect(
+      all.where((e) => e.isBodyweight).map((e) => e.id).toSet(),
+      all.where((e) => e.equipmentType == EquipmentType.bodyweight).map((e) => e.id).toSet(),
+      reason: '种子里 equipmentType 为 bodyweight 的都标了 isBodyweight',
+    );
+  });
+
+  test('create / update 带 measure 与 isBodyweight 往返', () async {
+    final e = await repo.create(
+      nameZh: '农夫行走',
+      muscleGroup: MuscleGroup.other,
+      equipmentType: EquipmentType.dumbbell,
+      measure: ExerciseMeasure.distance,
+    );
+    expect(e.measure, ExerciseMeasure.distance);
+    expect(e.isBodyweight, isFalse);
+
+    await repo.update(e.copyWith(measure: ExerciseMeasure.seconds, isBodyweight: true));
+    final after = (await repo.getById(e.id))!;
+    expect(after.measure, ExerciseMeasure.seconds);
+    expect(after.isBodyweight, isTrue);
+    expect(after.copyWith(defaultRepMin: 5).measure, ExerciseMeasure.seconds,
+        reason: 'copyWith 不传就保留');
   });
 
   group('器械备注', () {

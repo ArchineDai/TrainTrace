@@ -109,6 +109,7 @@ class ActiveWorkoutViewModel extends AsyncNotifier<ActiveWorkoutState?> {
         targetRepMin: ex.targetRepMin,
         targetRepMax: ex.targetRepMax,
         restSeconds: ex.restSeconds,
+        supersetGroup: ex.supersetGroup,
       );
     }
     session = (await _repo.getSession(session.id))!;

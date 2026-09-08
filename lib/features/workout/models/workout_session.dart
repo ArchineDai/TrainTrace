@@ -36,6 +36,7 @@ class WorkoutSet {
     this.rir,
     this.isCompleted = false,
     this.completedAt,
+    this.durationSeconds,
   });
 
   final String id;
@@ -44,7 +45,11 @@ class WorkoutSet {
   /// 从 0 开始，展示时 +1。
   final int setIndex;
   final SetType setType;
+
+  /// 重量（kg）。自重动作里是附加重量，辅助引体为负数。
   final double? weightKg;
+
+  /// 次数；distance 类动作里存米数。
   final int? reps;
 
   /// Reps in Reserve，可空表示没记。
@@ -52,12 +57,36 @@ class WorkoutSet {
   final bool isCompleted;
   final DateTime? completedAt;
 
-  /// 重量与次数都没填过：结束训练时会被物理清理。
-  bool get isEmpty => weightKg == null && reps == null;
+  /// 计时类动作的实际秒数，可空表示没记。
+  final int? durationSeconds;
 
-  /// 单组容量（kg×次），缺任一项为 0。
-  double get volumeKg =>
-      weightKg == null || reps == null ? 0 : weightKg! * reps!;
+  /// 重量、次数、秒数都没填过：结束训练时会被物理清理。
+  bool get isEmpty =>
+      weightKg == null && reps == null && durationSeconds == null;
+
+  /// 单组容量（kg×次）。不带体重快照，自重动作只算附加重量；
+  /// 要算上体重走 [volumeKgWith] 或 `WorkoutExercise.volumeKg`。
+  double get volumeKg => volumeOf(weightKg: weightKg, reps: reps);
+
+  /// 带体重快照的单组容量：(体重 + 附加重量) × 次数。
+  double volumeKgWith(double? bodyWeightKg) =>
+      volumeOf(weightKg: weightKg, reps: reps, bodyWeightKg: bodyWeightKg);
+
+  /// 容量的唯一算法。`WorkoutSession.totalVolumeKg` 与
+  /// `HistoryRepository` 的摘要聚合都走这里，别在别处再写一遍乘法。
+  ///
+  /// - 没有次数 → 0（计时类动作不算容量）
+  /// - 没有体重快照 → 重量 × 次数，重量缺就是 0（旧行为）
+  /// - 有体重快照 → (体重 + 附加重量) × 次数，附加重量缺按 0
+  static double volumeOf({
+    required double? weightKg,
+    required int? reps,
+    double? bodyWeightKg,
+  }) {
+    if (reps == null) return 0;
+    if (bodyWeightKg == null) return weightKg == null ? 0 : weightKg * reps;
+    return (bodyWeightKg + (weightKg ?? 0)) * reps;
+  }
 
   WorkoutSet copyWith({
     int? setIndex,
@@ -67,10 +96,12 @@ class WorkoutSet {
     int? rir,
     bool? isCompleted,
     DateTime? completedAt,
+    int? durationSeconds,
     bool clearWeight = false,
     bool clearReps = false,
     bool clearRir = false,
     bool clearCompletedAt = false,
+    bool clearDurationSeconds = false,
   }) {
     return WorkoutSet(
       id: id,
@@ -82,6 +113,9 @@ class WorkoutSet {
       rir: clearRir ? null : (rir ?? this.rir),
       isCompleted: isCompleted ?? this.isCompleted,
       completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),
+      durationSeconds: clearDurationSeconds
+          ? null
+          : (durationSeconds ?? this.durationSeconds),
     );
   }
 
@@ -106,6 +140,8 @@ class WorkoutExercise {
     this.targetRepMax,
     this.restSeconds,
     this.note,
+    this.supersetGroup,
+    this.bodyWeightKg,
     this.sets = const [],
   });
 
@@ -128,11 +164,23 @@ class WorkoutExercise {
   final int? restSeconds;
   final String? note;
 
+  /// 超级组编号。同一 session 里同组号的动作交替进行；null = 不在超级组里。
+  final int? supersetGroup;
+
+  /// 自重动作在这次训练时的体重快照（kg）。null = 不是自重动作或没记体重。
+  final double? bodyWeightKg;
+
   /// 已按 setIndex 排好。
   final List<WorkoutSet> sets;
 
   List<WorkoutSet> get completedSets =>
       sets.where((s) => s.isCompleted).toList();
+
+  bool get isInSuperset => supersetGroup != null;
+
+  /// 已完成组的容量之和，自重动作按 [bodyWeightKg] 参与计算。
+  double get volumeKg =>
+      completedSets.fold(0.0, (v, s) => v + s.volumeKgWith(bodyWeightKg));
 
   WorkoutExercise copyWith({
     int? sortOrder,
@@ -141,9 +189,13 @@ class WorkoutExercise {
     int? targetRepMax,
     int? restSeconds,
     String? note,
+    int? supersetGroup,
+    double? bodyWeightKg,
     List<WorkoutSet>? sets,
     bool clearEquipmentLabel = false,
     bool clearNote = false,
+    bool clearSupersetGroup = false,
+    bool clearBodyWeightKg = false,
   }) {
     return WorkoutExercise(
       id: id,
@@ -158,6 +210,10 @@ class WorkoutExercise {
       targetRepMax: targetRepMax ?? this.targetRepMax,
       restSeconds: restSeconds ?? this.restSeconds,
       note: clearNote ? null : (note ?? this.note),
+      supersetGroup:
+          clearSupersetGroup ? null : (supersetGroup ?? this.supersetGroup),
+      bodyWeightKg:
+          clearBodyWeightKg ? null : (bodyWeightKg ?? this.bodyWeightKg),
       sets: sets ?? this.sets,
     );
   }
@@ -206,10 +262,8 @@ class WorkoutSession {
   int get completedSetCount =>
       exercises.fold(0, (n, e) => n + e.completedSets.length);
 
-  double get totalVolumeKg => exercises.fold(
-        0,
-        (v, e) => v + e.completedSets.fold(0.0, (s, x) => s + x.volumeKg),
-      );
+  /// 已完成组的容量之和；自重动作按各动作的体重快照算（见 `WorkoutSet.volumeOf`）。
+  double get totalVolumeKg => exercises.fold(0, (v, e) => v + e.volumeKg);
 
   WorkoutSession copyWith({
     String? gymName,
