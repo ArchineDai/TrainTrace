@@ -1,6 +1,7 @@
 # TrainTrace V0.1 实现规划
 
-> 定位：中国版 Hevy + 新手工作重量助手。离线优先、记录极快、建议可解释。
+> 定位：中国版 Hevy，以训练数据的图表与趋势为核心（Trace），兼顾所有健身人群、个人优先，附新手工作重量助手。
+> 离线优先、记录极快、建议可解释。（V0.1 阶段的定位是"新手个人用"，2026-09-08 放宽，见 `backlog.md` V0.6 一节。）
 > 技术栈：Flutter 3.47 / Riverpod / Drift + SQLite / go_router。Android 优先，保留 iOS 兼容。
 
 ---
@@ -593,7 +594,8 @@ dev_dependencies:
 
 ### MVP 到后续版本的演进路径
 
-- **V0.1 → V0.5**：数据模型已预留 rir、set_type、equipment_label、UUID 主键、updated_at/deleted_at/sync_status。V0.5 新增体重表、周容量聚合、多次训练趋势规则，无需破坏性迁移。
+- **V0.1 → V0.5**：数据模型已预留 rir、set_type、equipment_label、UUID 主键、updated_at/deleted_at/sync_status。V0.5 七项（备注回显、超级组、1RM 趋势、体重与自重、计时动作、板片计算器、CSV）已落地，无破坏性迁移。
+- **V0.5 → V0.6**：定位放宽到所有健身人群，图表升为核心。五 Tab（首页 / 模板 / 动作 / 数据 / 设置）、动作库一级入口、fl_chart 统计页、身体测量表。需求见 `backlog.md` F-8 ～ F-11。
 - **V0.5 → V1.0**：Repository 接口不变，在 data 层加 outbox 表 + SyncService 做增量同步，state/presentation 零改动（预留见 1.5）。器械识别与 AI 教练作为独立 feature 包接入。
 
 ---
@@ -641,3 +643,4 @@ dev_dependencies:
 ### 6.3 明确不做（V0.1）
 
 登录/云同步、社交、AI 识别、AI 教练、饮食睡眠、Health 平台、复杂图表、付费。
+（"复杂图表"只是 V0.1 的取舍；V0.6 起图表是核心，见 `backlog.md` F-10。社交与 Health 平台仍不做。）

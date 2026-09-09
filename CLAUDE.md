@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-TrainTrace：个人优先、面向国内健身新手的力量训练记录 App（"中国版 Hevy + 新手工作重量助手"）。
+TrainTrace：个人优先、面向所有健身人群的力量训练记录与数据追踪 App（"中国版 Hevy，图表与趋势为核心"），
+内置新手工作重量助手。定位 2026-09-08 从"新手个人用"放宽，见 `docs/backlog.md` 的 V0.6 一节。
 Flutter 3.47 / Riverpod 3 / Drift 2.34 / go_router 18。Android 优先，保留 iOS。
 离线优先，V0.1 无登录、无网络；数据模型已为未来服务端同步预留。
 
