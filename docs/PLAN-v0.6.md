@@ -29,13 +29,18 @@
 
 | 序 | Tab | 路径 | 图标（outlined / filled） | 内容 |
 |---|---|---|---|---|
-| 0 | 首页 | `/` | `home_outlined` / `home` | 不变 + 本周迷你卡（§2.4） |
+| 0 | 首页 | `/` | `home_outlined` / `home` | 枢纽：开始训练、模板、本周迷你卡（§2.4）、最近训练；AppBar 标题是品牌名「训迹」 |
 | 1 | 模板 | `/routines` | `list_alt_outlined` / `list_alt` | 不变 |
 | 2 | 动作 | `/exercises` | `fitness_center_outlined` / `fitness_center` | **新增**，动作库列表（§3.1） |
 | 3 | 数据 | `/history` | `bar_chart_outlined` / `bar_chart` | 三段 概览 / 训练 / 身体（§2） |
 | 4 | 设置 | `/settings` | `settings_outlined` / `settings` | 不变，体重行改跳身体段 |
 
-- 首页图标从 `fitness_center` 换成 `home`，把哑铃让给「动作」。
+- **第 0 个 Tab 叫「首页」，AppBar 标题是品牌名「训迹」**（2026-09-09 反复过一次才定）。两种模型：
+  Strong 式 —— 第一个 Tab 只管"开始训练 + 模板"，一切回看都在历史 Tab，那它就该叫「训练」；
+  Apple 健身 / Hevy 式 —— 第一个 Tab 是打开 App 先看到的枢纽，有本周概要和最近记录，那它是「首页」。
+  本页有本周迷你卡和最近训练（§2.4，"图表为核心"的定位要求数据一打开就在），是后一种，叫「训练」名不副实。
+  「首页」当页面标题是句空话，所以标题放品牌名 —— 首页 Tab 显示品牌是通行做法，是"Tab 文案要等于页面标题"的公认例外。
+  图标：首页 `home`，哑铃归动作库（器械 / 动作的通用符号）。`tabWorkout` key 已删。
 - `AppShell` 的 `SlidingNavBar` 由 4 格改 5 格：每格 78dp，指示器 64×32 仍放得下，不改尺寸常量。
 - `/history` 路径与 `/history/:id` 深链**保留不改**，只改 Tab 文案（`tabHistory` → 文案「数据」，key 不改名，避免 ARB 大面积 diff）与图标。
 
@@ -86,8 +91,11 @@ IndexedStack 或按段 build（各段都是 ListView，切段不保状态也可�
 4. **每周训练次数卡**：大数字 + 「次 · 本周 9月7日 – 13日」；柱图 12 周（1 年 / 全部区间按周数自适应，最多 52 根），
    其余柱 `surfaceContainerHighest`，选中周 `primary`；点柱选中，大数字与日期随之变（§4.4）。
 5. **每周总容量卡**：同上，单位 `k kg`，副标「比上周 +8%」。
-6. **本月训练日历卡**：标题「已训练 N 天 · 上月 M 天」+ 梯度图例；7 列周一起，训练日按当天容量分四档深浅，今天 2dp 墨色描边，
-   未来日虚线框（§4.5）。
+6. **训练日历卡**（2026-09-09 从"只展示当月"改为可翻可点，照 Hevy / Strong / Apple 健身的月历）：卡头一行
+   `‹ 2026 年 9 月 ›`，箭头 48dp，横滑也能翻；翻不到未来月，也翻不到第一次训练之前。副标「已训练 N 天 · 上月 M 天」
+   随所看月份变，右侧梯度图例。7 列周一起，训练日按当天容量分四档深浅，今天 2dp 墨色描边（只在当月），未来日虚线框。
+   **点训练日直接进那次训练**；一天多练先弹底部列表挑一次。没练的日子不响应。所看月份是卡内局部态（`setState`），
+   数据用全量 `SessionSummary` 在本地切月，不为翻月查库。
 
 ### 2.3 训练段（画板 DataTraining）
 
@@ -265,7 +273,10 @@ class BodyMeasurements extends Table with UuidPrimaryKey, SyncColumns {
   `test/data/app_database_migration_test.dart` 补 v4 → v5 用例。
 - **体重继续用 `body_weights`**（训练页自重快照与 `latestBodyWeightProvider` 依赖它），UI 层合并。
 - 备份：`BackupRepository` 的表清单加 `body_measurements`，`backup_repository_test.dart` 补 round-trip；
-  CSV 导出（TrainTrace 格式）加一张 `measurements.csv`（metric, value, unit, measured_at），Hevy 格式不含。
+  CSV 导出**独立一行**「导出测量记录」（不塞进训练表 —— 一次点击弹两个系统文件对话框在手机上很怪，
+  Hevy / Strong 的 CSV 导出也只给训练记录）：`traintrace-measurements-<date>.csv`，四列 metric, value, unit, measured_at，
+  范围沿用卡片里那个选择器，0 条时置灰。**体重必须并进这张表**（`body_weights` 读出来当 `metric = 'weight'` 的行，
+  按 metric → 时间重排）：拿去 Excel 画图的人第一个要的就是体重曲线，少了它这张表基本没用。
 
 ### 5.2 指标枚举
 
@@ -340,7 +351,8 @@ Repository API（`features/measurements/data/body_measurement_repository.dart`�
 | pubspec | `fl_chart: ^1.2.0`、`path_drawing: ^1.0.1` |
 | `AppColors` 新字段（亮 / 暗各一组） | `chartBarMuted`、`chartGrid`、`bodySkin`（onSurface 10%）、`bodyMuscleIdle`（16%）、`bodyShadeLight`、`bodyShadeDark`；`test/theme/app_theme_test.dart` 补对比度 / 存在性断言 |
 | 生成码 | `body_map_data.dart`（脚本生成，git 追踪，头部注明来源与许可）、`*.g.dart`（schema v5 后 `dart run build_runner build`）、`app_localizations*.dart` |
-| 资产 | `docs/design/body_map_LICENSE.txt` 复制到 `assets/licenses/body_map_LICENSE.txt` 并在关于页字体许可旁列出 |
+| 资产 | `assets/licenses/`（打包）：`body_map_MIT.txt` + 两套字体的 `*-OFL.txt`。原来只放在 `assets/fonts/` 下的 OFL 文本**并没有被打进包**（`fonts:` 段只带字体文件，不带同目录的 txt），D-9 的旧说法有误 |
+| 关于页 | `/settings/about` → `AboutPage`：版本号（`package_info_plus`，已是传递依赖）、素材署名两行、「开源许可」进 Flutter 自带的 `showLicensePage`。素材许可由 `core/licenses.dart` 用 `LicenseRegistry.addLicense` 注册进去，和依赖许可列在一起，不自己写许可页。一并了结 D-9 |
 
 ---
 
@@ -376,7 +388,8 @@ Repository API（`features/measurements/data/body_measurement_repository.dart`�
 - [ ] 概览段：切区间四档数字与图同步变；点柱切换周；日历今天描边、未来日虚线；人体图六肌群深浅与横条数值一致，暗色模式下可辨。
 - [ ] 详情记录段：五指标切换、区间切换、不足 2 点显空态；纪录表 5 行与个人记录三格口径一致。
 - [ ] 身体：录入 → 列表 → 图更新；同日两条只画最后一条；左滑删除可撤销；改日期后排序正确；设置页体重行跳到指标页。
-- [ ] 备份 → 清空 → 恢复后测量记录完整；CSV 多出 `measurements.csv`。
+- [ ] 备份 → 清空 → 恢复后测量记录完整；备份页「导出测量记录」一行落盘成功，表里体重与围度都在、0 条时置灰。
+- [ ] 设置 → 关于：版本号正确；「开源许可」页里能读到两套字体的 OFL 与人体图的 MIT 全文。
 - [ ] `flutter analyze` 无问题、`flutter test` 全绿、`check_l10n` 零缺 key。
 
 ---
@@ -386,5 +399,5 @@ Repository API（`features/measurements/data/body_measurement_repository.dart`�
 - **D-17 自建动作**：先盘 Hevy / Strong / JEFIT / Keep 再定，本期不做；`ExerciseListView` 设计时给「自建」标记留出行尾位置即可。
 - **D-18 建议卡关闭开关**：设置页一行 Switch，关掉后训练卡片与详情记录段都不显示 `SuggestionCard`。半天，可插在 B3 之后。
 - **隐藏动作** `exercises.is_hidden`：等自建动作一起定。
-- **日历翻月、每周时长图、体重目标线、进步照片**：后续。
+- **每周时长图、体重目标线、进步照片**：后续。（日历翻月与点日进记录已随 §2.2 第 6 条做掉。）
 - **暗色模式下人体图**：亮色定稿；暗色的皮肤 / 阴影 alpha 在 `AppColors.dark` 里先按 §4.6 给值，真机看过再调。

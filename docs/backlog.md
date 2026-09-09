@@ -148,8 +148,6 @@
   "预约 15 秒后通知 / 申请精确闹钟"两个按钮在 vivo 真机验证 V-1 前还有用，之后删。
 - **D-10 训练页体验**：完成一组后不自动滚到下一组、不自动聚焦；默认休息时间用常量 90s
   而非设置项；键盘弹出时列表底部可能被遮住（Phase 6 打磨）。
-- **D-9 字体许可署名**：两套字体都是 SIL OFL 1.1，许可文本已随 `assets/fonts/*-OFL.txt`
-  打包。Phase 6 关于页加一行"字体：Noto Sans SC、IBM Plex Sans（SIL OFL 1.1）"。
 - **D-16 动作要领只有中文**：`assets/seed/exercises.json` 的 `cues` /
   `commonMistakes` / `equipmentVariants` 三段是中文教练话术，没有英文版，英文界面上
   这三块仍显示中文（`name` / `nameEn` 已双语，标题不受影响）。要补就是给 50 个内置
@@ -164,6 +162,11 @@
 ## 已了结
 
 - **D-2 CSV 导出**（2026-09-08）：随 F-7 落地，见上。
+
+- **D-9 字体与素材许可署名**（2026-09-09）：随 V0.6 落地。原来的说法有误 —— `assets/fonts/*-OFL.txt`
+  **没有被打进包**（`fonts:` 段只带字体文件）。现在三份许可原文放 `assets/licenses/` 并声明为 asset，
+  由 `core/licenses.dart` 的 `LicenseRegistry.addLicense` 注册，关于页（`/settings/about`）列出署名两行 +
+  「开源许可」进 Flutter 自带的 `showLicensePage` 读全文。人体图的 MIT 一并了结。
 
 - **D-11 文案迁移到 ARB**（2026-09-04）：`lib/` 里的界面文案全部走 ARB，约 150 个 key。
   枚举展示名移到 presentation 层扩展（`exercise_labels.dart` / `set_type_labels.dart`），
