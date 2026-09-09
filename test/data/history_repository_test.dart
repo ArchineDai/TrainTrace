@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/db/app_database.dart';
 import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/exercises/data/exercise_repository.dart';
+import 'package:traintrace/features/exercises/models/exercise.dart';
 import 'package:traintrace/features/history/data/history_repository.dart';
 import 'package:traintrace/features/workout/data/workout_repository.dart';
 import 'package:traintrace/features/workout/models/workout_session.dart';
@@ -313,6 +314,144 @@ void main() {
 
     expect(await history.oneRmSeries('ex_pec_deck'), isEmpty, reason: '无配重动作没有点');
     expect(await history.oneRmSeries('ex_plank'), isEmpty);
+  });
+
+  test('latestPerformanceByExercise：每个动作取最近一次里最重的一组', () async {
+    final map = await history.latestPerformanceByExercise();
+    final lat = map['ex_lat_pulldown']!;
+    expect(lat.exerciseId, 'ex_lat_pulldown');
+    expect(lat.weightKg, 22.7, reason: '9/3 那次的三组里最重的');
+    expect(lat.reps, 12);
+    expect(lat.durationSeconds, isNull);
+    expect(
+      lat.startedAt
+          .isAtSameMomentAs(DateTime.parse('2026-09-03T18:30:00+08:00')),
+      isTrue,
+      reason: '取的是那次 session 的开始时间，不是组的完成时间',
+    );
+
+    // 无配重动作（蝴蝶机只记次数）仍在 map 里：练过就是练过，只是没有重量。
+    expect(map.containsKey('ex_pec_deck'), isTrue);
+    expect(map['ex_pec_deck']!.weightKg, isNull);
+    expect(map['ex_pec_deck']!.reps, isNotNull);
+
+    expect(map.containsKey('ex_deadlift'), isFalse, reason: '种子里没练过');
+  });
+
+  test('latestPerformanceByExercise：计时动作取秒数最长的组；热身组与未完成组不算', () async {
+    final plank = (await exercises.getById('ex_plank'))!;
+    final lat = (await exercises.getById('ex_lat_pulldown'))!;
+
+    clock.advance(const Duration(days: 1));
+    final s = await workouts.startSession(gymName: 'MAX');
+    final timed = await workouts.addExercise(s.id, plank, setCount: 2);
+    await workouts.updateSet(timed.sets[0].id, durationSeconds: 45);
+    await workouts.setCompleted(timed.sets[0].id, true);
+    await workouts.updateSet(timed.sets[1].id, durationSeconds: 70);
+    await workouts.setCompleted(timed.sets[1].id, true);
+
+    // 这次高位下拉只完成了一组热身 + 一组填了没打勾 → 这次不算"练过"，
+    // 上次表现要退回到 9/3。
+    final we = await workouts.addExercise(s.id, lat, setCount: 1);
+    await workouts.updateSet(we.sets[0].id, weightKg: 60, reps: 12);
+    final warm =
+        await workouts.addSet(we.id, weightKg: 40, reps: 5, setType: SetType.warmup);
+    await workouts.setCompleted(warm.id, true);
+    await workouts.finishSession(s.id);
+
+    final map = await history.latestPerformanceByExercise();
+    expect(map['ex_plank']!.durationSeconds, 70);
+    expect(map['ex_plank']!.weightKg, isNull);
+    expect(map['ex_lat_pulldown']!.weightKg, 22.7, reason: '退回 9/3 那次');
+
+    // 软删最近那次训练后，计时动作从 map 里消失。
+    await workouts.deleteSession(s.id);
+    final after = await history.latestPerformanceByExercise();
+    expect(after.containsKey('ex_plank'), isFalse);
+  });
+
+  test('setsByMuscleGroup：按 session × 肌群计已完成正式组，since 过滤', () async {
+    final lat = (await exercises.getById('ex_lat_pulldown'))!;
+    final legPress = (await exercises.getById('ex_leg_press'))!;
+
+    clock.advance(const Duration(days: 1)); // 9/5
+    final s = await workouts.startSession();
+    final back = await workouts.addExercise(s.id, lat, setCount: 2);
+    for (final set in back.sets) {
+      await workouts.updateSet(set.id, weightKg: 20, reps: 12);
+      await workouts.setCompleted(set.id, true);
+    }
+    // 热身组与填了没打勾的组都不进计数。
+    final warm =
+        await workouts.addSet(back.id, weightKg: 10, reps: 10, setType: SetType.warmup);
+    await workouts.setCompleted(warm.id, true);
+    await workouts.addSet(back.id, weightKg: 25, reps: 8);
+
+    final leg = await workouts.addExercise(s.id, legPress, setCount: 3);
+    for (final set in leg.sets) {
+      await workouts.updateSet(set.id, weightKg: 80, reps: 10);
+      await workouts.setCompleted(set.id, true);
+    }
+    await workouts.finishSession(s.id);
+
+    final rows = await history.setsByMuscleGroup(since: DateTime(2026, 9, 5));
+    expect(rows.length, 2, reason: '一次训练两个肌群两行');
+    final byGroup = {for (final r in rows) r.group: r.sets};
+    expect(byGroup[MuscleGroup.back], 2);
+    expect(byGroup[MuscleGroup.leg], 3);
+    expect(rows.first.startedAt, DateTime(2026, 9, 5, 18));
+
+    // 不给 since 就查全部：种子三次训练也都进来了。
+    final all = await history.setsByMuscleGroup();
+    expect(all.length, greaterThan(rows.length));
+
+    // 软删这次训练后它的行消失。
+    await workouts.deleteSession(s.id);
+    expect(await history.setsByMuscleGroup(since: DateTime(2026, 9, 5)), isEmpty);
+  });
+
+  test('repMaxes：每档取 reps ≥ 档位里最重的一组，并列取最早那天', () async {
+    final lat = (await exercises.getById('ex_lat_pulldown'))!;
+
+    clock.advance(const Duration(days: 1)); // 9/5
+    final first = await workouts.startSession();
+    final we = await workouts.addExercise(first.id, lat, setCount: 1);
+    await workouts.updateSet(we.sets[0].id, weightKg: 100, reps: 1);
+    await workouts.setCompleted(we.sets[0].id, true);
+    final five = await workouts.addSet(we.id, weightKg: 70, reps: 5);
+    await workouts.setCompleted(five.id, true);
+    // 热身组再重也不算纪录。
+    final warm =
+        await workouts.addSet(we.id, weightKg: 200, reps: 1, setType: SetType.warmup);
+    await workouts.setCompleted(warm.id, true);
+    await workouts.finishSession(first.id);
+
+    clock.advance(const Duration(days: 2)); // 9/7：与 9/5 的 5RM 打平
+    final second = await workouts.startSession();
+    final we2 = await workouts.addExercise(second.id, lat, setCount: 1);
+    await workouts.updateSet(we2.sets[0].id, weightKg: 70, reps: 5);
+    await workouts.setCompleted(we2.sets[0].id, true);
+    final ten = await workouts.addSet(we2.id, weightKg: 50, reps: 12);
+    await workouts.setCompleted(ten.id, true);
+    await workouts.finishSession(second.id);
+
+    final maxes = await history.repMaxes('ex_lat_pulldown');
+    expect(maxes[1]!.weightKg, 100);
+    expect(maxes[3]!.weightKg, 70, reason: 'reps ≥ 3 里最重的是 70×5');
+    expect(maxes[5]!.weightKg, 70);
+    expect(maxes[5]!.startedAt, DateTime(2026, 9, 5, 18),
+        reason: '并列时是"什么时候破的"，取最早');
+    expect(maxes[8]!.weightKg, 50, reason: '50×12 同时满足 8 与 10 档');
+    expect(maxes[10]!.weightKg, 50);
+
+    // 每档单调不增：10RM 不可能比 1RM 重。
+    final weights = [for (final r in [1, 3, 5, 8, 10]) maxes[r]!.weightKg];
+    for (var i = 1; i < weights.length; i++) {
+      expect(weights[i], lessThanOrEqualTo(weights[i - 1]));
+    }
+
+    expect(await history.repMaxes('ex_pec_deck'), isEmpty,
+        reason: '只记次数没记重量，一档都算不出来');
   });
 
   test('estimateOneRm：1 次即重量本身', () {

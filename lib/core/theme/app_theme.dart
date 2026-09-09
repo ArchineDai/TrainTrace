@@ -380,6 +380,12 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.suggestDecrease,
     required this.danger,
     required this.disabled,
+    required this.chartBarMuted,
+    required this.chartGrid,
+    required this.bodySkin,
+    required this.bodyMuscleIdle,
+    required this.bodyShadeLight,
+    required this.bodyShadeDark,
   });
 
   /// 橙色当文字时用它：暗色下就是品牌橙，亮色下加深到 #B34A08 才够 4.5:1。
@@ -412,6 +418,28 @@ class AppColors extends ThemeExtension<AppColors> {
   /// 还没填的组、不可用的控件。
   final Color disabled;
 
+  // ── 图表（fl_chart 的画笔要具体色值，取不到 ColorScheme）─────────
+  /// 柱图里未选中的柱。取各自 `surfaceContainerHighest` 那一档的色值：
+  /// 它是背景，信息在选中那根 `primary` 柱上，不承载判读。
+  final Color chartBarMuted;
+
+  /// 图表水平网格线。取 `outlineVariant` 那一档，与卡片描边同一档灰。
+  final Color chartGrid;
+
+  // ── 人体热力图（PLAN-v0.6 §4.6）───────────────────────────────
+  /// 人形躯干底色。半透明的墨 / 银，压在卡片上而不是自成一色，
+  /// 卡片底色变了不用跟着改。
+  final Color bodySkin;
+
+  /// 本区间一组都没练的肌群。比 [bodySkin] 深一点，能看出"这里是块肌肉"。
+  final Color bodyMuscleIdle;
+
+  /// 肌肉体积感：每块肌肉自身 bounds 上渐变的高光端（白）。
+  final Color bodyShadeLight;
+
+  /// 同上的暗部端（黑）。暗色下要更重，否则近黑底上分不出块。
+  final Color bodyShadeDark;
+
   static const AppColors dark = AppColors(
     accentText: AppTheme.accent,
     setDone: Color(0xFF59D27A),
@@ -424,6 +452,14 @@ class AppColors extends ThemeExtension<AppColors> {
     suggestDecrease: Color(0xFFF23D2E),
     danger: Color(0xFFF23D2E),
     disabled: Color(0xFF3A3E47),
+    // _darkScheme.surfaceContainerHighest / outlineVariant 的色值。
+    chartBarMuted: Color(0xFF23262D),
+    chartGrid: Color(0xFF2A2D34),
+    // onSurface(#ECEDEF) 的 10% / 16%。
+    bodySkin: Color(0x1AECEDEF),
+    bodyMuscleIdle: Color(0x29ECEDEF),
+    bodyShadeLight: Color(0x4DFFFFFF),
+    bodyShadeDark: Color(0x66000000),
   );
 
   static const AppColors light = AppColors(
@@ -439,6 +475,14 @@ class AppColors extends ThemeExtension<AppColors> {
     suggestDecrease: Color(0xFFC62F22),
     danger: Color(0xFFC62F22),
     disabled: Color(0xFFC2C6CD),
+    // _lightScheme.surfaceContainerHighest / outlineVariant 的色值（这套色板里同一档）。
+    chartBarMuted: Color(0xFFD5D8DE),
+    chartGrid: Color(0xFFD5D8DE),
+    // 墨色(#0C0D10) 的 10% / 16%。
+    bodySkin: Color(0x1A0C0D10),
+    bodyMuscleIdle: Color(0x290C0D10),
+    bodyShadeLight: Color(0x73FFFFFF),
+    bodyShadeDark: Color(0x47000000),
   );
 
   @override
@@ -454,6 +498,12 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? suggestDecrease,
     Color? danger,
     Color? disabled,
+    Color? chartBarMuted,
+    Color? chartGrid,
+    Color? bodySkin,
+    Color? bodyMuscleIdle,
+    Color? bodyShadeLight,
+    Color? bodyShadeDark,
   }) {
     return AppColors(
       accentText: accentText ?? this.accentText,
@@ -467,6 +517,12 @@ class AppColors extends ThemeExtension<AppColors> {
       suggestDecrease: suggestDecrease ?? this.suggestDecrease,
       danger: danger ?? this.danger,
       disabled: disabled ?? this.disabled,
+      chartBarMuted: chartBarMuted ?? this.chartBarMuted,
+      chartGrid: chartGrid ?? this.chartGrid,
+      bodySkin: bodySkin ?? this.bodySkin,
+      bodyMuscleIdle: bodyMuscleIdle ?? this.bodyMuscleIdle,
+      bodyShadeLight: bodyShadeLight ?? this.bodyShadeLight,
+      bodyShadeDark: bodyShadeDark ?? this.bodyShadeDark,
     );
   }
 
@@ -485,6 +541,12 @@ class AppColors extends ThemeExtension<AppColors> {
       suggestDecrease: Color.lerp(suggestDecrease, other.suggestDecrease, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       disabled: Color.lerp(disabled, other.disabled, t)!,
+      chartBarMuted: Color.lerp(chartBarMuted, other.chartBarMuted, t)!,
+      chartGrid: Color.lerp(chartGrid, other.chartGrid, t)!,
+      bodySkin: Color.lerp(bodySkin, other.bodySkin, t)!,
+      bodyMuscleIdle: Color.lerp(bodyMuscleIdle, other.bodyMuscleIdle, t)!,
+      bodyShadeLight: Color.lerp(bodyShadeLight, other.bodyShadeLight, t)!,
+      bodyShadeDark: Color.lerp(bodyShadeDark, other.bodyShadeDark, t)!,
     );
   }
 }

@@ -17,6 +17,13 @@ final csvExportCountProvider =
   (ref, range) => ref.watch(csvExportRepositoryProvider).count(range),
 );
 
+/// 某范围内会导出多少条身体测量（含体重）。0 条时备份页把那一行置灰。
+final csvMeasurementCountProvider =
+    FutureProvider.autoDispose.family<int, CsvExportRange>(
+  (ref, range) =>
+      ref.watch(csvExportRepositoryProvider).countMeasurements(range),
+);
+
 /// CSV 导出的编排：仓库生成文本 + 系统文件对话框落盘。与 `BackupController`
 /// 同一套路：文件走 SAF / Files，用户自己挑存哪，不申请存储权限。
 ///
@@ -39,6 +46,30 @@ class CsvExportController {
       allowedExtensions: const ['csv'],
     );
     return uri != null;
+  }
+
+  /// 导出身体测量（体重 + 围度）并让用户选保存位置。用户取消返回 `false`。
+  ///
+  /// 独立成一次导出、不塞进训练表：一次点击弹两个系统文件对话框在手机上很怪，
+  /// 而且 Hevy / Strong 的 CSV 导出也只给训练记录。范围沿用界面上那一个选择器。
+  Future<bool> exportMeasurementsToFile(CsvExportRange range) async {
+    final csv = await _repo.exportMeasurements(range);
+    final bytes = Uint8List.fromList(utf8.encode(csv));
+    final uri = await FilePicker.saveFile(
+      fileName: suggestedMeasurementsFileName(),
+      bytes: bytes,
+      mimeType: 'text/csv',
+      type: FileType.custom,
+      allowedExtensions: const ['csv'],
+    );
+    return uri != null;
+  }
+
+  /// `traintrace-measurements-20260908.csv`。
+  String suggestedMeasurementsFileName() {
+    final d = _clock.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    return 'traintrace-measurements-${d.year}${two(d.month)}${two(d.day)}.csv';
   }
 
   /// `traintrace-sets-20260908.csv` / `traintrace-hevy-20260908.csv`。

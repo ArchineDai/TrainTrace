@@ -73,6 +73,34 @@ class ExercisePerformance {
   int get hashCode => workoutExerciseId.hashCode;
 }
 
+/// 每个动作"上次练是什么时候、多重"的一行（PLAN-v0.6 §3.2）。
+///
+/// 与 [ExercisePerformance] 的分工：那个带着一次训练里的**每一组**，训练页要靠
+/// 它逐组回显；这个只要一行摘要，动作库一屏 60 个动作全靠一条 SQL 查完
+/// （`latestPerformanceByExercise`），不做 60 次 `lastPerformance`。
+class ExerciseLastPerformance {
+  const ExerciseLastPerformance({
+    required this.exerciseId,
+    required this.startedAt,
+    this.weightKg,
+    this.reps,
+    this.durationSeconds,
+    this.equipmentLabel,
+  });
+
+  final String exerciseId;
+
+  /// 那次 session 的开始时间。
+  final DateTime startedAt;
+
+  /// 那次表现里最重的已完成正式组，与它同一组的次数 / 秒数。
+  /// 无配重或计时类动作可能为 null。
+  final double? weightKg;
+  final int? reps;
+  final int? durationSeconds;
+  final String? equipmentLabel;
+}
+
 /// 某动作历史上最近一条非空备注。训练卡片"上次备注"回显的数据单元。
 ///
 /// 独立于 [ExercisePerformance]：备注（座椅档位、把手位置）通常几周才写一次，

@@ -10,6 +10,8 @@ dependencies:
   drift: ^2.34.4
   drift_flutter: ^0.3.1
   file_picker: ^12.2.0
+  # 只用 BarChart / LineChart（PLAN-v0.6 §4.1）。日历、KPI、人体图、横条自绘。
+  fl_chart: ^1.2.0
   flutter:
     sdk: flutter
   flutter_local_notifications: ^22.3.0
@@ -19,6 +21,12 @@ dependencies:
   go_router: ^18.0.1
   image_picker: ^1.2.3
   intl: ^0.20.3
+  # 关于页的版本号。已经是 file_picker 的传递依赖，提为直接依赖不增体积；
+  # 写死常量迟早和 pubspec 里的版本走样。
+  package_info_plus: ^10.2.1
+  # 人体热力图：把生成码里的 SVG path 字符串解析成 dart:ui Path（不引 flutter_svg，
+  # 它不认 CSS class 动态上色，见 PLAN-v0.6 §4.6）。
+  path_drawing: ^1.0.1
   path_provider: ^2.1.6
   share_plus: ^13.3.0
   timezone: ^0.11.1
@@ -42,6 +50,9 @@ flutter:
   # 首启导入的内置动作 / 模板 / 历史记录（core/db/seed/seed_loader.dart）。
   assets:
     - assets/seed/
+    # 第三方素材的许可原文。字体的 OFL 与人体图的 MIT 都要求随分发保留，
+    # 光放在仓库里不算 —— 必须打进包并在关于页可读（core/licenses.dart 注册）。
+    - assets/licenses/
 
   # 西文 / 数字走 IBM Plex Sans（OFL），汉字回落到 Noto Sans SC（OFL）。
   # Noto 已子集化到 GB2312 + UI 符号（tool/fonts/subset_fonts.mjs），

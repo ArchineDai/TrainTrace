@@ -7,6 +7,8 @@ import 'package:traintrace/core/db/seed/seed_loader.dart';
 import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/backup/data/backup_repository.dart';
 import 'package:traintrace/features/backup/models/backup_summary.dart';
+import 'package:traintrace/features/measurements/data/body_measurement_repository.dart';
+import 'package:traintrace/features/measurements/models/body_metric.dart';
 import 'package:traintrace/features/routines/data/routine_repository.dart';
 
 import 'test_db.dart';
@@ -204,6 +206,38 @@ void main() {
       () => repo.inspect(jsonEncode(sameVersion)),
       throwsA(isA<BackupFormatException>()),
     );
+  });
+
+  test('body_measurements 往返：值、单位对应的 metric 名、软删墓碑都回来', () async {
+    // 备份是全库 dump，新表只要注册进 allTables 就自动进出；这条用例守的是
+    // "注册漏了"这种静默失败 —— 漏了不报错，只是用户的围度记录换机后没了。
+    final measurements = BodyMeasurementRepository(db, clock);
+    await measurements.add(BodyMetric.waist, 82.5,
+        measuredAt: DateTime(2026, 9, 1));
+    await measurements.add(BodyMetric.waist, 81.5,
+        measuredAt: DateTime(2026, 9, 3));
+    final gone = await measurements.add(BodyMetric.bodyFat, 18.4,
+        measuredAt: DateTime(2026, 9, 2));
+    await measurements.remove(gone.id);
+
+    final json = jsonDecode(await repo.exportJson()) as Map<String, dynamic>;
+    final dumped =
+        (json['tables'] as Map)['body_measurements'] as List<dynamic>;
+    expect(dumped, hasLength(3), reason: '含软删的那条');
+    expect(dumped.first, contains('measured_at'), reason: '列名是 SQL 的 snake_case');
+
+    final fresh = memoryDb();
+    addTearDown(fresh.close);
+    await repoFor(fresh).restore(jsonEncode(json));
+
+    final restored = BodyMeasurementRepository(fresh, clock);
+    final series = await restored.watchSeries(BodyMetric.waist).first;
+    expect(series.map((e) => e.value).toList(), [82.5, 81.5],
+        reason: 'REAL 列不丢精度，升序回来');
+    final latest = await restored.watchLatestAll().first;
+    expect(latest.containsKey(BodyMetric.bodyFat), isFalse,
+        reason: '软删墓碑一并恢复，仍被过滤掉');
+    expect(await count(fresh, fresh.bodyMeasurements), 3);
   });
 
   test('备份里多出来的未知列被忽略，不会让恢复失败', () async {

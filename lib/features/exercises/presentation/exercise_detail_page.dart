@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/formatters.dart';
 import '../../../core/theme/app_text_size.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../router/app_routes.dart';
 import '../../../shared/widgets/text_fields_dialog.dart';
 import '../../history/models/history_models.dart';
 import '../../suggestion/presentation/suggestion_card.dart';
@@ -18,22 +20,42 @@ import 'exercise_labels.dart';
 import 'widgets/equipment_note_photo.dart';
 import 'widgets/exercise_defaults_sheet.dart';
 import 'widgets/exercise_guide_section.dart';
-import 'widgets/one_rm_trend_section.dart';
+import 'widgets/exercise_trend_card.dart';
+import 'widgets/rep_max_table.dart';
 
-/// 动作详情：目标与增量、个人记录、最近记录、场馆 / 器械备注。
-/// 工作重量建议卡片随 Phase 5 加在头部下方。
-class ExerciseDetailPage extends ConsumerWidget {
+/// 动作详情：头部（名称、meta、默认值）固定，其下三段
+/// 记录 / 要领 / 器械（PLAN-v0.6 §3.3）。
+///
+/// 段是页面局部态：没有第二个页面读它，所以 `setState` 而不是 provider
+/// （CLAUDE.md 变更纪律 2）。
+class ExerciseDetailPage extends ConsumerStatefulWidget {
   const ExerciseDetailPage({super.key, required this.exerciseId});
 
   final String exerciseId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final exercise = ref.watch(exerciseByIdProvider(exerciseId));
-    final history = ref.watch(exerciseHistoryProvider(exerciseId)).value ?? const [];
-    final pr = ref.watch(personalRecordsProvider(exerciseId)).value ?? PersonalRecords.empty;
-    final notes = ref.watch(equipmentNotesProvider(exerciseId)).value ?? const [];
-    final now = ref.read(clockProvider).now();
+  ConsumerState<ExerciseDetailPage> createState() => _ExerciseDetailPageState();
+}
+
+class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
+  DetailTab? _tab;
+
+  String get _exerciseId => widget.exerciseId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 初始段来自深链的 `?tab=`（选择器的 ⓘ 传 `guide`）。只认第一次：之后切段
+    // 只 setState、不回写 URL（回写会污染返回栈，PLAN-v0.6 §1.3），所以依赖
+    // 再变化时不能把用户手动切过的段拉回去。
+    _tab ??= DetailTab.parse(
+      GoRouterState.of(context).uri.queryParameters['tab'],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final exercise = ref.watch(exerciseByIdProvider(_exerciseId));
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
 
@@ -44,6 +66,7 @@ class ExerciseDetailPage extends ConsumerWidget {
       );
     }
 
+    final tab = _tab ?? DetailTab.records;
     final altName = exercise.alternateName(context);
 
     return Scaffold(
@@ -61,7 +84,7 @@ class ExerciseDetailPage extends ConsumerWidget {
           // 默认目标：数值在哪显示就在哪改（Hevy / Strong 的"点数值改数值"），
           // 点整行进弹层。整行撑到 48dp 触控高度。
           InkWell(
-            onTap: () => ExerciseDefaultsSheet.show(context, exerciseId),
+            onTap: () => ExerciseDefaultsSheet.show(context, _exerciseId),
             borderRadius: BorderRadius.circular(AppTheme.radius),
             child: SizedBox(
               height: AppTheme.minTouch,
@@ -84,113 +107,154 @@ class ExerciseDetailPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-
-          // ── 下次怎么练：工作重量建议（按最近一次用的器械标签算）──
-          _section(context, l10n.nextSuggestion),
-          SuggestionCard(
-            query: SuggestionQuery(
-              exerciseId: exerciseId,
-              equipmentLabel: history.isEmpty ? null : history.first.equipmentLabel,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // ── 怎么做：示意动画、要领、常见错误，个人记录插在找哪台机器之前 ──
-          ExerciseGuideSection(
-            exercise: exercise,
-            beforeMachines: [
-              _section(context, l10n.personalRecords),
-              if (pr.isEmpty)
-                _muted(context, l10n.emptyNoRecords)
-              else
-                Row(
-                  children: [
-                    _Stat(
-                      label: l10n.prMaxWeight,
-                      value: '${Formatters.kg(pr.maxWeightKg!)} kg × ${pr.maxWeightReps}',
-                    ),
-                    _Stat(
-                      label: l10n.prMaxSetVolume,
-                      value: '${Formatters.kg(pr.maxSetVolumeKg!)} kg',
-                    ),
-                    _Stat(
-                      label: l10n.prEstimatedOneRm,
-                      // 估算值，两位小数是假精度。
-                      value: '${Formatters.kg(pr.estimatedOneRmKg!, decimals: 1)} kg',
-                    ),
-                  ],
-                ),
-              const SizedBox(height: 20),
-
-              // ── 估算 1RM 趋势：没记录时整段不出（含底部间距）──
-              OneRmTrendSection(
-                exerciseId: exerciseId,
-                title: _section(context, l10n.oneRmTrend),
+          SegmentedButton<DetailTab>(
+            segments: [
+              ButtonSegment(
+                value: DetailTab.records,
+                label: Text(l10n.detailTabRecords),
+              ),
+              ButtonSegment(
+                value: DetailTab.guide,
+                label: Text(l10n.detailTabGuide),
+              ),
+              ButtonSegment(
+                value: DetailTab.equipment,
+                label: Text(l10n.detailTabEquipment),
               ),
             ],
+            selected: {tab},
+            showSelectedIcon: false,
+            onSelectionChanged: (s) => setState(() => _tab = s.first),
           ),
-
-          // ── 最近记录 ────────────────────────────────────────
-          _section(context, l10n.recentRecords),
-          if (history.isEmpty)
-            _muted(context, l10n.emptyNoRecords)
-          else
-            for (final p in history)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 96,
-                      child: Text(
-                        Formatters.relativeDay(p.startedAt, now, l10n),
-                        style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        _performanceSummary(l10n, p),
-                        style: TextStyle(fontSize: AppTextSize.sm),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          const SizedBox(height: 20),
-
-          // ── 场馆 / 器械备注 ─────────────────────────────────
-          Row(
-            children: [
-              Expanded(child: _section(context, l10n.equipmentNotesSection)),
-              TextButton.icon(
-                onPressed: () => _editNote(context, ref, null),
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(l10n.actionAdd),
-              ),
-            ],
-          ),
-          if (notes.isEmpty)
-            _muted(context, l10n.equipmentNotesEmpty)
-          else
-            for (final n in notes)
-              Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: EquipmentNotePhoto(note: n),
-                  title: Text(n.displayLabel),
-                  subtitle: n.note == null || n.note!.isEmpty ? null : Text(n.note!),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: l10n.actionDelete,
-                    onPressed: () => ref.read(exerciseRepositoryProvider).deleteNote(n.id),
-                  ),
-                  onTap: () => _editNote(context, ref, n),
-                ),
-              ),
+          const SizedBox(height: 16),
+          ...switch (tab) {
+            DetailTab.records => _records(context, exercise),
+            DetailTab.guide => [ExerciseGuideSection(exercise: exercise)],
+            DetailTab.equipment => _equipment(context),
+          },
         ],
       ),
     );
+  }
+
+  /// 记录段：建议 → 个人记录三格 → 趋势卡 → 纪录表 → 最近记录。
+  List<Widget> _records(BuildContext context, Exercise exercise) {
+    final history = ref.watch(exerciseHistoryProvider(_exerciseId)).value ?? const [];
+    final pr = ref.watch(personalRecordsProvider(_exerciseId)).value ?? PersonalRecords.empty;
+    final now = ref.read(clockProvider).now();
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+
+    return [
+      // ── 下次怎么练：工作重量建议（按最近一次用的器械标签算）──
+      _section(context, l10n.nextSuggestion),
+      SuggestionCard(
+        query: SuggestionQuery(
+          exerciseId: _exerciseId,
+          equipmentLabel: history.isEmpty ? null : history.first.equipmentLabel,
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      // ── 个人记录三格：估算 1RM 在这里，纪录表里的 1RM 是实际单次最重 ──
+      _section(context, l10n.personalRecords),
+      if (pr.isEmpty)
+        _muted(context, l10n.emptyNoRecords)
+      else
+        Row(
+          children: [
+            _Stat(
+              label: l10n.prMaxWeight,
+              value: '${Formatters.kg(pr.maxWeightKg!)} kg × ${pr.maxWeightReps}',
+            ),
+            _Stat(
+              label: l10n.prMaxSetVolume,
+              value: '${Formatters.kg(pr.maxSetVolumeKg!)} kg',
+            ),
+            _Stat(
+              label: l10n.prEstimatedOneRm,
+              // 估算值，两位小数是假精度。
+              value: '${Formatters.kg(pr.estimatedOneRmKg!, decimals: 1)} kg',
+            ),
+          ],
+        ),
+      const SizedBox(height: 20),
+
+      // ── 趋势：五指标 × 四区间（PLAN-v0.6 §4.7）──
+      _section(context, l10n.trendTitle),
+      ExerciseTrendCard(exerciseId: _exerciseId),
+      const SizedBox(height: 20),
+
+      // ── 纪录表：1/3/5/8/10RM 的实际最重（§4.8）──
+      _section(context, l10n.recordsTitle),
+      RepMaxTable(exerciseId: _exerciseId),
+      const SizedBox(height: 20),
+
+      // ── 最近记录 ────────────────────────────────────────
+      _section(context, l10n.recentRecords),
+      if (history.isEmpty)
+        _muted(context, l10n.emptyNoRecords)
+      else
+        for (final p in history)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 96,
+                  child: Text(
+                    Formatters.relativeDay(p.startedAt, now, l10n),
+                    style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _performanceSummary(l10n, p),
+                    style: TextStyle(fontSize: AppTextSize.sm),
+                  ),
+                ),
+              ],
+            ),
+          ),
+    ];
+  }
+
+  /// 器械段：场馆 / 器械备注列表与增删改。
+  List<Widget> _equipment(BuildContext context) {
+    final notes = ref.watch(equipmentNotesProvider(_exerciseId)).value ?? const [];
+    final l10n = AppLocalizations.of(context);
+
+    return [
+      Row(
+        children: [
+          Expanded(child: _section(context, l10n.equipmentNotesSection)),
+          TextButton.icon(
+            onPressed: () => _editNote(context, null),
+            icon: const Icon(Icons.add, size: 18),
+            label: Text(l10n.actionAdd),
+          ),
+        ],
+      ),
+      if (notes.isEmpty)
+        _muted(context, l10n.equipmentNotesEmpty)
+      else
+        for (final n in notes)
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: EquipmentNotePhoto(note: n),
+              title: Text(n.displayLabel),
+              subtitle: n.note == null || n.note!.isEmpty ? null : Text(n.note!),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: l10n.actionDelete,
+                onPressed: () => ref.read(exerciseRepositoryProvider).deleteNote(n.id),
+              ),
+              onTap: () => _editNote(context, n),
+            ),
+          ),
+    ];
   }
 
   /// 一次表现的各组摘要 +（器械标签）。
@@ -222,7 +286,7 @@ class ExerciseDetailPage extends ConsumerWidget {
         ),
       );
 
-  Future<void> _editNote(BuildContext context, WidgetRef ref, EquipmentNote? existing) async {
+  Future<void> _editNote(BuildContext context, EquipmentNote? existing) async {
     final l10n = AppLocalizations.of(context);
     // controller 归对话框自己持有（见 showTextFieldsDialog），这里不再手工 dispose。
     final texts = await showTextFieldsDialog(
@@ -258,7 +322,7 @@ class ExerciseDetailPage extends ConsumerWidget {
       await repo.deleteNote(existing.id);
     }
     await repo.upsertNote(
-      exerciseId: exerciseId,
+      exerciseId: _exerciseId,
       gymName: g.isEmpty ? null : g,
       equipmentLabel: l,
       note: n.isEmpty ? null : n,

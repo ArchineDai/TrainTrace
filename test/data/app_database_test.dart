@@ -30,7 +30,7 @@ void main() {
   });
 
   test('schema v4：动作 measure 默认 reps、is_bodyweight / is_assisted 默认 false', () async {
-    expect(db.schemaVersion, 4);
+    expect(db.schemaVersion, 5);
     await db.into(db.exercises).insert(exercise('ex1'));
     final row = await db.select(db.exercises).getSingle();
     expect(row.measure, 'reps');

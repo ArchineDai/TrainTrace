@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traintrace/core/theme/app_theme.dart';
+import 'package:traintrace/shared/charts/chart_theme.dart';
 
 /// WCAG 对比度。小字 4.5:1，大字 / 图形 3:1。
 double _contrast(Color a, Color b) {
@@ -75,6 +76,53 @@ void main() {
         if (scheme.brightness == Brightness.dark) {
           expect(_contrast(AppTheme.accent, scheme.surface),
               greaterThanOrEqualTo(4.5));
+        }
+      });
+
+      test('图表与人体图的 token 亮暗都给了值，且都不是全透明', () {
+        final c = colors!;
+        for (final (label, color) in [
+          ('chartBarMuted', c.chartBarMuted),
+          ('chartGrid', c.chartGrid),
+          ('bodySkin', c.bodySkin),
+          ('bodyMuscleIdle', c.bodyMuscleIdle),
+          ('bodyShadeLight', c.bodyShadeLight),
+          ('bodyShadeDark', c.bodyShadeDark),
+        ]) {
+          // 全透明会静默画不出来：没有报错、图上就是缺一块。
+          expect(color.a, greaterThan(0), reason: '$name.$label');
+        }
+        // 皮肤 / 阴影是压在卡片上的半透明覆盖层，不透明就会盖掉底色。
+        expect(c.bodySkin.a, lessThan(1));
+        expect(c.bodyShadeLight.a, lessThan(1));
+        expect(c.bodyShadeDark.a, lessThan(1));
+        // 一组都没练的肌群要比躯干底色深一点，否则看不出"这里是块肌肉"。
+        expect(c.bodyMuscleIdle.a, greaterThan(c.bodySkin.a));
+      });
+
+      test('承载信息的图表元素对卡片底 ≥ 3:1，网格与 muted 柱看得见但不抢戏', () {
+        final chart = AppChartTheme.resolve(theme);
+        // 图画在卡片上（surfaceContainerLow），不是页面底。
+        final card = scheme.surfaceContainerLow;
+        // 折线与折线上的点是"细元素"，判读全靠对比度 —— 非文字门槛 3:1。
+        // AppChartTheme 因此把线色取成 accentText 而不是 primary：
+        // 亮色下品牌橙对白底只有 2.4:1（见 app_theme.dart 顶部）。
+        expect(_contrast(chart.line, card), greaterThanOrEqualTo(3),
+            reason: '$name.line');
+        expect(_contrast(chart.rawPoint, card), greaterThanOrEqualTo(3),
+            reason: '$name.rawPoint');
+        // 选中柱是"填充"而不是细元素，按主题的规矩走 primary；它靠色相加柱顶
+        // 那行 onSurface 数值与 muted 柱区分，所以这里只要求两者不同色。
+        expect(chart.barFocus, scheme.primary);
+        expect(chart.barFocus, isNot(chart.barMuted));
+        // 网格线与 muted 柱是背景：要能看出来（> 1.15），但不能反过来压过数据（< 3）。
+        for (final (label, color) in [
+          ('chartGrid', chart.grid),
+          ('chartBarMuted', chart.barMuted),
+        ]) {
+          final ratio = _contrast(color, card);
+          expect(ratio, greaterThan(1.15), reason: '$name.$label 看不见');
+          expect(ratio, lessThan(3), reason: '$name.$label 抢过数据了');
         }
       });
 

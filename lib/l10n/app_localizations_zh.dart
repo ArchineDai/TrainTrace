@@ -13,13 +13,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appTitle => '训迹';
 
   @override
-  String get tabWorkout => '训练';
+  String get tabHome => '首页';
 
   @override
   String get tabRoutines => '模板';
 
   @override
-  String get tabHistory => '历史';
+  String get tabExercises => '动作';
+
+  @override
+  String get tabHistory => '数据';
 
   @override
   String get tabSettings => '设置';
@@ -93,6 +96,42 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backupSettingsSubtitle => '备份到文件，卸载重装或换手机后恢复';
+
+  @override
+  String get aboutSection => '关于';
+
+  @override
+  String get aboutTitle => '关于训迹';
+
+  @override
+  String get aboutSettingsSubtitle => '版本、素材署名与开源许可';
+
+  @override
+  String aboutVersion(String version, String build) {
+    return '版本 $version（构建 $build）';
+  }
+
+  @override
+  String get aboutCreditsSection => '素材署名';
+
+  @override
+  String get aboutFontsTitle => 'IBM Plex Sans、Noto Sans SC';
+
+  @override
+  String get aboutFontsSubtitle => 'SIL Open Font License 1.1';
+
+  @override
+  String get aboutBodyMapTitle => '肌群人体图';
+
+  @override
+  String get aboutBodyMapSubtitle =>
+      'react-native-body-highlighter · MIT License';
+
+  @override
+  String get aboutLicenses => '开源许可';
+
+  @override
+  String get aboutLicensesHint => '全部依赖与素材的许可原文';
 
   @override
   String get backupIntro => '备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。';
@@ -201,6 +240,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get csvExportDone => '表格已保存';
 
   @override
+  String get csvExportMeasurementsTitle => '导出测量记录';
+
+  @override
+  String get csvExportMeasurementsSubtitle => '体重与围度，一行一条';
+
+  @override
+  String csvExportMeasurementsCount(int count) {
+    return '体重与围度 · $count 条';
+  }
+
+  @override
   String get restReminderSetting => '休息结束提醒';
 
   @override
@@ -223,11 +273,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get devPlaygroundHint => '键盘 / 计时 / 后台提醒';
-
-  @override
-  String placeholderPending(String phase) {
-    return '$phase 接入';
-  }
 
   @override
   String get actionCancel => '取消';
@@ -270,6 +315,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionCustom => '自定义';
+
+  @override
+  String get actionUndo => '撤销';
 
   @override
   String get toastSaved => '已保存';
@@ -410,6 +458,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeNoRoutines => '还没有模板，去「模板」页新建一个';
 
   @override
+  String get homeThisWeek => '本周';
+
+  @override
   String get homeRecentWorkouts => '最近训练';
 
   @override
@@ -548,6 +599,25 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get libraryFilterAllEquipment => '全部器械';
+
+  @override
+  String get libraryOnlyPerformed => '只看练过的';
+
+  @override
+  String libraryCount(String group, int n) {
+    return '$group · $n 个动作 · 最近练过的在前';
+  }
+
+  @override
+  String get neverPerformed => '未练过';
+
+  @override
+  String lastPerformedAt(String date) {
+    return '上次 $date';
+  }
+
+  @override
   String get exerciseNotFound => '动作不存在或已删除';
 
   @override
@@ -571,33 +641,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prEstimatedOneRm => '估算 1RM';
 
   @override
-  String get oneRmTrend => '估算 1RM 趋势';
+  String get rangeFourWeeks => '4 周';
 
   @override
-  String get oneRmRangeFourWeeks => '4 周';
+  String get rangeThreeMonths => '3 个月';
 
   @override
-  String get oneRmRangeThreeMonths => '3 个月';
+  String get rangeOneYear => '1 年';
 
   @override
-  String get oneRmRangeAll => '全部';
+  String get rangeAll => '全部';
 
   @override
-  String get oneRmTrendEmpty => '再练几次就有趋势了';
+  String get detailTabRecords => '记录';
 
   @override
-  String oneRmTrendMeta(String since, int count) {
-    return '$since · $count 次训练 · Epley 公式估算';
+  String get detailTabGuide => '要领';
+
+  @override
+  String get detailTabEquipment => '器械';
+
+  @override
+  String get trendTitle => '趋势';
+
+  @override
+  String get metricOneRm => '估算 1RM';
+
+  @override
+  String get metricMaxWeight => '最大重量';
+
+  @override
+  String get metricSessionVolume => '单次容量';
+
+  @override
+  String get metricTotalReps => '总次数';
+
+  @override
+  String get metricSets => '组数';
+
+  @override
+  String trendDelta(String delta, String range, int count) {
+    return '$delta · $range · $count 次训练';
   }
 
   @override
-  String get oneRmSinceFourWeeks => '较 4 周前';
+  String get recordsTitle => '纪录';
 
   @override
-  String get oneRmSinceThreeMonths => '较 3 个月前';
+  String get recordsColReps => '次数';
 
   @override
-  String get oneRmSinceAll => '较最早记录';
+  String get recordsColWeight => '最重';
+
+  @override
+  String get recordsColDate => '日期';
+
+  @override
+  String get recordNone => '尚无';
 
   @override
   String get recentRecords => '最近记录';
@@ -1010,6 +1110,84 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noCompletedSets => '未完成任何一组';
 
   @override
+  String get segmentOverview => '概览';
+
+  @override
+  String get segmentTraining => '训练';
+
+  @override
+  String get segmentBody => '身体';
+
+  @override
+  String get kpiSessions => '训练';
+
+  @override
+  String get kpiVolume => '容量';
+
+  @override
+  String get kpiDuration => '时长';
+
+  @override
+  String get kpiHoursUnit => '小时';
+
+  @override
+  String kpiVsPrevious(String delta) {
+    return '$delta 比上期';
+  }
+
+  @override
+  String get muscleVolumeTitle => '各肌群训练量';
+
+  @override
+  String muscleVolumeSubtitle(String range) {
+    return '每周平均组数 · $range';
+  }
+
+  @override
+  String get muscleReferenceBand => '参考 10–20 组 / 周';
+
+  @override
+  String muscleBelowReference(String list) {
+    return '$list 低于每周 10 组';
+  }
+
+  @override
+  String get weeklySessionsTitle => '每周训练次数';
+
+  @override
+  String get weeklyVolumeTitle => '每周总容量';
+
+  @override
+  String thisWeek(String range) {
+    return '本周 $range';
+  }
+
+  @override
+  String vsLastWeek(String delta) {
+    return '比上周 $delta';
+  }
+
+  @override
+  String get calendarTitle => '训练日历';
+
+  @override
+  String calendarSubtitle(int days, int lastMonth) {
+    return '已训练 $days 天 · 上月 $lastMonth 天';
+  }
+
+  @override
+  String get legendLess => '少';
+
+  @override
+  String get legendMore => '多';
+
+  @override
+  String get bodyFront => '正面';
+
+  @override
+  String get bodyBack => '背面';
+
+  @override
   String get historyEmpty => '还没有训练记录';
 
   @override
@@ -1026,6 +1204,85 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deleteSessionBody => '动作的历史表现与个人记录会随之变化。';
+
+  @override
+  String get bodyMetricWeight => '体重';
+
+  @override
+  String get bodyMetricBodyFat => '体脂率';
+
+  @override
+  String get bodyMetricNeck => '颈围';
+
+  @override
+  String get bodyMetricShoulders => '肩宽';
+
+  @override
+  String get bodyMetricChest => '胸围';
+
+  @override
+  String get bodyMetricAbdomen => '腹围';
+
+  @override
+  String get bodyMetricWaist => '腰围';
+
+  @override
+  String get bodyMetricHips => '臀围';
+
+  @override
+  String get bodyMetricLeftUpperArm => '左大臂';
+
+  @override
+  String get bodyMetricRightUpperArm => '右大臂';
+
+  @override
+  String get bodyMetricLeftForearm => '左前臂';
+
+  @override
+  String get bodyMetricRightForearm => '右前臂';
+
+  @override
+  String get bodyMetricLeftThigh => '左大腿';
+
+  @override
+  String get bodyMetricRightThigh => '右大腿';
+
+  @override
+  String get bodyMetricLeftCalf => '左小腿';
+
+  @override
+  String get bodyMetricRightCalf => '右小腿';
+
+  @override
+  String get bodyNotRecorded => '未记录';
+
+  @override
+  String bodyRecord(String metric) {
+    return '记录$metric';
+  }
+
+  @override
+  String get bodyEntriesTitle => '记录';
+
+  @override
+  String get bodyEntriesHint => '左滑删除 · 点按修改数值或日期';
+
+  @override
+  String get bodyMovingAverage => '7 日均线';
+
+  @override
+  String get bodyDaily => '每日';
+
+  @override
+  String bodyDeltaSince(String range) {
+    return '较 $range前';
+  }
+
+  @override
+  String get bodyEditEntry => '修改记录';
+
+  @override
+  String get bodyDeleted => '记录已删除';
 
   @override
   String get suggestInsufficientTitle => '还没有足够记录';

@@ -3,9 +3,13 @@
 
   "appTitle": "训迹",
 
-  "tabWorkout": "训练",
+  "tabHome": "首页",
   "tabRoutines": "模板",
-  "tabHistory": "历史",
+  "tabExercises": "动作",
+  "tabHistory": "数据",
+  "@tabHistory": {
+    "description": "第 4 个 Tab。V0.6 起承载概览 / 训练 / 身体三段，文案从「历史」改为「数据」；路径仍是 /history，key 不改名"
+  },
   "tabSettings": "设置",
 
   "settings": "设置",
@@ -42,6 +46,24 @@
   "settingsData": "数据",
   "backupTitle": "备份与恢复",
   "backupSettingsSubtitle": "备份到文件，卸载重装或换手机后恢复",
+  "aboutSection": "关于",
+  "aboutTitle": "关于训迹",
+  "aboutSettingsSubtitle": "版本、素材署名与开源许可",
+  "aboutVersion": "版本 {version}（构建 {build}）",
+  "@aboutVersion": {
+    "description": "关于页版本行",
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
+  "aboutCreditsSection": "素材署名",
+  "aboutFontsTitle": "IBM Plex Sans、Noto Sans SC",
+  "aboutFontsSubtitle": "SIL Open Font License 1.1",
+  "aboutBodyMapTitle": "肌群人体图",
+  "aboutBodyMapSubtitle": "react-native-body-highlighter · MIT License",
+  "aboutLicenses": "开源许可",
+  "aboutLicensesHint": "全部依赖与素材的许可原文",
   "backupIntro": "备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。",
   "backupExport": "备份到文件",
   "backupLastAt": "上次备份：{date}",
@@ -96,6 +118,15 @@
   },
   "csvExportAction": "导出 CSV",
   "csvExportDone": "表格已保存",
+  "csvExportMeasurementsTitle": "导出测量记录",
+  "csvExportMeasurementsSubtitle": "体重与围度，一行一条",
+  "csvExportMeasurementsCount": "体重与围度 · {count} 条",
+  "@csvExportMeasurementsCount": {
+    "description": "测量记录导出行的副标，count 含体重",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "restReminderSetting": "休息结束提醒",
   "restReminderStatusOn": "已开启",
   "restReminderStatusNoNotifications": "未允许通知，休息结束不会提醒",
@@ -105,13 +136,6 @@
   "devPlayground": "Phase 0 技术验证",
   "devPlaygroundHint": "键盘 / 计时 / 后台提醒",
 
-  "placeholderPending": "{phase} 接入",
-  "@placeholderPending": {
-    "description": "占位页正文，phase 形如 'Phase 4'",
-    "placeholders": {
-      "phase": { "type": "String" }
-    }
-  },
 
   "actionCancel": "取消",
   "actionSave": "保存",
@@ -127,6 +151,7 @@
   "actionMore": "更多",
   "actionClose": "关闭",
   "actionCustom": "自定义",
+  "actionUndo": "撤销",
   "toastSaved": "已保存",
   "toastDeleted": "已删除",
   "emptyNoRecords": "还没有记录",
@@ -223,6 +248,7 @@
   "homeStartEmptyWorkout": "开始空白训练",
   "homeFromRoutine": "从模板开始",
   "homeNoRoutines": "还没有模板，去「模板」页新建一个",
+  "homeThisWeek": "本周",
   "homeRecentWorkouts": "最近训练",
   "workoutInProgressToast": "有一次训练还在进行中，先继续或放弃它",
   "resumeBannerStaleTitle": "有一次训练超过 12 小时未结束",
@@ -309,6 +335,25 @@
     }
   },
 
+  "libraryFilterAllEquipment": "全部器械",
+  "libraryOnlyPerformed": "只看练过的",
+  "libraryCount": "{group} · {n} 个动作 · 最近练过的在前",
+  "@libraryCount": {
+    "description": "动作库列表上方的 muted 说明行。group 是肌群筛选当前选中的展示名（未筛选时传 filterAll）",
+    "placeholders": {
+      "group": { "type": "String" },
+      "n": { "type": "int" }
+    }
+  },
+  "neverPerformed": "未练过",
+  "lastPerformedAt": "上次 {date}",
+  "@lastPerformedAt": {
+    "description": "动作库行右上角的上次训练日期，date 由 Formatters.relativeDay 给出",
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+
   "exerciseNotFound": "动作不存在或已删除",
   "exerciseDefaultsMeta": "默认目标 {min}–{max} 次 · 休息 {rest}s · 每次加 {increment} kg",
   "@exerciseDefaultsMeta": {
@@ -324,22 +369,37 @@
   "prMaxWeight": "最大重量",
   "prMaxSetVolume": "单组容量",
   "prEstimatedOneRm": "估算 1RM",
-  "oneRmTrend": "估算 1RM 趋势",
-  "oneRmRangeFourWeeks": "4 周",
-  "oneRmRangeThreeMonths": "3 个月",
-  "oneRmRangeAll": "全部",
-  "oneRmTrendEmpty": "再练几次就有趋势了",
-  "oneRmTrendMeta": "{since} · {count} 次训练 · Epley 公式估算",
-  "@oneRmTrendMeta": {
-    "description": "趋势图下方涨幅数字后面的说明。since 是 oneRmSince* 之一",
+  "rangeFourWeeks": "4 周",
+  "rangeThreeMonths": "3 个月",
+  "rangeOneYear": "1 年",
+  "rangeAll": "全部",
+  "@rangeFourWeeks": {
+    "description": "统计区间 chip（StatsRange）。概览段、动作趋势卡、身体指标页共用"
+  },
+
+  "detailTabRecords": "记录",
+  "detailTabGuide": "要领",
+  "detailTabEquipment": "器械",
+  "trendTitle": "趋势",
+  "metricOneRm": "估算 1RM",
+  "metricMaxWeight": "最大重量",
+  "metricSessionVolume": "单次容量",
+  "metricTotalReps": "总次数",
+  "metricSets": "组数",
+  "trendDelta": "{delta} · {range} · {count} 次训练",
+  "@trendDelta": {
+    "description": "趋势图下方一行。delta 是带符号的涨幅成品串（如 +12.5 kg / +8%），无对比时调用方不显示这行；range 是区间 chip 的展示名",
     "placeholders": {
-      "since": { "type": "String" },
+      "delta": { "type": "String" },
+      "range": { "type": "String" },
       "count": { "type": "int" }
     }
   },
-  "oneRmSinceFourWeeks": "较 4 周前",
-  "oneRmSinceThreeMonths": "较 3 个月前",
-  "oneRmSinceAll": "较最早记录",
+  "recordsTitle": "纪录",
+  "recordsColReps": "次数",
+  "recordsColWeight": "最重",
+  "recordsColDate": "日期",
+  "recordNone": "尚无",
   "recentRecords": "最近记录",
   "equipmentNotesSection": "场馆 / 器械备注",
   "equipmentNotesEmpty": "同一动作在不同健身房、不同机器上的合适重量不可比，记在这里。",
@@ -598,12 +658,113 @@
   "statVolume": "容量",
   "noCompletedSets": "未完成任何一组",
 
+  "segmentOverview": "概览",
+  "segmentTraining": "训练",
+  "segmentBody": "身体",
+
+  "kpiSessions": "训练",
+  "kpiVolume": "容量",
+  "kpiDuration": "时长",
+  "kpiHoursUnit": "小时",
+  "kpiVsPrevious": "{delta} 比上期",
+  "@kpiVsPrevious": {
+    "description": "KPI 卡里的区间对比。delta 是带符号的成品串（如 +8%），无上一区间数据时调用方传「—」或不显示这行",
+    "placeholders": {
+      "delta": { "type": "String" }
+    }
+  },
+  "muscleVolumeTitle": "各肌群训练量",
+  "muscleVolumeSubtitle": "每周平均组数 · {range}",
+  "@muscleVolumeSubtitle": {
+    "description": "range 是区间 chip 的展示名（range* 之一）",
+    "placeholders": {
+      "range": { "type": "String" }
+    }
+  },
+  "muscleReferenceBand": "参考 10–20 组 / 周",
+  "muscleBelowReference": "{list} 低于每周 10 组",
+  "@muscleBelowReference": {
+    "description": "肌群卡末行的 muted 提示。list 是调用方用「、」拼好的肌群名列表",
+    "placeholders": {
+      "list": { "type": "String" }
+    }
+  },
+  "weeklySessionsTitle": "每周训练次数",
+  "weeklyVolumeTitle": "每周总容量",
+  "thisWeek": "本周 {range}",
+  "@thisWeek": {
+    "description": "柱图卡头大数字后面的周次说明。range 是选中那一周的日期跨度成品串，如「9月7日 – 13日」",
+    "placeholders": {
+      "range": { "type": "String" }
+    }
+  },
+  "vsLastWeek": "比上周 {delta}",
+  "@vsLastWeek": {
+    "description": "delta 是带符号的成品串（如 +8%），无上周数据时调用方传「—」",
+    "placeholders": {
+      "delta": { "type": "String" }
+    }
+  },
+  "calendarTitle": "训练日历",
+  "calendarSubtitle": "已训练 {days} 天 · 上月 {lastMonth} 天",
+  "@calendarSubtitle": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "lastMonth": { "type": "int" }
+    }
+  },
+  "legendLess": "少",
+  "legendMore": "多",
+  "bodyFront": "正面",
+  "bodyBack": "背面",
+
   "historyEmpty": "还没有训练记录",
   "sessionDetailTitle": "训练详情",
   "doItAgain": "再练一次",
   "deleteSession": "删除记录",
   "deleteSessionTitle": "删除这次训练记录？",
   "deleteSessionBody": "动作的历史表现与个人记录会随之变化。",
+
+  "bodyMetricWeight": "体重",
+  "bodyMetricBodyFat": "体脂率",
+  "bodyMetricNeck": "颈围",
+  "bodyMetricShoulders": "肩宽",
+  "bodyMetricChest": "胸围",
+  "bodyMetricAbdomen": "腹围",
+  "bodyMetricWaist": "腰围",
+  "bodyMetricHips": "臀围",
+  "bodyMetricLeftUpperArm": "左大臂",
+  "bodyMetricRightUpperArm": "右大臂",
+  "bodyMetricLeftForearm": "左前臂",
+  "bodyMetricRightForearm": "右前臂",
+  "bodyMetricLeftThigh": "左大腿",
+  "bodyMetricRightThigh": "右大腿",
+  "bodyMetricLeftCalf": "左小腿",
+  "bodyMetricRightCalf": "右小腿",
+  "@bodyMetricWeight": {
+    "description": "BodyMetric 枚举的 16 个展示名，顺序与枚举一致；体重仍存在 body_weights 表，这里只是同一套展示名"
+  },
+  "bodyNotRecorded": "未记录",
+  "bodyRecord": "记录{metric}",
+  "@bodyRecord": {
+    "description": "指标页 FAB 与录入弹层标题。metric 是 bodyMetric* 之一",
+    "placeholders": {
+      "metric": { "type": "String" }
+    }
+  },
+  "bodyEntriesTitle": "记录",
+  "bodyEntriesHint": "左滑删除 · 点按修改数值或日期",
+  "bodyMovingAverage": "7 日均线",
+  "bodyDaily": "每日",
+  "bodyDeltaSince": "较 {range}前",
+  "@bodyDeltaSince": {
+    "description": "头部较区间起点的差值说明。range 传区间 chip 的展示名（4 周 / 3 个月 / 1 年）；rangeAll 不显示对比，避免拼出「较全部前」",
+    "placeholders": {
+      "range": { "type": "String" }
+    }
+  },
+  "bodyEditEntry": "修改记录",
+  "bodyDeleted": "记录已删除",
 
   "suggestInsufficientTitle": "还没有足够记录",
   "suggestInsufficientReason": "完成一次训练后就会给出建议",

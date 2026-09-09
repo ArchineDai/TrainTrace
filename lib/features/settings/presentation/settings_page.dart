@@ -7,7 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/time/clock.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
-import '../../measurements/presentation/body_weight_sheet.dart';
+import '../../measurements/models/body_metric.dart';
 import '../../measurements/state/body_weight_view_model.dart';
 import '../models/rest_reminder_state.dart';
 import '../models/theme_settings.dart';
@@ -104,7 +104,8 @@ class SettingsPage extends ConsumerWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _openReminderGuide(context, ref),
             ),
-          // 体重：自重动作的容量按它算。和训练卡片的体重芯片开同一个弹层。
+          // 体重：自重动作的容量按它算。V0.6 起这行跳身体指标页（趋势 + 记录
+          // 列表都在那里），不再直接开体重弹层 —— 训练卡片的芯片仍开弹层。
           ListTile(
             minTileHeight: AppTheme.minTouch,
             leading: const Icon(Icons.monitor_weight_outlined),
@@ -118,7 +119,8 @@ class SettingsPage extends ConsumerWidget {
                     ),
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => BodyWeightSheet.show(context),
+            onTap: () =>
+                context.push(AppRoutes.bodyMetric(BodyMetric.weight.name)),
           ),
           _SectionHeader(l10n.settingsGeneral),
           ListTile(
@@ -137,6 +139,15 @@ class SettingsPage extends ConsumerWidget {
             subtitle: Text(l10n.backupSettingsSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(AppRoutes.backup),
+          ),
+          _SectionHeader(l10n.aboutSection),
+          ListTile(
+            minTileHeight: AppTheme.minTouch,
+            leading: const Icon(Icons.info_outline),
+            title: Text(l10n.aboutTitle),
+            subtitle: Text(l10n.aboutSettingsSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(AppRoutes.about),
           ),
           const SizedBox(height: 16),
         ],

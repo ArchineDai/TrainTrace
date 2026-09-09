@@ -3,14 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_text_size.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../models/exercise.dart';
 import '../state/exercise_list_view_model.dart';
 import 'exercise_labels.dart';
+import 'widgets/exercise_list_view.dart';
 
 /// 动作选择器。模态进入，选中后 `context.pop(exerciseId)` 回传。
+///
+/// 只是动作 Tab 那份 [ExerciseListView] 外面包的一层模态壳：不显示上次表现
+/// （挑动作时看历史没用，反而挤掉名字），也没有「只看练过的」与器械筛选
+/// —— 选择器要能挑到任何一个动作。
 ///
 /// 搜索词与肌群筛选是纯局部 UI 态，留 `setState`。
 class ExercisePickerPage extends ConsumerStatefulWidget {
@@ -73,14 +77,14 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                _GroupChip(
+                ExerciseFilterChip(
                   label: l10n.filterAll,
                   selected: _group == null,
                   onTap: () => setState(() => _group = null),
                 ),
                 for (final g in MuscleGroup.values)
                   if (g != MuscleGroup.other || all.any((e) => e.muscleGroup == g))
-                    _GroupChip(
+                    ExerciseFilterChip(
                       label: g.label(l10n),
                       selected: _group == g,
                       onTap: () => setState(() => _group = g),
@@ -100,58 +104,21 @@ class _ExercisePickerPageState extends ConsumerState<ExercisePickerPage> {
                       ),
                     ),
                   )
-                : ListView.separated(
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, _) => const Divider(indent: 16),
-                    itemBuilder: (context, i) {
-                      final e = filtered[i];
-                      return ListTile(
-                        minTileHeight: AppTheme.minTouch + 8,
-                        title: Text(e.displayName(context)),
-                        subtitle: Text(
-                          '${e.muscleGroup.label(l10n)} · ${e.equipmentType.label(l10n)}'
-                          '${e.isCustom ? ' · ${l10n.actionCustom}' : ''}'
-                          ' · ${l10n.exerciseRepRange(e.defaultRepMin, e.defaultRepMax)}',
-                        ),
-                        // 新手先看要领再选；点行本身仍是选中。
-                        trailing: IconButton(
-                          tooltip: l10n.exerciseGuide,
-                          icon: const Icon(Icons.info_outline),
-                          onPressed: () =>
-                              context.push(AppRoutes.exerciseDetail(e.id)),
-                        ),
-                        onTap: () => context.pop(e.id),
-                      );
-                    },
+                : ExerciseListView(
+                    exercises: filtered,
+                    onTap: (id) => context.pop(id),
+                    // 新手先看要领再选；从选择器进详情默认落在「要领」段（§1.3）。
+                    // 点行本身仍是选中。
+                    trailing: (e) => IconButton(
+                      tooltip: l10n.exerciseGuide,
+                      icon: const Icon(Icons.info_outline),
+                      onPressed: () => context.push(
+                        AppRoutes.exerciseDetailTab(e.id, DetailTab.guide),
+                      ),
+                    ),
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-}
-
-class _GroupChip extends StatelessWidget {
-  const _GroupChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    // 选中样式来自 AppTheme 的 chipTheme，页面不重复写。
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => onTap(),
       ),
     );
   }

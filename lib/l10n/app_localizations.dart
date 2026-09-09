@@ -104,11 +104,11 @@ abstract class AppLocalizations {
   /// **'训迹'**
   String get appTitle;
 
-  /// No description provided for @tabWorkout.
+  /// No description provided for @tabHome.
   ///
   /// In zh, this message translates to:
-  /// **'训练'**
-  String get tabWorkout;
+  /// **'首页'**
+  String get tabHome;
 
   /// No description provided for @tabRoutines.
   ///
@@ -116,10 +116,16 @@ abstract class AppLocalizations {
   /// **'模板'**
   String get tabRoutines;
 
-  /// No description provided for @tabHistory.
+  /// No description provided for @tabExercises.
   ///
   /// In zh, this message translates to:
-  /// **'历史'**
+  /// **'动作'**
+  String get tabExercises;
+
+  /// 第 4 个 Tab。V0.6 起承载概览 / 训练 / 身体三段，文案从「历史」改为「数据」；路径仍是 /history，key 不改名
+  ///
+  /// In zh, this message translates to:
+  /// **'数据'**
   String get tabHistory;
 
   /// No description provided for @tabSettings.
@@ -259,6 +265,72 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'备份到文件，卸载重装或换手机后恢复'**
   String get backupSettingsSubtitle;
+
+  /// No description provided for @aboutSection.
+  ///
+  /// In zh, this message translates to:
+  /// **'关于'**
+  String get aboutSection;
+
+  /// No description provided for @aboutTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'关于训迹'**
+  String get aboutTitle;
+
+  /// No description provided for @aboutSettingsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'版本、素材署名与开源许可'**
+  String get aboutSettingsSubtitle;
+
+  /// 关于页版本行
+  ///
+  /// In zh, this message translates to:
+  /// **'版本 {version}（构建 {build}）'**
+  String aboutVersion(String version, String build);
+
+  /// No description provided for @aboutCreditsSection.
+  ///
+  /// In zh, this message translates to:
+  /// **'素材署名'**
+  String get aboutCreditsSection;
+
+  /// No description provided for @aboutFontsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'IBM Plex Sans、Noto Sans SC'**
+  String get aboutFontsTitle;
+
+  /// No description provided for @aboutFontsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'SIL Open Font License 1.1'**
+  String get aboutFontsSubtitle;
+
+  /// No description provided for @aboutBodyMapTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'肌群人体图'**
+  String get aboutBodyMapTitle;
+
+  /// No description provided for @aboutBodyMapSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'react-native-body-highlighter · MIT License'**
+  String get aboutBodyMapSubtitle;
+
+  /// No description provided for @aboutLicenses.
+  ///
+  /// In zh, this message translates to:
+  /// **'开源许可'**
+  String get aboutLicenses;
+
+  /// No description provided for @aboutLicensesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部依赖与素材的许可原文'**
+  String get aboutLicensesHint;
 
   /// No description provided for @backupIntro.
   ///
@@ -440,6 +512,24 @@ abstract class AppLocalizations {
   /// **'表格已保存'**
   String get csvExportDone;
 
+  /// No description provided for @csvExportMeasurementsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'导出测量记录'**
+  String get csvExportMeasurementsTitle;
+
+  /// No description provided for @csvExportMeasurementsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'体重与围度，一行一条'**
+  String get csvExportMeasurementsSubtitle;
+
+  /// 测量记录导出行的副标，count 含体重
+  ///
+  /// In zh, this message translates to:
+  /// **'体重与围度 · {count} 条'**
+  String csvExportMeasurementsCount(int count);
+
   /// No description provided for @restReminderSetting.
   ///
   /// In zh, this message translates to:
@@ -487,12 +577,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'键盘 / 计时 / 后台提醒'**
   String get devPlaygroundHint;
-
-  /// 占位页正文，phase 形如 'Phase 4'
-  ///
-  /// In zh, this message translates to:
-  /// **'{phase} 接入'**
-  String placeholderPending(String phase);
 
   /// No description provided for @actionCancel.
   ///
@@ -577,6 +661,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'自定义'**
   String get actionCustom;
+
+  /// No description provided for @actionUndo.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get actionUndo;
 
   /// No description provided for @toastSaved.
   ///
@@ -799,6 +889,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'还没有模板，去「模板」页新建一个'**
   String get homeNoRoutines;
+
+  /// No description provided for @homeThisWeek.
+  ///
+  /// In zh, this message translates to:
+  /// **'本周'**
+  String get homeThisWeek;
 
   /// No description provided for @homeRecentWorkouts.
   ///
@@ -1046,6 +1142,36 @@ abstract class AppLocalizations {
   /// **'{min}–{max} 次'**
   String exerciseRepRange(int min, int max);
 
+  /// No description provided for @libraryFilterAllEquipment.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部器械'**
+  String get libraryFilterAllEquipment;
+
+  /// No description provided for @libraryOnlyPerformed.
+  ///
+  /// In zh, this message translates to:
+  /// **'只看练过的'**
+  String get libraryOnlyPerformed;
+
+  /// 动作库列表上方的 muted 说明行。group 是肌群筛选当前选中的展示名（未筛选时传 filterAll）
+  ///
+  /// In zh, this message translates to:
+  /// **'{group} · {n} 个动作 · 最近练过的在前'**
+  String libraryCount(String group, int n);
+
+  /// No description provided for @neverPerformed.
+  ///
+  /// In zh, this message translates to:
+  /// **'未练过'**
+  String get neverPerformed;
+
+  /// 动作库行右上角的上次训练日期，date 由 Formatters.relativeDay 给出
+  ///
+  /// In zh, this message translates to:
+  /// **'上次 {date}'**
+  String lastPerformedAt(String date);
+
   /// No description provided for @exerciseNotFound.
   ///
   /// In zh, this message translates to:
@@ -1088,59 +1214,119 @@ abstract class AppLocalizations {
   /// **'估算 1RM'**
   String get prEstimatedOneRm;
 
-  /// No description provided for @oneRmTrend.
-  ///
-  /// In zh, this message translates to:
-  /// **'估算 1RM 趋势'**
-  String get oneRmTrend;
-
-  /// No description provided for @oneRmRangeFourWeeks.
+  /// 统计区间 chip（StatsRange）。概览段、动作趋势卡、身体指标页共用
   ///
   /// In zh, this message translates to:
   /// **'4 周'**
-  String get oneRmRangeFourWeeks;
+  String get rangeFourWeeks;
 
-  /// No description provided for @oneRmRangeThreeMonths.
+  /// No description provided for @rangeThreeMonths.
   ///
   /// In zh, this message translates to:
   /// **'3 个月'**
-  String get oneRmRangeThreeMonths;
+  String get rangeThreeMonths;
 
-  /// No description provided for @oneRmRangeAll.
+  /// No description provided for @rangeOneYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'1 年'**
+  String get rangeOneYear;
+
+  /// No description provided for @rangeAll.
   ///
   /// In zh, this message translates to:
   /// **'全部'**
-  String get oneRmRangeAll;
+  String get rangeAll;
 
-  /// No description provided for @oneRmTrendEmpty.
+  /// No description provided for @detailTabRecords.
   ///
   /// In zh, this message translates to:
-  /// **'再练几次就有趋势了'**
-  String get oneRmTrendEmpty;
+  /// **'记录'**
+  String get detailTabRecords;
 
-  /// 趋势图下方涨幅数字后面的说明。since 是 oneRmSince* 之一
+  /// No description provided for @detailTabGuide.
   ///
   /// In zh, this message translates to:
-  /// **'{since} · {count} 次训练 · Epley 公式估算'**
-  String oneRmTrendMeta(String since, int count);
+  /// **'要领'**
+  String get detailTabGuide;
 
-  /// No description provided for @oneRmSinceFourWeeks.
+  /// No description provided for @detailTabEquipment.
   ///
   /// In zh, this message translates to:
-  /// **'较 4 周前'**
-  String get oneRmSinceFourWeeks;
+  /// **'器械'**
+  String get detailTabEquipment;
 
-  /// No description provided for @oneRmSinceThreeMonths.
+  /// No description provided for @trendTitle.
   ///
   /// In zh, this message translates to:
-  /// **'较 3 个月前'**
-  String get oneRmSinceThreeMonths;
+  /// **'趋势'**
+  String get trendTitle;
 
-  /// No description provided for @oneRmSinceAll.
+  /// No description provided for @metricOneRm.
   ///
   /// In zh, this message translates to:
-  /// **'较最早记录'**
-  String get oneRmSinceAll;
+  /// **'估算 1RM'**
+  String get metricOneRm;
+
+  /// No description provided for @metricMaxWeight.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大重量'**
+  String get metricMaxWeight;
+
+  /// No description provided for @metricSessionVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'单次容量'**
+  String get metricSessionVolume;
+
+  /// No description provided for @metricTotalReps.
+  ///
+  /// In zh, this message translates to:
+  /// **'总次数'**
+  String get metricTotalReps;
+
+  /// No description provided for @metricSets.
+  ///
+  /// In zh, this message translates to:
+  /// **'组数'**
+  String get metricSets;
+
+  /// 趋势图下方一行。delta 是带符号的涨幅成品串（如 +12.5 kg / +8%），无对比时调用方不显示这行；range 是区间 chip 的展示名
+  ///
+  /// In zh, this message translates to:
+  /// **'{delta} · {range} · {count} 次训练'**
+  String trendDelta(String delta, String range, int count);
+
+  /// No description provided for @recordsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'纪录'**
+  String get recordsTitle;
+
+  /// No description provided for @recordsColReps.
+  ///
+  /// In zh, this message translates to:
+  /// **'次数'**
+  String get recordsColReps;
+
+  /// No description provided for @recordsColWeight.
+  ///
+  /// In zh, this message translates to:
+  /// **'最重'**
+  String get recordsColWeight;
+
+  /// No description provided for @recordsColDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'日期'**
+  String get recordsColDate;
+
+  /// No description provided for @recordNone.
+  ///
+  /// In zh, this message translates to:
+  /// **'尚无'**
+  String get recordNone;
 
   /// No description provided for @recentRecords.
   ///
@@ -1850,6 +2036,138 @@ abstract class AppLocalizations {
   /// **'未完成任何一组'**
   String get noCompletedSets;
 
+  /// No description provided for @segmentOverview.
+  ///
+  /// In zh, this message translates to:
+  /// **'概览'**
+  String get segmentOverview;
+
+  /// No description provided for @segmentTraining.
+  ///
+  /// In zh, this message translates to:
+  /// **'训练'**
+  String get segmentTraining;
+
+  /// No description provided for @segmentBody.
+  ///
+  /// In zh, this message translates to:
+  /// **'身体'**
+  String get segmentBody;
+
+  /// No description provided for @kpiSessions.
+  ///
+  /// In zh, this message translates to:
+  /// **'训练'**
+  String get kpiSessions;
+
+  /// No description provided for @kpiVolume.
+  ///
+  /// In zh, this message translates to:
+  /// **'容量'**
+  String get kpiVolume;
+
+  /// No description provided for @kpiDuration.
+  ///
+  /// In zh, this message translates to:
+  /// **'时长'**
+  String get kpiDuration;
+
+  /// No description provided for @kpiHoursUnit.
+  ///
+  /// In zh, this message translates to:
+  /// **'小时'**
+  String get kpiHoursUnit;
+
+  /// KPI 卡里的区间对比。delta 是带符号的成品串（如 +8%），无上一区间数据时调用方传「—」或不显示这行
+  ///
+  /// In zh, this message translates to:
+  /// **'{delta} 比上期'**
+  String kpiVsPrevious(String delta);
+
+  /// No description provided for @muscleVolumeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'各肌群训练量'**
+  String get muscleVolumeTitle;
+
+  /// range 是区间 chip 的展示名（range* 之一）
+  ///
+  /// In zh, this message translates to:
+  /// **'每周平均组数 · {range}'**
+  String muscleVolumeSubtitle(String range);
+
+  /// No description provided for @muscleReferenceBand.
+  ///
+  /// In zh, this message translates to:
+  /// **'参考 10–20 组 / 周'**
+  String get muscleReferenceBand;
+
+  /// 肌群卡末行的 muted 提示。list 是调用方用「、」拼好的肌群名列表
+  ///
+  /// In zh, this message translates to:
+  /// **'{list} 低于每周 10 组'**
+  String muscleBelowReference(String list);
+
+  /// No description provided for @weeklySessionsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'每周训练次数'**
+  String get weeklySessionsTitle;
+
+  /// No description provided for @weeklyVolumeTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'每周总容量'**
+  String get weeklyVolumeTitle;
+
+  /// 柱图卡头大数字后面的周次说明。range 是选中那一周的日期跨度成品串，如「9月7日 – 13日」
+  ///
+  /// In zh, this message translates to:
+  /// **'本周 {range}'**
+  String thisWeek(String range);
+
+  /// delta 是带符号的成品串（如 +8%），无上周数据时调用方传「—」
+  ///
+  /// In zh, this message translates to:
+  /// **'比上周 {delta}'**
+  String vsLastWeek(String delta);
+
+  /// No description provided for @calendarTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'训练日历'**
+  String get calendarTitle;
+
+  /// No description provided for @calendarSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'已训练 {days} 天 · 上月 {lastMonth} 天'**
+  String calendarSubtitle(int days, int lastMonth);
+
+  /// No description provided for @legendLess.
+  ///
+  /// In zh, this message translates to:
+  /// **'少'**
+  String get legendLess;
+
+  /// No description provided for @legendMore.
+  ///
+  /// In zh, this message translates to:
+  /// **'多'**
+  String get legendMore;
+
+  /// No description provided for @bodyFront.
+  ///
+  /// In zh, this message translates to:
+  /// **'正面'**
+  String get bodyFront;
+
+  /// No description provided for @bodyBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'背面'**
+  String get bodyBack;
+
   /// No description provided for @historyEmpty.
   ///
   /// In zh, this message translates to:
@@ -1885,6 +2203,156 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'动作的历史表现与个人记录会随之变化。'**
   String get deleteSessionBody;
+
+  /// BodyMetric 枚举的 16 个展示名，顺序与枚举一致；体重仍存在 body_weights 表，这里只是同一套展示名
+  ///
+  /// In zh, this message translates to:
+  /// **'体重'**
+  String get bodyMetricWeight;
+
+  /// No description provided for @bodyMetricBodyFat.
+  ///
+  /// In zh, this message translates to:
+  /// **'体脂率'**
+  String get bodyMetricBodyFat;
+
+  /// No description provided for @bodyMetricNeck.
+  ///
+  /// In zh, this message translates to:
+  /// **'颈围'**
+  String get bodyMetricNeck;
+
+  /// No description provided for @bodyMetricShoulders.
+  ///
+  /// In zh, this message translates to:
+  /// **'肩宽'**
+  String get bodyMetricShoulders;
+
+  /// No description provided for @bodyMetricChest.
+  ///
+  /// In zh, this message translates to:
+  /// **'胸围'**
+  String get bodyMetricChest;
+
+  /// No description provided for @bodyMetricAbdomen.
+  ///
+  /// In zh, this message translates to:
+  /// **'腹围'**
+  String get bodyMetricAbdomen;
+
+  /// No description provided for @bodyMetricWaist.
+  ///
+  /// In zh, this message translates to:
+  /// **'腰围'**
+  String get bodyMetricWaist;
+
+  /// No description provided for @bodyMetricHips.
+  ///
+  /// In zh, this message translates to:
+  /// **'臀围'**
+  String get bodyMetricHips;
+
+  /// No description provided for @bodyMetricLeftUpperArm.
+  ///
+  /// In zh, this message translates to:
+  /// **'左大臂'**
+  String get bodyMetricLeftUpperArm;
+
+  /// No description provided for @bodyMetricRightUpperArm.
+  ///
+  /// In zh, this message translates to:
+  /// **'右大臂'**
+  String get bodyMetricRightUpperArm;
+
+  /// No description provided for @bodyMetricLeftForearm.
+  ///
+  /// In zh, this message translates to:
+  /// **'左前臂'**
+  String get bodyMetricLeftForearm;
+
+  /// No description provided for @bodyMetricRightForearm.
+  ///
+  /// In zh, this message translates to:
+  /// **'右前臂'**
+  String get bodyMetricRightForearm;
+
+  /// No description provided for @bodyMetricLeftThigh.
+  ///
+  /// In zh, this message translates to:
+  /// **'左大腿'**
+  String get bodyMetricLeftThigh;
+
+  /// No description provided for @bodyMetricRightThigh.
+  ///
+  /// In zh, this message translates to:
+  /// **'右大腿'**
+  String get bodyMetricRightThigh;
+
+  /// No description provided for @bodyMetricLeftCalf.
+  ///
+  /// In zh, this message translates to:
+  /// **'左小腿'**
+  String get bodyMetricLeftCalf;
+
+  /// No description provided for @bodyMetricRightCalf.
+  ///
+  /// In zh, this message translates to:
+  /// **'右小腿'**
+  String get bodyMetricRightCalf;
+
+  /// No description provided for @bodyNotRecorded.
+  ///
+  /// In zh, this message translates to:
+  /// **'未记录'**
+  String get bodyNotRecorded;
+
+  /// 指标页 FAB 与录入弹层标题。metric 是 bodyMetric* 之一
+  ///
+  /// In zh, this message translates to:
+  /// **'记录{metric}'**
+  String bodyRecord(String metric);
+
+  /// No description provided for @bodyEntriesTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'记录'**
+  String get bodyEntriesTitle;
+
+  /// No description provided for @bodyEntriesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'左滑删除 · 点按修改数值或日期'**
+  String get bodyEntriesHint;
+
+  /// No description provided for @bodyMovingAverage.
+  ///
+  /// In zh, this message translates to:
+  /// **'7 日均线'**
+  String get bodyMovingAverage;
+
+  /// No description provided for @bodyDaily.
+  ///
+  /// In zh, this message translates to:
+  /// **'每日'**
+  String get bodyDaily;
+
+  /// 头部较区间起点的差值说明。range 传区间 chip 的展示名（4 周 / 3 个月 / 1 年）；rangeAll 不显示对比，避免拼出「较全部前」
+  ///
+  /// In zh, this message translates to:
+  /// **'较 {range}前'**
+  String bodyDeltaSince(String range);
+
+  /// No description provided for @bodyEditEntry.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改记录'**
+  String get bodyEditEntry;
+
+  /// No description provided for @bodyDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'记录已删除'**
+  String get bodyDeleted;
 
   /// No description provided for @suggestInsufficientTitle.
   ///

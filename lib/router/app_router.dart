@@ -5,13 +5,16 @@ import 'package:go_router/go_router.dart';
 
 import '../features/dev/presentation/dev_playground_page.dart';
 import '../features/exercises/presentation/exercise_detail_page.dart';
+import '../features/exercises/presentation/exercise_library_page.dart';
 import '../features/exercises/presentation/exercise_picker_page.dart';
-import '../features/history/presentation/history_list_page.dart';
+import '../features/history/presentation/history_page.dart';
 import '../features/history/presentation/session_detail_page.dart';
 import '../features/home/presentation/home_page.dart';
+import '../features/measurements/presentation/body_metric_page.dart';
 import '../features/routines/presentation/routine_edit_page.dart';
 import '../features/routines/presentation/routine_list_page.dart';
 import '../features/backup/presentation/backup_page.dart';
+import '../features/settings/presentation/about_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/workout/presentation/active_workout_page.dart';
 import '../features/workout/presentation/widgets/workout_dark_scope.dart';
@@ -30,7 +33,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.home,
     debugLogDiagnostics: false,
     routes: [
-      // 四 Tab 用 StatefulShellRoute + IndexedStack 容器，各分支保活自己的页面栈与
+      // 五 Tab 用 StatefulShellRoute + IndexedStack 容器，各分支保活自己的页面栈与
       // 局部 UI 态（滚动位置、筛选）。普通 ShellRoute 切 Tab 会销毁上一个 Tab。
       // 不用现成的 `.indexedStack`：它会给隐藏分支关 TickerMode，切主题后再切 Tab
       // 卡片边框会闪，见 TabBranchStack。
@@ -62,9 +65,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoutes.exercises,
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: ExerciseLibraryPage()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoutes.history,
                 pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: HistoryListPage()),
+                    const NoTransitionPage(child: HistoryPage()),
               ),
             ],
           ),
@@ -109,6 +121,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       // /exercises/pick 必须在 /exercises/:id 之前注册（docs/routing.md 3）。
+      // 与分支根 /exercises 不冲突：go_router 匹配的是整条路径，`/exercises` 只吃
+      // 自己那一段，`/exercises/pick` 与 `/exercises/ex1` 在分支里没有子路由可接，
+      // 于是继续往下找到这两条根栈路由 —— 所以它们排在 StatefulShellRoute 之后也行。
       GoRoute(
         path: AppRoutes.exercisePick,
         parentNavigatorKey: _rootNavigatorKey,
@@ -126,7 +141,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const BackupPage(),
       ),
-      // ── 根栈：历史 ────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.about,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const AboutPage(),
+      ),
+      // ── 根栈：数据（历史）─────────────────────────────────────
+      // /history/body/:metric 必须在 /history/:id 之前：反了 `body` 会被当成
+      // session id，指标页永远打不开。
+      GoRoute(
+        path: AppRoutes.bodyMetricPath,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            BodyMetricPage(metricName: state.pathParameters['metric']!),
+      ),
       GoRoute(
         path: AppRoutes.sessionDetailPath,
         parentNavigatorKey: _rootNavigatorKey,

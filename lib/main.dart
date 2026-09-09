@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
 import 'core/db/seed/seed_loader.dart';
+import 'core/licenses.dart';
 import 'core/log.dart';
 import 'features/settings/state/locale_settings_view_model.dart';
 import 'features/settings/state/theme_settings_view_model.dart';
@@ -17,6 +18,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // 训练页单手竖屏操作，横屏没有意义。
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // 字体与人体图的许可要能在关于页读到（OFL / MIT 的分发要求）。只登记，不读文件。
+  registerAssetLicenses();
 
   final restNotifier = await _createRestNotifier();
   final container = ProviderContainer(

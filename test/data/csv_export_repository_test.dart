@@ -4,6 +4,9 @@ import 'package:traintrace/core/db/app_database.dart';
 import 'package:traintrace/core/time/clock.dart';
 import 'package:traintrace/features/backup/data/csv_export_repository.dart';
 import 'package:traintrace/features/backup/models/csv_export.dart';
+import 'package:traintrace/features/measurements/data/body_measurement_repository.dart';
+import 'package:traintrace/features/measurements/data/body_weight_repository.dart';
+import 'package:traintrace/features/measurements/models/body_metric.dart';
 
 import 'test_db.dart';
 
@@ -412,6 +415,123 @@ void main() {
       // 种子里没有这些数据：其他行三列全空
       final other = tt.skip(1).map((r) => byHeader(tt.first, r)).where((r) => r['session_id'] != 's-x');
       expect(other.every((r) => r['duration_seconds'] == '' && r['superset_group'] == ''), isTrue);
+    });
+  });
+
+  group('measurements.csv（只 TrainTrace 格式有）', () {
+    final measurements = <BodyMetric, List<(double, DateTime)>>{
+      BodyMetric.waist: [
+        (82.5, DateTime(2026, 6, 1)),
+        (81, DateTime(2026, 9, 1)),
+      ],
+      BodyMetric.bodyFat: [(18.4, DateTime(2026, 9, 2))],
+    };
+
+    Future<BodyMeasurementRepository> seedMeasurements() async {
+      final repo = BodyMeasurementRepository(db, clock);
+      for (final e in measurements.entries) {
+        for (final (value, at) in e.value) {
+          await repo.add(e.key, value, measuredAt: at);
+        }
+      }
+      return repo;
+    }
+
+    test('表头固定四列、BOM + CRLF、按 metric → 时间升序', () async {
+      await seedMeasurements();
+      final csv = await repo.exportMeasurements(CsvExportRange.all);
+      expect(csv.codeUnitAt(0), 0xFEFF);
+      final table = parseCsv(csv);
+      expect(table.first, CsvExportRepository.measurementsHeader);
+      expect(table.first, ['metric', 'value', 'unit', 'measured_at']);
+
+      final rows = table.skip(1).map((r) => byHeader(table.first, r)).toList();
+      expect(rows.map((r) => r['metric']).toList(),
+          ['bodyFat', 'waist', 'waist'], reason: 'metric 字典序，同 metric 内时间升序');
+      expect(rows.map((r) => r['measured_at']).toList(), [
+        isoLocal(DateTime(2026, 9, 2)),
+        isoLocal(DateTime(2026, 6, 1)),
+        isoLocal(DateTime(2026, 9, 1)),
+      ]);
+    });
+
+    test('体重来自 body_weights，与围度并进同一张表', () async {
+      await seedMeasurements();
+      final weights = BodyWeightRepository(db, clock);
+      await weights.add(73.4, measuredAt: DateTime(2026, 6, 2));
+      await weights.add(72, measuredAt: DateTime(2026, 9, 3));
+      final gone = await weights.add(99, measuredAt: DateTime(2026, 7, 1));
+      await weights.remove(gone.id);
+
+      final table = parseCsv(await repo.exportMeasurements(CsvExportRange.all));
+      final rows = table.skip(1).map((r) => byHeader(table.first, r)).toList();
+      final weight = rows.where((r) => r['metric'] == 'weight').toList();
+
+      expect(weight.map((r) => r['value']).toList(), ['73.4', '72'],
+          reason: '按时间升序，软删的那条不出');
+      expect(weight.every((r) => r['unit'] == 'kg'), isTrue);
+      // 合并后整表仍按 metric 字典序（waist < weight），同 metric 内按时间升序。
+      expect(rows.map((r) => r['metric']).toList(),
+          ['bodyFat', 'waist', 'waist', 'weight', 'weight']);
+      expect(await repo.countMeasurements(CsvExportRange.all), rows.length);
+    });
+
+    test('单位来自枚举、数值去尾零', () async {
+      await seedMeasurements();
+      final table = parseCsv(await repo.exportMeasurements(CsvExportRange.all));
+      final rows = table.skip(1).map((r) => byHeader(table.first, r)).toList();
+
+      final bodyFat = rows.singleWhere((r) => r['metric'] == 'bodyFat');
+      expect(bodyFat['unit'], '%');
+      expect(bodyFat['value'], '18.4');
+
+      final waist = rows.where((r) => r['metric'] == 'waist').toList();
+      expect(waist.every((r) => r['unit'] == 'cm'), isTrue);
+      expect(waist.map((r) => r['value']).toList(), ['82.5', '81'],
+          reason: '整数不带 .0');
+    });
+
+    test('软删的行不导出；范围过滤按测量时间', () async {
+      final m = await seedMeasurements();
+      final latest = (await m.watchLatestAll().first)[BodyMetric.waist]!;
+      await m.remove(latest.id);
+
+      final all = parseCsv(await repo.exportMeasurements(CsvExportRange.all));
+      expect(all.length - 1, 2, reason: '软删那条没了');
+
+      // 时钟固定在 2026-09-04：近 3 个月 = 06-04 起，06-01 那条被滤掉。
+      final recent =
+          parseCsv(await repo.exportMeasurements(CsvExportRange.last3Months));
+      final metrics =
+          recent.skip(1).map((r) => byHeader(recent.first, r)['metric']);
+      expect(metrics, ['bodyFat']);
+    });
+
+    test('一条测量都没有时只有表头', () async {
+      final csv = await repo.exportMeasurements(CsvExportRange.all);
+      expect(csv, '$csvBom${CsvExportRepository.measurementsHeader.join(',')}\r\n');
+    });
+
+    test('countMeasurements 与导出行数一致', () async {
+      expect(await repo.countMeasurements(CsvExportRange.all), 0);
+      final m = await seedMeasurements();
+      expect(await repo.countMeasurements(CsvExportRange.all), 3);
+      expect(await repo.countMeasurements(CsvExportRange.last3Months), 2);
+
+      final latest = (await m.watchLatestAll().first)[BodyMetric.waist]!;
+      await m.remove(latest.id);
+      expect(await repo.countMeasurements(CsvExportRange.all), 2);
+      expect(
+        await repo.countMeasurements(CsvExportRange.all),
+        parseCsv(await repo.exportMeasurements(CsvExportRange.all)).length - 1,
+      );
+    });
+
+    test('Hevy 格式的表头里没有测量列', () {
+      for (final col in CsvExportRepository.measurementsHeader) {
+        expect(CsvExportRepository.hevyHeader, isNot(contains(col)));
+      }
+      expect(CsvExportRepository.traintraceHeader, isNot(contains('metric')));
     });
   });
 }

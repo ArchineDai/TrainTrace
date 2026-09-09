@@ -13,13 +13,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'TrainTrace';
 
   @override
-  String get tabWorkout => 'Workout';
+  String get tabHome => 'Home';
 
   @override
   String get tabRoutines => 'Routines';
 
   @override
-  String get tabHistory => 'History';
+  String get tabExercises => 'Exercises';
+
+  @override
+  String get tabHistory => 'Data';
 
   @override
   String get tabSettings => 'Settings';
@@ -97,6 +100,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get backupSettingsSubtitle =>
       'Save to a file; restore after a reinstall or on a new phone';
+
+  @override
+  String get aboutSection => 'About';
+
+  @override
+  String get aboutTitle => 'About TrainTrace';
+
+  @override
+  String get aboutSettingsSubtitle => 'Version, credits and licenses';
+
+  @override
+  String aboutVersion(String version, String build) {
+    return 'Version $version (build $build)';
+  }
+
+  @override
+  String get aboutCreditsSection => 'Credits';
+
+  @override
+  String get aboutFontsTitle => 'IBM Plex Sans, Noto Sans SC';
+
+  @override
+  String get aboutFontsSubtitle => 'SIL Open Font License 1.1';
+
+  @override
+  String get aboutBodyMapTitle => 'Muscle body map';
+
+  @override
+  String get aboutBodyMapSubtitle =>
+      'react-native-body-highlighter · MIT License';
+
+  @override
+  String get aboutLicenses => 'Open source licenses';
+
+  @override
+  String get aboutLicensesHint =>
+      'Full license texts for dependencies and assets';
 
   @override
   String get backupIntro =>
@@ -211,6 +251,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get csvExportDone => 'Spreadsheet saved';
 
   @override
+  String get csvExportMeasurementsTitle => 'Export measurements';
+
+  @override
+  String get csvExportMeasurementsSubtitle => 'Weight and girths, one row each';
+
+  @override
+  String csvExportMeasurementsCount(int count) {
+    return 'Weight and girths · $count entries';
+  }
+
+  @override
   String get restReminderSetting => 'Rest reminder';
 
   @override
@@ -235,11 +286,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get devPlaygroundHint => 'Keypad / timer / background reminder';
-
-  @override
-  String placeholderPending(String phase) {
-    return 'Coming in $phase';
-  }
 
   @override
   String get actionCancel => 'Cancel';
@@ -282,6 +328,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionCustom => 'Custom';
+
+  @override
+  String get actionUndo => 'Undo';
 
   @override
   String get toastSaved => 'Saved';
@@ -421,6 +470,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeNoRoutines =>
       'No routines yet — create one on the Routines tab';
+
+  @override
+  String get homeThisWeek => 'This week';
 
   @override
   String get homeRecentWorkouts => 'Recent workouts';
@@ -565,6 +617,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get libraryFilterAllEquipment => 'All equipment';
+
+  @override
+  String get libraryOnlyPerformed => 'Only ones I\'ve done';
+
+  @override
+  String libraryCount(String group, int n) {
+    return '$group · $n exercises · recently trained first';
+  }
+
+  @override
+  String get neverPerformed => 'Never done';
+
+  @override
+  String lastPerformedAt(String date) {
+    return 'Last $date';
+  }
+
+  @override
   String get exerciseNotFound => 'This exercise does not exist or was deleted';
 
   @override
@@ -588,34 +659,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prEstimatedOneRm => 'Est. 1RM';
 
   @override
-  String get oneRmTrend => 'Est. 1RM trend';
+  String get rangeFourWeeks => '4 wk';
 
   @override
-  String get oneRmRangeFourWeeks => '4 wk';
+  String get rangeThreeMonths => '3 mo';
 
   @override
-  String get oneRmRangeThreeMonths => '3 mo';
+  String get rangeOneYear => '1 yr';
 
   @override
-  String get oneRmRangeAll => 'All';
+  String get rangeAll => 'All';
 
   @override
-  String get oneRmTrendEmpty =>
-      'A few more sessions and the trend shows up here';
+  String get detailTabRecords => 'Records';
 
   @override
-  String oneRmTrendMeta(String since, int count) {
-    return '$since · $count sessions · Epley estimate';
+  String get detailTabGuide => 'How-to';
+
+  @override
+  String get detailTabEquipment => 'Equipment';
+
+  @override
+  String get trendTitle => 'Trend';
+
+  @override
+  String get metricOneRm => 'Est. 1RM';
+
+  @override
+  String get metricMaxWeight => 'Top weight';
+
+  @override
+  String get metricSessionVolume => 'Session volume';
+
+  @override
+  String get metricTotalReps => 'Total reps';
+
+  @override
+  String get metricSets => 'Sets';
+
+  @override
+  String trendDelta(String delta, String range, int count) {
+    return '$delta · $range · $count sessions';
   }
 
   @override
-  String get oneRmSinceFourWeeks => 'vs 4 weeks ago';
+  String get recordsTitle => 'Rep maxes';
 
   @override
-  String get oneRmSinceThreeMonths => 'vs 3 months ago';
+  String get recordsColReps => 'Reps';
 
   @override
-  String get oneRmSinceAll => 'vs first record';
+  String get recordsColWeight => 'Best';
+
+  @override
+  String get recordsColDate => 'Date';
+
+  @override
+  String get recordNone => 'None yet';
 
   @override
   String get recentRecords => 'Recent';
@@ -1038,6 +1138,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noCompletedSets => 'No sets completed';
 
   @override
+  String get segmentOverview => 'Overview';
+
+  @override
+  String get segmentTraining => 'Training';
+
+  @override
+  String get segmentBody => 'Body';
+
+  @override
+  String get kpiSessions => 'Workouts';
+
+  @override
+  String get kpiVolume => 'Volume';
+
+  @override
+  String get kpiDuration => 'Time';
+
+  @override
+  String get kpiHoursUnit => 'h';
+
+  @override
+  String kpiVsPrevious(String delta) {
+    return '$delta vs last';
+  }
+
+  @override
+  String get muscleVolumeTitle => 'Volume by muscle group';
+
+  @override
+  String muscleVolumeSubtitle(String range) {
+    return 'Average sets per week · $range';
+  }
+
+  @override
+  String get muscleReferenceBand => 'Reference 10–20 sets / wk';
+
+  @override
+  String muscleBelowReference(String list) {
+    return '$list under 10 sets a week';
+  }
+
+  @override
+  String get weeklySessionsTitle => 'Workouts per week';
+
+  @override
+  String get weeklyVolumeTitle => 'Volume per week';
+
+  @override
+  String thisWeek(String range) {
+    return 'This week · $range';
+  }
+
+  @override
+  String vsLastWeek(String delta) {
+    return '$delta vs last week';
+  }
+
+  @override
+  String get calendarTitle => 'Training calendar';
+
+  @override
+  String calendarSubtitle(int days, int lastMonth) {
+    return '$days days trained · $lastMonth last month';
+  }
+
+  @override
+  String get legendLess => 'Less';
+
+  @override
+  String get legendMore => 'More';
+
+  @override
+  String get bodyFront => 'Front';
+
+  @override
+  String get bodyBack => 'Back';
+
+  @override
   String get historyEmpty => 'No workouts recorded yet';
 
   @override
@@ -1055,6 +1233,86 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteSessionBody =>
       'Exercise history and personal records will change accordingly.';
+
+  @override
+  String get bodyMetricWeight => 'Weight';
+
+  @override
+  String get bodyMetricBodyFat => 'Body fat';
+
+  @override
+  String get bodyMetricNeck => 'Neck';
+
+  @override
+  String get bodyMetricShoulders => 'Shoulders';
+
+  @override
+  String get bodyMetricChest => 'Chest';
+
+  @override
+  String get bodyMetricAbdomen => 'Abdomen';
+
+  @override
+  String get bodyMetricWaist => 'Waist';
+
+  @override
+  String get bodyMetricHips => 'Hips';
+
+  @override
+  String get bodyMetricLeftUpperArm => 'Left upper arm';
+
+  @override
+  String get bodyMetricRightUpperArm => 'Right upper arm';
+
+  @override
+  String get bodyMetricLeftForearm => 'Left forearm';
+
+  @override
+  String get bodyMetricRightForearm => 'Right forearm';
+
+  @override
+  String get bodyMetricLeftThigh => 'Left thigh';
+
+  @override
+  String get bodyMetricRightThigh => 'Right thigh';
+
+  @override
+  String get bodyMetricLeftCalf => 'Left calf';
+
+  @override
+  String get bodyMetricRightCalf => 'Right calf';
+
+  @override
+  String get bodyNotRecorded => 'Not recorded';
+
+  @override
+  String bodyRecord(String metric) {
+    return 'Log $metric';
+  }
+
+  @override
+  String get bodyEntriesTitle => 'Entries';
+
+  @override
+  String get bodyEntriesHint =>
+      'Swipe left to delete · tap to edit the value or date';
+
+  @override
+  String get bodyMovingAverage => '7-day average';
+
+  @override
+  String get bodyDaily => 'Daily';
+
+  @override
+  String bodyDeltaSince(String range) {
+    return 'vs $range ago';
+  }
+
+  @override
+  String get bodyEditEntry => 'Edit entry';
+
+  @override
+  String get bodyDeleted => 'Entry deleted';
 
   @override
   String get suggestInsufficientTitle => 'Not enough records yet';

@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../exercises/presentation/exercise_labels.dart';
 import '../../history/models/history_models.dart';
+import '../../history/models/stats.dart';
 import '../../history/state/history_list_view_model.dart';
 import '../../routines/models/routine.dart';
 import '../../routines/state/routine_list_view_model.dart';
@@ -23,7 +24,9 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final routines = ref.watch(routinesProvider).value;
-    final summaries = ref.watch(sessionSummariesProvider).value ?? const [];
+    // 本周卡在首帧无数据时整卡不画，而不是先显示一排 0（变更纪律 6）。
+    final summaryData = ref.watch(sessionSummariesProvider).value;
+    final summaries = summaryData ?? const <SessionSummary>[];
     final lastPerformed = ref.watch(routineLastPerformedProvider);
     final active = ref.watch(activeWorkoutProvider).value;
     final now = ref.read(clockProvider).now();
@@ -31,7 +34,9 @@ class HomePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabWorkout)),
+      // 首页顶部放品牌名：这页是"开始训练 + 本周 + 最近"的枢纽，叫「训练」名不副实，
+      // 叫「首页」又是句空话；首页 Tab 显示品牌是各家 App 的通行做法。
+      appBar: AppBar(title: Text(l10n.appTitle)),
       body: routines == null
           ? const SizedBox.shrink()
           : ListView(
@@ -67,6 +72,10 @@ class HomePage extends ConsumerWidget {
                     style: TextStyle(fontSize: AppTextSize.sm, color: scheme.onSurfaceVariant),
                   ),
                 const SizedBox(height: 24),
+                if (summaryData != null) ...[
+                  _ThisWeekCard(summaries: summaryData, now: now),
+                  const SizedBox(height: 24),
+                ],
                 _sectionTitle(context, l10n.homeRecentWorkouts),
                 if (summaries.isEmpty)
                   Text(
@@ -260,6 +269,163 @@ class _RoutineCard extends StatelessWidget {
     );
   }
 }
+
+/// 「数据」Tab 在 `app_router.dart` branches 里的下标：0 首页 / 1 模板 / 2 动作 /
+/// 3 数据 / 4 设置。`goBranch` 认的是下标，写错不报错、只会跳错 Tab，
+/// 所以这里留常量 + 注释，别在调用处裸写数字（`AppShell` 同一个约定）。
+const int _historyBranchIndex = 3;
+
+/// 首页「本周」迷你卡（PLAN-v0.6 §2.4）：训练次数 / 总容量 / 比上周。
+///
+/// 整卡点击切到数据 Tab（默认落在概览段）。切 Tab 必须走 `goBranch`，不能
+/// `context.go('/history')` —— 后者会把目标分支的页面栈重置到根，见 `app_shell.dart`。
+class _ThisWeekCard extends StatelessWidget {
+  const _ThisWeekCard({required this.summaries, required this.now});
+
+  final List<SessionSummary> summaries;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final colors = AppTheme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final week = _weekOverWeek(summaries, now);
+    final delta = _deltaPercent(week.deltaRatio);
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radius),
+        onTap: () =>
+            StatefulNavigationShell.of(context).goBranch(_historyBranchIndex),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.homeThisWeek,
+                      style: TextStyle(
+                        fontSize: AppTextSize.sm,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MiniStat(
+                            value: week.sessions.toString(),
+                            label: l10n.kpiSessions,
+                          ),
+                        ),
+                        Expanded(
+                          child: _MiniStat(
+                            value: '${_volumeShort(week.volumeKg)} kg',
+                            label: l10n.kpiVolume,
+                          ),
+                        ),
+                        Expanded(
+                          child: _MiniStat(
+                            // 没有上周数据（或上周容量为 0）显「—」，不显 +100%。
+                            value: delta ?? '—',
+                            // ARB 只有带占位符的整句「比上周 {delta}」，这里要的是
+                            // 光标签，传空串再 trim 出「比上周」/「vs last week」。
+                            label: l10n.vsLastWeek('').trim(),
+                            // 涨绿；跌与持平走 muted 而不是 danger —— 容量下降可能
+                            // 是主动减载周，不该在首页报红。
+                            valueColor: (week.deltaRatio ?? 0) > 0
+                                ? colors.setDone
+                                : scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 本周卡的一格：上数字下标签。
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({required this.value, required this.label, this.valueColor});
+
+  final String value;
+  final String label;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: AppTextSize.lg,
+            fontWeight: FontWeight.w600,
+            color: valueColor,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: AppTextSize.xs, color: scheme.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+/// 本周次数 / 容量，以及容量的周环比。周一为周首（PLAN-v0.6 §4.2）。
+///
+/// 环比看容量而不是次数：次数是 3 ～ 5 的小整数，差一次就是 ±25%，噪音太大。
+/// 上周容量为 0（含没练）时返回 null，界面显「—」。
+///
+/// 归并走 `WeeklyStats.bucket`（有测试守着），本页不再自己数周：
+/// 4 周区间固定是 5 个桶，末桶是本周、倒数第二桶是上周。
+({int sessions, double volumeKg, double? deltaRatio}) _weekOverWeek(
+  List<SessionSummary> summaries,
+  DateTime now,
+) {
+  final buckets = WeeklyStats.bucket(summaries, StatsRange.fourWeeks, now);
+  if (buckets.isEmpty) return (sessions: 0, volumeKg: 0, deltaRatio: null);
+  final week = buckets.last;
+  final previous = buckets.length < 2 ? null : buckets[buckets.length - 2];
+  return (
+    sessions: week.sessions,
+    volumeKg: week.volumeKg,
+    deltaRatio: previous == null
+        ? null
+        : WeeklyStats.deltaRatio(week.volumeKg, previous.volumeKg),
+  );
+}
+
+/// 涨幅成品串：`+8%` / `−12%`。用真减号（U+2212）而不是连字符，和组行的负重一致。
+String? _deltaPercent(double? ratio) {
+  if (ratio == null) return null;
+  final pct = (ratio.abs() * 100).round();
+  return '${ratio < 0 ? '−' : '+'}$pct%';
+}
+
+/// 容量短写：`12.5k` / `860`。三格挤在一行里放不下五位数。
+String _volumeShort(double kg) =>
+    kg >= 1000 ? '${(kg / 1000).toStringAsFixed(1)}k' : Formatters.volumeKg(kg);
 
 class _RecentTile extends StatelessWidget {
   const _RecentTile({required this.summary, required this.now});

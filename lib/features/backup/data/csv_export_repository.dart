@@ -5,6 +5,7 @@ import '../../../core/db/app_database.dart';
 import '../../../core/db/database_provider.dart';
 import '../../../core/formatters.dart';
 import '../../../core/time/clock.dart';
+import '../../measurements/models/body_metric.dart';
 import '../models/csv_export.dart';
 
 /// 训练记录导出为 CSV，一行一组。
@@ -46,6 +47,15 @@ class CsvExportRepository {
     'completed_at',
   ];
 
+  /// 身体测量表（`measurements.csv`）的表头。只有 TrainTrace 格式有这张表 ——
+  /// Hevy 的导入器只吃组记录，多一张它不认识的表反而会让导入失败。
+  static const measurementsHeader = [
+    'metric',
+    'value',
+    'unit',
+    'measured_at',
+  ];
+
   /// 照 Hevy 官方导出的表头顺序。
   static const hevyHeader = [
     'title',
@@ -77,6 +87,84 @@ class CsvExportRepository {
           header: hevyHeader,
         ),
     };
+  }
+
+  /// 身体测量导出为 CSV 文本（TrainTrace 格式的第二张表）。
+  ///
+  /// **体重不在这里**：它存 `body_weights`，不是 `body_measurements`
+  ///（见 `BodyMeasurementRepository` 的类注释），但导出必须带上它 —— 拿去 Excel
+  /// 画图的人第一个要的就是体重曲线，少了它这张表基本没用。所以这里把
+  /// `body_weights` 读出来当成 `metric = 'weight'` 的行并进结果，两张表的差异
+  /// 收在这一个方法里，表格使用者看不到。
+  ///
+  /// 按 metric → 时间升序：一个指标的序列在表里连续，Excel 里直接选一段画图；
+  /// 复合索引 `(metric, measured_at)` 正好是这个顺序。
+  /// 枚举不认识的 metric 也照原样出，单位留空 —— 导出宁可多一行看不懂的，
+  /// 也不要静默丢用户数据。数值用 `Formatters.kg`（名字带 kg，实际只是"去尾零的
+  /// 小数格式化"，与单位无关）。
+  Future<String> exportMeasurements(CsvExportRange range) async {
+    final table = _db.bodyMeasurements;
+    final query = _db.select(table)
+      ..where((t) => t.deletedAt.isNull())
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.metric),
+        (t) => OrderingTerm.asc(t.measuredAt),
+      ]);
+    final start = rangeStart(range);
+    if (start != null) {
+      query.where((t) =>
+          t.measuredAt.isBiggerOrEqualValue(start.millisecondsSinceEpoch));
+    }
+    final rows = await query.get();
+    final lines = <List<String?>>[
+      for (final r in rows)
+        [
+          r.metric,
+          Formatters.kg(r.value),
+          BodyMetric.parse(r.metric)?.unit,
+          _iso(r.measuredAt),
+        ],
+      for (final w in await _weightRows(range))
+        [
+          BodyMetric.weight.name,
+          Formatters.kg(w.weightKg),
+          BodyMetric.weight.unit,
+          _iso(w.measuredAt),
+        ],
+    ];
+    // 合并后重排：同一 metric 的序列要连续且按时间升序，Excel 里才能直接选一段画图。
+    lines.sort((a, b) {
+      final byMetric = (a[0] ?? '').compareTo(b[0] ?? '');
+      return byMetric != 0 ? byMetric : (a[3] ?? '').compareTo(b[3] ?? '');
+    });
+    return encodeCsv(lines, header: measurementsHeader);
+  }
+
+  /// 体重行（`body_weights`），软删已过滤。
+  Future<List<BodyWeightRow>> _weightRows(CsvExportRange range) {
+    final table = _db.bodyWeights;
+    final query = _db.select(table)..where((t) => t.deletedAt.isNull());
+    final start = rangeStart(range);
+    if (start != null) {
+      query.where((t) =>
+          t.measuredAt.isBiggerOrEqualValue(start.millisecondsSinceEpoch));
+    }
+    return query.get();
+  }
+
+  /// 该范围内有多少条身体测量。含体重（与 [exportMeasurements] 同口径）。
+  /// 0 条时界面把入口置灰，不让用户导出一张只有表头的表。
+  Future<int> countMeasurements(CsvExportRange range) async {
+    final table = _db.bodyMeasurements;
+    final total = table.id.count();
+    final query = _db.selectOnly(table)..addColumns([total]);
+    final start = rangeStart(range);
+    query.where(start == null
+        ? table.deletedAt.isNull()
+        : table.deletedAt.isNull() &
+            table.measuredAt.isBiggerOrEqualValue(start.millisecondsSinceEpoch));
+    final measurements = (await query.getSingle()).read(total) ?? 0;
+    return measurements + (await _weightRows(range)).length;
   }
 
   /// 该范围内会导出多少次训练、多少组。

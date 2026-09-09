@@ -90,7 +90,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
           ),
           _SectionHeader(l10n.csvExportSection),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: _CsvExportCard(
               format: _csvFormat,
               range: _csvRange,
@@ -100,9 +100,33 @@ class _BackupPageState extends ConsumerState<BackupPage> {
               onExport: _exportCsv,
             ),
           ),
+          // 测量记录单独一行：范围沿用上面卡片里的选择器，但格式（TrainTrace /
+          // Hevy）只对训练记录有意义，所以不做进那张卡。
+          _MeasurementExportTile(
+            range: _csvRange,
+            busy: _busy,
+            onExport: _exportMeasurements,
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );
+  }
+
+  Future<void> _exportMeasurements() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _busy = true);
+    try {
+      final saved = await ref
+          .read(csvExportControllerProvider)
+          .exportMeasurementsToFile(_csvRange);
+      if (saved && mounted) AppTheme.showToast(context, l10n.csvExportDone);
+    } catch (e, s) {
+      swallow(e, 'csv export measurements', s);
+      if (mounted) AppTheme.showToast(context, l10n.backupFailed);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _exportCsv() async {
@@ -226,6 +250,40 @@ class _SectionHeader extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
       ),
+    );
+  }
+}
+
+/// 「导出测量记录」一行。计数 watch `csvMeasurementCountProvider(range)`，
+/// 0 条时置灰 —— 没记过体重的人点了只会得到一张空表。
+///
+/// 有旧数据就不显示 loading：切范围时旧数字先留着（同 [_CsvExportCard]）。
+class _MeasurementExportTile extends ConsumerWidget {
+  const _MeasurementExportTile({
+    required this.range,
+    required this.busy,
+    required this.onExport,
+  });
+
+  final CsvExportRange range;
+  final bool busy;
+  final VoidCallback onExport;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final count = ref.watch(csvMeasurementCountProvider(range)).value;
+    final enabled = !busy && (count ?? 0) > 0;
+    return ListTile(
+      minTileHeight: AppTheme.minTouch,
+      leading: const Icon(Icons.straighten_outlined),
+      title: Text(l10n.csvExportMeasurementsTitle),
+      subtitle: Text(count == null
+          ? l10n.csvExportMeasurementsSubtitle
+          : l10n.csvExportMeasurementsCount(count)),
+      trailing: const Icon(Icons.chevron_right),
+      enabled: enabled,
+      onTap: enabled ? onExport : null,
     );
   }
 }

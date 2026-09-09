@@ -19,7 +19,7 @@ void main() {
   });
   tearDown(() => dir.delete(recursive: true));
 
-  test('v2 库打开后升到 v4：新列默认值、body_weights 可写、旧行保留', () async {
+  test('v2 库打开后升到 v5：新列默认值、body_weights 可写、旧行保留', () async {
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.into(v3.exercises).insert(ExercisesCompanion.insert(
           id: 'ex1',
@@ -49,8 +49,10 @@ void main() {
           weightKg: const Value(20),
           reps: const Value(12),
         ));
-    // 降回 v2（先去掉 v4 的四列，再去掉 v3 的）。
+    // 降回 v2（先去掉 v5 的表，再 v4 的四列，再 v3 的）。
     for (final sql in const [
+      'DROP INDEX idx_body_measurements_metric_time',
+      'DROP TABLE body_measurements',
       'ALTER TABLE exercises DROP COLUMN is_assisted',
       'ALTER TABLE workout_sessions DROP COLUMN running_set_id',
       'ALTER TABLE workout_sessions DROP COLUMN running_set_started_at',
@@ -94,14 +96,24 @@ void main() {
           updatedAt: 2000,
         ));
     expect((await upgraded.select(upgraded.bodyWeights).get()).length, 1);
+    await upgraded
+        .into(upgraded.bodyMeasurements)
+        .insert(BodyMeasurementsCompanion.insert(
+          id: 'bm1',
+          metric: 'waist',
+          value: 82.5,
+          measuredAt: 2000,
+          updatedAt: 2000,
+        ));
+    expect((await upgraded.select(upgraded.bodyMeasurements).get()).length, 1);
     final version = await upgraded
         .customSelect('PRAGMA user_version')
         .getSingle()
         .then((r) => r.data.values.first);
-    expect(version, 4);
+    expect(version, 5);
   });
 
-  test('v3 库打开后升到 v4：is_assisted 默认 false、running_set_* 三列可空、旧行保留', () async {
+  test('v3 库打开后升到 v5：is_assisted 默认 false、running_set_* 三列可空、旧行保留', () async {
     final v4 = AppDatabase(NativeDatabase(file));
     await v4.into(v4.exercises).insert(ExercisesCompanion.insert(
           id: 'ex_assisted_pullup',
@@ -119,8 +131,10 @@ void main() {
           restEndsAt: const Value(5000),
           updatedAt: 1000,
         ));
-    // 降回 v3：只去掉 v4 加的四列。
+    // 降回 v3：去掉 v5 的表与 v4 加的四列。
     for (final sql in const [
+      'DROP INDEX idx_body_measurements_metric_time',
+      'DROP TABLE body_measurements',
       'ALTER TABLE exercises DROP COLUMN is_assisted',
       'ALTER TABLE workout_sessions DROP COLUMN running_set_id',
       'ALTER TABLE workout_sessions DROP COLUMN running_set_started_at',
@@ -160,6 +174,65 @@ void main() {
         .customSelect('PRAGMA user_version')
         .getSingle()
         .then((r) => r.data.values.first);
-    expect(version, 4);
+    expect(version, 5);
+  });
+
+  test('v4 库打开后升到 v5：body_measurements 建表建索引、旧行保留', () async {
+    final v5 = AppDatabase(NativeDatabase(file));
+    await v5.into(v5.bodyWeights).insert(BodyWeightsCompanion.insert(
+          id: 'bw1',
+          weightKg: 72.4,
+          measuredAt: 1000,
+          updatedAt: 1000,
+        ));
+    // 降回 v4：只去掉 v5 加的表与它的索引。
+    for (final sql in const [
+      'DROP INDEX idx_body_measurements_metric_time',
+      'DROP TABLE body_measurements',
+      'PRAGMA user_version = 4',
+    ]) {
+      await v5.customStatement(sql);
+    }
+    await v5.close();
+
+    final upgraded = AppDatabase(NativeDatabase(file));
+    addTearDown(upgraded.close);
+
+    final bw = await upgraded.select(upgraded.bodyWeights).getSingle();
+    expect(bw.weightKg, 72.4, reason: '体重旧行保留，它不搬家');
+
+    // 新表能写能读，同步三列有默认值。
+    await upgraded
+        .into(upgraded.bodyMeasurements)
+        .insert(BodyMeasurementsCompanion.insert(
+          id: 'bm1',
+          metric: 'waist',
+          value: 82.5,
+          measuredAt: 2000,
+          updatedAt: 2000,
+        ));
+    final bm = await upgraded.select(upgraded.bodyMeasurements).getSingle();
+    expect(bm.metric, 'waist');
+    expect(bm.value, 82.5);
+    expect(bm.measuredAt, 2000);
+    expect(bm.deletedAt, isNull);
+    expect(bm.syncStatus, 'local');
+
+    // 索引真的建了 —— 只 createTable 忘了 createIndex 是最容易漏的一步，
+    // 而且漏了不报错，只是身体段列表慢。
+    final indexes = await upgraded
+        .customSelect(
+          "SELECT name FROM sqlite_master "
+          "WHERE type = 'index' AND tbl_name = 'body_measurements'",
+        )
+        .get()
+        .then((rows) => rows.map((r) => r.read<String>('name')).toSet());
+    expect(indexes, contains('idx_body_measurements_metric_time'));
+
+    final version = await upgraded
+        .customSelect('PRAGMA user_version')
+        .getSingle()
+        .then((r) => r.data.values.first);
+    expect(version, 5);
   });
 }
