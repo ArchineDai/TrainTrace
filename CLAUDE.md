@@ -136,7 +136,8 @@ powershell -File scripts/build_release.ps1 -Install -Force
 
 | 文件 | 什么时候读 |
 |---|---|
-| `docs/PLAN.md` | 总规划：架构、schema、页面、任务表、风险 |
+| `docs/PLAN.md` | V0.1 总规划：架构、schema、页面、任务表、风险 |
+| `docs/PLAN-v0.6.md` | **V0.6 开发依据**：五 Tab、动作库入口、图表（fl_chart / 人体热力图）、身体测量；任务分解与验收清单 |
 | `docs/architecture.md` | 目录职责与依赖用途（现状） |
 | `docs/data-layer.md` | 写 Repository / model / ViewModel 时的契约细则 |
 | `docs/routing.md` | 加页面、改导航 |

@@ -595,7 +595,7 @@ dev_dependencies:
 ### MVP 到后续版本的演进路径
 
 - **V0.1 → V0.5**：数据模型已预留 rir、set_type、equipment_label、UUID 主键、updated_at/deleted_at/sync_status。V0.5 七项（备注回显、超级组、1RM 趋势、体重与自重、计时动作、板片计算器、CSV）已落地，无破坏性迁移。
-- **V0.5 → V0.6**：定位放宽到所有健身人群，图表升为核心。五 Tab（首页 / 模板 / 动作 / 数据 / 设置）、动作库一级入口、fl_chart 统计页、身体测量表。需求见 `backlog.md` F-8 ～ F-11。
+- **V0.5 → V0.6**：定位放宽到所有健身人群，图表升为核心。五 Tab（首页 / 模板 / 动作 / 数据 / 设置）、动作库一级入口、fl_chart 统计页、身体测量表。开发依据是 `PLAN-v0.6.md`，决策过程见 `backlog.md` V0.6 一节。
 - **V0.5 → V1.0**：Repository 接口不变，在 data 层加 outbox 表 + SyncService 做增量同步，state/presentation 零改动（预留见 1.5）。器械识别与 AI 教练作为独立 feature 包接入。
 
 ---
