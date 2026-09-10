@@ -499,7 +499,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       case ExerciseCardAction.editNote:
         await _editNote(weId);
       case ExerciseCardAction.viewExercise:
-        await context.push(AppRoutes.exerciseDetail(exerciseId));
+        // 菜单文案是「查看动作要领」，落点就得是要领段（?tab=guide）。
+        await context.push(AppRoutes.exerciseDetailTab(exerciseId, DetailTab.guide));
       case ExerciseCardAction.superset:
         await SupersetPickerSheet.show(context, workoutExerciseId: weId);
       case ExerciseCardAction.unlink:
