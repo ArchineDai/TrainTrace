@@ -10,6 +10,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../router/app_routes.dart';
 import '../../../shared/widgets/text_fields_dialog.dart';
 import '../../history/models/history_models.dart';
+import '../../history/state/stats_providers.dart';
 import '../../suggestion/presentation/suggestion_card.dart';
 import '../../suggestion/state/suggestion_provider.dart';
 import '../data/exercise_repository.dart';
@@ -139,8 +140,23 @@ class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
 
   /// 记录段：建议 → 个人记录三格 → 趋势卡 → 纪录表 → 最近记录。
   List<Widget> _records(BuildContext context, Exercise exercise) {
-    final history = ref.watch(exerciseHistoryProvider(_exerciseId)).value ?? const [];
-    final pr = ref.watch(personalRecordsProvider(_exerciseId)).value ?? PersonalRecords.empty;
+    final historyAsync = ref.watch(exerciseHistoryProvider(_exerciseId));
+    final prAsync = ref.watch(personalRecordsProvider(_exerciseId));
+    // 首帧三份数据还没回来：整段先不画，不出 loading、也不把 null 当空渲染成
+    // 「暂无记录」—— 否则进页会先闪一帧空态再换成数据（铁律 6，同 body_segment）。
+    // 判 isLoading 而不是 hasValue：查询出错时按空态兜底，不留白屏。
+    if (historyAsync.isLoading || prAsync.isLoading) return const [];
+    // 纪录表也一起等：它首帧五行全是「尚无」，下一帧才换成数值。
+    if (ref.watch(repMaxesProvider(_exerciseId)).isLoading) return const [];
+    final history = historyAsync.value ?? const <ExercisePerformance>[];
+    final pr = prAsync.value ?? PersonalRecords.empty;
+    // 建议卡依赖 history 里最近的器械标签，只能第二阶段才开始算；
+    // 同样等它回来再一起画，避免卡片晚一帧撑开把下面内容顶下去。
+    final query = SuggestionQuery(
+      exerciseId: _exerciseId,
+      equipmentLabel: history.isEmpty ? null : history.first.equipmentLabel,
+    );
+    if (ref.watch(suggestionProvider(query)).isLoading) return const [];
     final now = ref.read(clockProvider).now();
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
@@ -148,12 +164,7 @@ class _ExerciseDetailPageState extends ConsumerState<ExerciseDetailPage> {
     return [
       // ── 下次怎么练：工作重量建议（按最近一次用的器械标签算）──
       _section(context, l10n.nextSuggestion),
-      SuggestionCard(
-        query: SuggestionQuery(
-          exerciseId: _exerciseId,
-          equipmentLabel: history.isEmpty ? null : history.first.equipmentLabel,
-        ),
-      ),
+      SuggestionCard(query: query),
       const SizedBox(height: 20),
 
       // ── 个人记录三格：估算 1RM 在这里，纪录表里的 1RM 是实际单次最重 ──
