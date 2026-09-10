@@ -352,7 +352,7 @@ Repository API（`features/measurements/data/body_measurement_repository.dart`�
 | `AppColors` 新字段（亮 / 暗各一组） | `chartBarMuted`、`chartGrid`、`bodySkin`（onSurface 10%）、`bodyMuscleIdle`（16%）、`bodyShadeLight`、`bodyShadeDark`；`test/theme/app_theme_test.dart` 补对比度 / 存在性断言 |
 | 生成码 | `body_map_data.dart`（脚本生成，git 追踪，头部注明来源与许可）、`*.g.dart`（schema v5 后 `dart run build_runner build`）、`app_localizations*.dart` |
 | 资产 | `assets/licenses/`（打包）：`body_map_MIT.txt` + 两套字体的 `*-OFL.txt`。原来只放在 `assets/fonts/` 下的 OFL 文本**并没有被打进包**（`fonts:` 段只带字体文件，不带同目录的 txt），D-9 的旧说法有误 |
-| 关于页 | `/settings/about` → `AboutPage`：版本号（`package_info_plus`，已是传递依赖）、素材署名两行、「开源许可」进 Flutter 自带的 `showLicensePage`。素材许可由 `core/licenses.dart` 用 `LicenseRegistry.addLicense` 注册进去，和依赖许可列在一起，不自己写许可页。一并了结 D-9 |
+| 关于页 | `/settings/about` → `AboutPage`：版本号（`package_info_plus`，已是传递依赖）、「开源许可」一条进 Flutter 自带的 `showLicensePage`，不单独做署名栏。素材许可由 `core/licenses.dart` 用 `LicenseRegistry.addLicense` 注册进去，和依赖许可列在一起，不自己写许可页。一并了结 D-9 |
 
 ---
 

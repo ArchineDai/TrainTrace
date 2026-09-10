@@ -281,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutSettingsSubtitle.
   ///
   /// In zh, this message translates to:
-  /// **'版本、素材署名与开源许可'**
+  /// **'版本与开源许可'**
   String get aboutSettingsSubtitle;
 
   /// 关于页版本行
@@ -289,36 +289,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'版本 {version}（构建 {build}）'**
   String aboutVersion(String version, String build);
-
-  /// No description provided for @aboutCreditsSection.
-  ///
-  /// In zh, this message translates to:
-  /// **'素材署名'**
-  String get aboutCreditsSection;
-
-  /// No description provided for @aboutFontsTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'IBM Plex Sans、Noto Sans SC'**
-  String get aboutFontsTitle;
-
-  /// No description provided for @aboutFontsSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'SIL Open Font License 1.1'**
-  String get aboutFontsSubtitle;
-
-  /// No description provided for @aboutBodyMapTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'肌群人体图'**
-  String get aboutBodyMapTitle;
-
-  /// No description provided for @aboutBodyMapSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'react-native-body-highlighter · MIT License'**
-  String get aboutBodyMapSubtitle;
 
   /// No description provided for @aboutLicenses.
   ///
@@ -329,7 +299,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutLicensesHint.
   ///
   /// In zh, this message translates to:
-  /// **'全部依赖与素材的许可原文'**
+  /// **'字体、人体图与全部依赖的许可原文'**
   String get aboutLicensesHint;
 
   /// No description provided for @backupIntro.

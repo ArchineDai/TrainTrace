@@ -165,8 +165,9 @@
 
 - **D-9 字体与素材许可署名**（2026-09-09）：随 V0.6 落地。原来的说法有误 —— `assets/fonts/*-OFL.txt`
   **没有被打进包**（`fonts:` 段只带字体文件）。现在三份许可原文放 `assets/licenses/` 并声明为 asset，
-  由 `core/licenses.dart` 的 `LicenseRegistry.addLicense` 注册，关于页（`/settings/about`）列出署名两行 +
-  「开源许可」进 Flutter 自带的 `showLicensePage` 读全文。人体图的 MIT 一并了结。
+  由 `core/licenses.dart` 的 `LicenseRegistry.addLicense` 注册，关于页（`/settings/about`）只留一条
+  「开源许可」进 Flutter 自带的 `showLicensePage` 读全文，与主流 App 一致（OFL / MIT 都不要求可见署名，
+  2026-09-10 去掉了原来的署名两行）。人体图的 MIT 一并了结。
 
 - **D-11 文案迁移到 ARB**（2026-09-04）：`lib/` 里的界面文案全部走 ARB，约 150 个 key。
   枚举展示名移到 presentation 层扩展（`exercise_labels.dart` / `set_type_labels.dart`），

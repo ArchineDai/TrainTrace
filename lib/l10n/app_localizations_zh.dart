@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutTitle => '关于训迹';
 
   @override
-  String get aboutSettingsSubtitle => '版本、素材署名与开源许可';
+  String get aboutSettingsSubtitle => '版本与开源许可';
 
   @override
   String aboutVersion(String version, String build) {
@@ -112,26 +112,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get aboutCreditsSection => '素材署名';
-
-  @override
-  String get aboutFontsTitle => 'IBM Plex Sans、Noto Sans SC';
-
-  @override
-  String get aboutFontsSubtitle => 'SIL Open Font License 1.1';
-
-  @override
-  String get aboutBodyMapTitle => '肌群人体图';
-
-  @override
-  String get aboutBodyMapSubtitle =>
-      'react-native-body-highlighter · MIT License';
-
-  @override
   String get aboutLicenses => '开源许可';
 
   @override
-  String get aboutLicensesHint => '全部依赖与素材的许可原文';
+  String get aboutLicensesHint => '字体、人体图与全部依赖的许可原文';
 
   @override
   String get backupIntro => '备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。';

@@ -108,7 +108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutTitle => 'About TrainTrace';
 
   @override
-  String get aboutSettingsSubtitle => 'Version, credits and licenses';
+  String get aboutSettingsSubtitle => 'Version and licenses';
 
   @override
   String aboutVersion(String version, String build) {
@@ -116,27 +116,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get aboutCreditsSection => 'Credits';
-
-  @override
-  String get aboutFontsTitle => 'IBM Plex Sans, Noto Sans SC';
-
-  @override
-  String get aboutFontsSubtitle => 'SIL Open Font License 1.1';
-
-  @override
-  String get aboutBodyMapTitle => 'Muscle body map';
-
-  @override
-  String get aboutBodyMapSubtitle =>
-      'react-native-body-highlighter · MIT License';
-
-  @override
   String get aboutLicenses => 'Open source licenses';
 
   @override
   String get aboutLicensesHint =>
-      'Full license texts for dependencies and assets';
+      'Full license texts for fonts, body map and all dependencies';
 
   @override
   String get backupIntro =>

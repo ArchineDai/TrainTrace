@@ -10,12 +10,11 @@ import '../../../l10n/app_localizations.dart';
 final _packageInfoProvider =
     FutureProvider.autoDispose<PackageInfo>((_) => PackageInfo.fromPlatform());
 
-/// 关于页：版本号 + 第三方素材署名 + 完整开源许可。
+/// 关于页：版本号 + 一条「开源许可」入口，与主流 App 一致。
 ///
-/// 署名这几行是**分发义务**，不是装饰：两套字体是 SIL OFL 1.1、数据页的人体图
-/// 是 MIT，都要求随分发保留版权声明与许可原文。原文由 `core/licenses.dart`
-/// 注册进 Flutter 的许可注册表，「开源许可」那一行打开的系统许可页里能读到全文，
-/// 和 pub 依赖的许可列在一起。
+/// 字体（SIL OFL 1.1）与人体图（MIT）的分发义务只有一件：许可原文随包附带、
+/// 用户在 App 内能读到。原文由 `core/licenses.dart` 注册进 Flutter 的许可注册表，
+/// 在 [showLicensePage] 里和 pub 依赖一起列出，不在关于页单独做致谢栏。
 class AboutPage extends ConsumerWidget {
   const AboutPage({super.key});
 
@@ -49,16 +48,6 @@ class AboutPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _SectionTitle(l10n.aboutCreditsSection),
-          _CreditTile(
-            title: l10n.aboutFontsTitle,
-            subtitle: l10n.aboutFontsSubtitle,
-          ),
-          _CreditTile(
-            title: l10n.aboutBodyMapTitle,
-            subtitle: l10n.aboutBodyMapSubtitle,
-          ),
-          const SizedBox(height: 8),
           ListTile(
             minTileHeight: AppTheme.minTouch,
             contentPadding: EdgeInsets.zero,
@@ -71,55 +60,6 @@ class AboutPage extends ConsumerWidget {
               applicationName: l10n.appTitle,
               applicationVersion:
                   info == null ? null : '${info.version}+${info.buildNumber}',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: AppTextSize.sm,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-}
-
-/// 一条署名。不可点：许可全文在「开源许可」里，这里只交代"用了谁的东西"。
-class _CreditTile extends StatelessWidget {
-  const _CreditTile({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: TextStyle(fontSize: AppTextSize.md)),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: AppTextSize.xs,
-              color: scheme.onSurfaceVariant,
             ),
           ),
         ],

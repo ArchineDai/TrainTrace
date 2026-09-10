@@ -48,7 +48,7 @@
   "backupSettingsSubtitle": "备份到文件，卸载重装或换手机后恢复",
   "aboutSection": "关于",
   "aboutTitle": "关于训迹",
-  "aboutSettingsSubtitle": "版本、素材署名与开源许可",
+  "aboutSettingsSubtitle": "版本与开源许可",
   "aboutVersion": "版本 {version}（构建 {build}）",
   "@aboutVersion": {
     "description": "关于页版本行",
@@ -57,13 +57,8 @@
       "build": { "type": "String" }
     }
   },
-  "aboutCreditsSection": "素材署名",
-  "aboutFontsTitle": "IBM Plex Sans、Noto Sans SC",
-  "aboutFontsSubtitle": "SIL Open Font License 1.1",
-  "aboutBodyMapTitle": "肌群人体图",
-  "aboutBodyMapSubtitle": "react-native-body-highlighter · MIT License",
   "aboutLicenses": "开源许可",
-  "aboutLicensesHint": "全部依赖与素材的许可原文",
+  "aboutLicensesHint": "字体、人体图与全部依赖的许可原文",
   "backupIntro": "备份文件包含全部模板、训练记录和设置。卸载重装或换手机后，从文件恢复即可找回。器械照片不在备份里。",
   "backupExport": "备份到文件",
   "backupLastAt": "上次备份：{date}",
