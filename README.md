@@ -1,7 +1,21 @@
-# TrainTrace
+# TrainTrace · 训迹
 
-个人优先、面向国内健身新手的力量训练记录 App。定位：中国版 Hevy + 新手工作重量助手。
+力量训练记录 App，支持训练模板、动作库、数据趋势与身体测量，内置新手工作重量助手。
 
-- 技术栈：Flutter / Riverpod / Drift + SQLite / go_router
-- Android 优先，保留 iOS 兼容
-- 完整 V0.1 规划见 [docs/PLAN.md](docs/PLAN.md)
+## 截图
+
+| 首页 | 模板 | 动作 |
+| :---: | :---: | :---: |
+| [<img src="docs/screenshots/tab-home.png" width="250" alt="首页">](docs/screenshots/tab-home.png) | [<img src="docs/screenshots/tab-routines.png" width="250" alt="模板">](docs/screenshots/tab-routines.png) | [<img src="docs/screenshots/tab-exercises.png" width="250" alt="动作">](docs/screenshots/tab-exercises.png) |
+
+| 数据 · 概览 | 设置 |
+| :---: | :---: |
+| [<img src="docs/screenshots/tab-data-overview.png" width="250" alt="数据概览">](docs/screenshots/tab-data-overview.png) | [<img src="docs/screenshots/tab-settings.png" width="250" alt="设置">](docs/screenshots/tab-settings.png) |
+
+| 训练 | 身体 |
+| :---: | :---: |
+| [<img src="docs/screenshots/tab-data-training.png" width="250" alt="数据训练子页">](docs/screenshots/tab-data-training.png) | [<img src="docs/screenshots/tab-data-body.png" width="250" alt="数据身体子页">](docs/screenshots/tab-data-body.png) |
+
+| 记录 | 要领 | 器械 |
+| :---: | :---: | :---: |
+| [<img src="docs/screenshots/exercise-records.png" width="250" alt="坐姿划船记录">](docs/screenshots/exercise-records.png) | [<img src="docs/screenshots/exercise-guide.png" width="250" alt="坐姿划船要领">](docs/screenshots/exercise-guide.png) | [<img src="docs/screenshots/exercise-equipment.png" width="250" alt="坐姿划船器械">](docs/screenshots/exercise-equipment.png) |
